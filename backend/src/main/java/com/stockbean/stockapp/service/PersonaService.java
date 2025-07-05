@@ -1,11 +1,10 @@
 package com.stockbean.stockapp.service;
 
 import java.time.LocalDateTime;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import com.stockbean.stockapp.model.Persona;
+import com.stockbean.stockapp.model.tablas.Persona;
 import com.stockbean.stockapp.repository.PersonaRepository; 
 
 
