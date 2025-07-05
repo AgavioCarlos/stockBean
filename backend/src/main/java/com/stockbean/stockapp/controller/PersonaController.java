@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 import com.stockbean.stockapp.service.PersonaService;
 import java.util.List;
-import com.stockbean.stockapp.model.Persona;
+import com.stockbean.stockapp.model.tablas.Persona;
 
 @RestController
 @RequestMapping("/personas")
@@ -44,7 +44,7 @@ public class PersonaController {
         return actualizada != null ? ResponseEntity.ok(actualizada) : ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}") 
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         personaService.eliminar(id);
         return ResponseEntity.noContent().build();
