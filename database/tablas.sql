@@ -353,3 +353,61 @@ CREATE INDEX idx_cat_motivos_nombre ON cat_motivos(nombre);
 
 ------------------------------------------------------------------
 
+CREATE TABLE tbl_devoluciones_compra (
+	id_devolucion SERIAL PRIMARY KEY, 
+	id_compra INT NOT NULL, 
+	id_producto INT NOT NULL, 
+	cantidad INT NOT NULL,
+	fecha TIMESTAMP NOT NULL,
+	id_motivo INT NOT NULL,
+	id_usuario INT NOT NULL, 
+	id_sucursal INT NOT NULL,
+	status BOOLEAN DEFAULT TRUE,
+	fecha_alta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	fecha_baja TIMESTAMP,
+	fecha_ultima_modificacion TIMESTAMP, 
+
+	CONSTRAINT fk_dev_compra_compra FOREIGN KEY (id_compra) REFERENCES tbl_compras(id_compra),
+	CONSTRAINT fk_dev_compra_producto FOREIGN KEY (id_producto) REFERENCES tbl_productos(id_producto),
+	CONSTRAINT fk_dev_compra_usuario FOREIGN KEY (id_usuario) REFERENCES tbl_usuarios(id_usuario),
+	CONSTRAINT fk_dev_compra_sucursal FOREIGN KEY (id_sucursal) REFERENCES tbl_sucursales(id_sucursal),
+	CONSTRAINT fk_dev_compra_motivo FOREIGN KEY (id_motivo) REFERENCES cat_motivos(id_motivo)
+);
+
+CREATE INDEX idx_tbl_devoluciones_compra_id_compra ON tbl_devoluciones_compra(id_compra);
+CREATE INDEX idx_tbl_devoluciones_compra_id_producto ON tbl_devoluciones_compra(id_producto);
+CREATE INDEX idx_tbl_devoluciones_compra_id_usuario ON tbl_devoluciones_compra(id_usuario);
+CREATE INDEX idx_tbl_devoluciones_compra_motivo ON tbl_devoluciones_compra(id_motivo);
+CREATE INDEX idx_tbl_devoluciones_compra_sucursal ON tbl_devoluciones_compra(id_sucursal);
+CREATE INDEX idx_tbl_devoluciones_compra_status ON tbl_devoluciones_compra(status);
+
+
+CREATE TABLE tbl_devoluciones_venta(
+	id_devolucion SERIAL PRIMARY KEY,
+	id_venta INT NOT NULL,
+	id_producto INT NOT NULL,
+	cantidad INT NOT NULL,
+	fecha TIMESTAMP NOT NULL,
+	id_motivo INT NOT NULL,
+	id_usuario INT NOT NULL,
+	id_sucursal INT NOT NULL,
+	status BOOLEAN DEFAULT TRUE,
+	fecha_alta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	fecha_baja TIMESTAMP, 
+	fecha_ultima_moficacion TIMESTAMP, 
+
+	CONSTRAINT fk_dev_venta_venta FOREIGN KEY (id_venta) REFERENCES tbl_ventas(id_venta),
+	CONSTRAINT fk_dev_venta_producto FOREIGN KEY (id_producto) REFERENCES tbl_productos(id_producto),
+	CONSTRAINT fk_dev_venta_usuario FOREIGN KEY (id_usuario) REFERENCES tbl_usuarios(id_usuario),
+	CONSTRAINT fk_dev_venta_sucursal FOREIGN KEY (id_sucursal) REFERENCES tbl_sucursales(id_sucursal),
+	CONSTRAINT fk_dev_venta_motivo FOREIGN KEY (id_motivo) REFERENCES cat_motivos(id_motivo)
+	
+);
+
+CREATE INDEX idx_tbl_devoluciones_venta_id_venta ON tbl_devoluciones_venta(id_venta);
+CREATE INDEX idx_tbl_devoluciones_venta_id_producto ON tbl_devoluciones_venta(id_producto);
+CREATE INDEX idx_tbl_devoluciones_venta_id_usuario ON tbl_devoluciones_venta(id_usuario);
+CREATE INDEX idx_tbl_devoluciones_venta_id_motivo ON tbl_devoluciones_venta(id_motivo);
+CREATE INDEX idx_tbl_devoluciones_venta_id_sucursal ON tbl_devoluciones_venta(id_sucursal);
+CREATE INDEX idx_tbl_devoluciones_venta_status ON tbl_devoluciones_venta(status);
+
