@@ -2,19 +2,29 @@ import { useEffect, useState } from "react"
 import FormularioRegistro from "../../components/FormularioRegistro";
 
 function Login(){
-    const [mostrarFormularioRegistro, setMostrarFormularioRegistro] = useState(false);
+    const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
     useEffect(()=> {
-        if(mostrarFormularioRegistro){
+        if(mostrarFormulario){
             document.body.classList.add("modal-open")
         } else {
             document.body.classList.remove("modal-open")
         }
-    }, [mostrarFormularioRegistro]);
+    }, [mostrarFormulario]);
 
 
 return (
+  
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+      
+        
+      {mostrarFormulario ? (
+      <FormularioRegistro
+        mostrarFormulario={mostrarFormulario}
+        setMostrarFormulario={setMostrarFormulario}
+      />
+    ) : (
+
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md">
         <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">Iniciar Sesión</h2>
 
@@ -54,19 +64,20 @@ return (
         </form>
 
         <p className="text-sm text-gray-500 text-center mt-6">
-          ¿No tienes una cuenta? <a onClick={() => setMostrarFormularioRegistro(true)} className="text-indigo-600 hover:underline">Regístrate</a>
+          ¿No tienes una cuenta? <a onClick={() => setMostrarFormulario(true)} className="text-indigo-600 hover:underline">Regístrate</a>
         </p>
 
-        <button onClick={() => setMostrarFormularioRegistro(true)}>
+        {/* <button onClick={() => setMostrarFormularioRegistro(true)}>
             Registrar
-        </button>
+        </button> */}
 
       </div>
+    )}
 
-        <FormularioRegistro
-        mostrarFormulario={mostrarFormularioRegistro}
-        setMostrarFormulario={setMostrarFormularioRegistro}
-        />
+{/*         <FormularioRegistro
+        mostrarFormulario={mostrarFormulario}
+        setMostrarFormulario={setMostrarFormulario}
+        /> */}
     </div>
 );
 }
