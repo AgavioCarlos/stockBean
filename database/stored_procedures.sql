@@ -49,6 +49,8 @@ $$ LANGUAGE plpgsql;
 SELECT spd_registra_admin('Carlos', 'Agavio', 'Trujillo', 'agavio@email.com', 'agavio', '1234');
 
 
+SELECT spd_registra_admin('Emanuel', 'Agavio', 'Trujillo', 'agavio@email.com', 'manu', '1234');
+
 
 SELECT u.id_usuario, u.cuenta, u.status, u.id_rol, u.password,
        p.nombre, p.apellido_paterno, p.apellido_materno, p.email
