@@ -2,17 +2,29 @@ package com.stockbean.stockapp.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+import com.stockbean.stockapp.repository.UnidadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import com.stockbean.stockapp.dto.ProductoRequest;
 import com.stockbean.stockapp.model.tablas.Producto;
+import com.stockbean.stockapp.repository.CategoriaRepository;
+import com.stockbean.stockapp.repository.MarcaRepository;
 import com.stockbean.stockapp.repository.ProductoRepository;
 
 @Service
 public class ProductoService {
+
     @Autowired
-    private ProductoRepository productoRepository; 
+    private ProductoRepository productoRepository;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private UnidadRepository unidadRepository;
+
+    @Autowired
+    private MarcaRepository marcaRepository;
 
     public List<Producto> listarTodos(){
         return productoRepository.findAll();
@@ -22,10 +34,26 @@ public class ProductoService {
         return productoRepository.findById(id).orElse(null);
     }
 
-    public Producto guardar(Producto producto){
-        producto.setFecha_alta(LocalDateTime.now());
-        producto.setFecha_ultima_modificacion(LocalDateTime.now());
+    public Producto guardar(ProductoRequest dto){
+
+        Producto producto = new Producto();
+        producto.setNombre(dto.getNombre());
+        producto.setDescripcion(dto.getDescripcion());
+        producto.setCategoria(categoriaRepository.findById(dto.getIdCategoria())
+            .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
+        
+        producto.setUnidad(unidadRepository.findById(dto.getIdUnidad())
+            .orElseThrow(() -> new RuntimeException("Unidad no encontrada")));
+        
+        producto.setMarca(marcaRepository.findById(dto.getIdMarca())
+            .orElse(null));
+
+        producto.setCodigoBarras(dto.getCodigoBarras());
+        producto.setImagenUrl(dto.getImagenUrl());
         producto.setStatus(true);
+        producto.setFechaAlta(LocalDateTime.now());
+        producto.setFechaUltimaModificacion(LocalDateTime.now());
+        
         return productoRepository.save(producto);
     }
 
@@ -35,13 +63,13 @@ public class ProductoService {
 
         producto.setNombre(productoActualizado.getNombre());
         producto.setDescripcion(productoActualizado.getDescripcion());
-        producto.setId_categoria(productoActualizado.getId_categoria());
-        producto.setId_unidad(productoActualizado.getId_unidad());
-        producto.setId_marca(productoActualizado.getId_marca());
-        producto.setCodigo_barras(productoActualizado.getCodigo_barras());
-        producto.setImagen_url(productoActualizado.getImagen_url());
+        producto.setCategoria(productoActualizado.getCategoria());
+        producto.setUnidad(productoActualizado.getUnidad());
+        producto.setMarca(productoActualizado.getMarca());
+        producto.setCodigoBarras(productoActualizado.getCodigoBarras());
+        producto.setImagenUrl(productoActualizado.getImagenUrl());
         producto.setStatus(productoActualizado.getStatus());
-        producto.setFecha_ultima_modificacion(LocalDateTime.now());
+        producto.setFechaUltimaModificacion(LocalDateTime.now());
 
         return productoRepository.save(producto);
     }
@@ -50,10 +78,9 @@ public class ProductoService {
         Producto producto = obtenerPorId(id);
         if(producto != null){
             producto.setStatus(false);
-            producto.setFecha_baja(LocalDateTime.now());
-            producto.setFecha_ultima_modificacion(LocalDateTime.now());
+            producto.setFechaBaja(LocalDateTime.now());
+            producto.setFechaUltimaModificacion(LocalDateTime.now());
             productoRepository.save(producto);
-
         }
     }
 }
