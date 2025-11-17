@@ -5,9 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.stockbean.stockapp.model.catalogos.Unidad;
 import com.stockbean.stockapp.service.UnidadService;
-
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,14 +14,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 
-
-
 @RestController
 @RequestMapping("/unidades")
 public class UnidadController {
     @Autowired 
     private UnidadService unidadService;
-
 
     @GetMapping
     public List<Unidad> listar() {
