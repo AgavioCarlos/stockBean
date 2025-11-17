@@ -23,8 +23,8 @@ public class UnidadService {
     }
 
     public Unidad guardar(Unidad unidades){
-        unidades.setFecha_alta(LocalDateTime.now());
-        unidades.setFecha_ultima_modificacion(LocalDateTime.now());
+        unidades.setFechaAlta(LocalDateTime.now());
+        unidades.setFechaUltimaModificacion(LocalDateTime.now());
         return unidadRepository.save(unidades);
     }
 
@@ -33,7 +33,7 @@ public class UnidadService {
         if(unidades == null) return null; 
         unidades.setNombre(unidadActualizada.getNombre());
         unidades.setAbreviatura(unidadActualizada.getAbreviatura());
-        unidades.setFecha_ultima_modificacion(LocalDateTime.now());
+        unidades.setFechaUltimaModificacion(LocalDateTime.now());
         return unidadRepository.save(unidades);
     }
     

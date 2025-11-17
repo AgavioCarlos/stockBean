@@ -2,13 +2,10 @@ package com.stockbean.stockapp.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.stockbean.stockapp.model.catalogos.Marca;
 import com.stockbean.stockapp.repository.MarcaRepository;
-
 @Service
 public class MarcaService {
     @Autowired
@@ -23,8 +20,8 @@ public class MarcaService {
     }
 
     public Marca guardar(Marca marca){
-        marca.setFecha_alta(LocalDateTime.now());
-        marca.setFecha_ultima_modificacion(LocalDateTime.now());
+        marca.setFechaAlta(LocalDateTime.now());
+        marca.setFechaUltimaModificacion(LocalDateTime.now());
         marca.setStatus(true);
         
         return marcaRepository.save(marca);
@@ -35,7 +32,7 @@ public class MarcaService {
         if(marca == null) return null;
 
         marca.setNombre(marcaActualizada.getNombre());
-        marca.setFecha_ultima_modificacion(marcaActualizada.getFecha_ultima_modificacion());
+        marca.setFechaUltimaModificacion(marcaActualizada.getFechaUltimaModificacion());
         return marcaRepository.save(marca);
     }
 
@@ -43,10 +40,9 @@ public class MarcaService {
         Marca marca = obtenerPorId(id);
         if(marca != null) {
             marca.setStatus(false);
-            marca.setFecha_baja(LocalDateTime.now());
-            marca.setFecha_ultima_modificacion(LocalDateTime.now());
+            marca.setFechaBaja(LocalDateTime.now());
+            marca.setFechaUltimaModificacion(LocalDateTime.now());
             marcaRepository.save(marca);
         }
     }
-    
 }

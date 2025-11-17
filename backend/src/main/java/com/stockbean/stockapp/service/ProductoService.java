@@ -50,10 +50,9 @@ public class ProductoService {
 
         producto.setCodigoBarras(dto.getCodigoBarras());
         producto.setImagenUrl(dto.getImagenUrl());
-        producto.setStatus(true);
+        producto.setStatus(dto.getStatus());
         producto.setFechaAlta(LocalDateTime.now());
         producto.setFechaUltimaModificacion(LocalDateTime.now());
-        
         return productoRepository.save(producto);
     }
 
