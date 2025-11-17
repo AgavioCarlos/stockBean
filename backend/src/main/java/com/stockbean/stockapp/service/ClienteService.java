@@ -22,7 +22,7 @@ public class ClienteService {
     }
 
     public Cliente obtenerPorId(Integer id){
-        return clienteRepository.findById(id).orElse(null);
+        return clienteRepository.findById(id).orElseThrow(() -> new RuntimeException("Cliente no encontrado con id: " + id));
     }
 
     public Cliente guardar (ClienteRequest dto){
@@ -38,8 +38,7 @@ public class ClienteService {
     }
 
     public Cliente actualizar (Integer id, ClienteRequest dtoActualizado){
-        Cliente cliente = obtenerPorId(id);
-        if (cliente == null) return null;
+        Cliente cliente = obtenerPorId(id); // Esto ya lanza una excepción si no lo encuentra.
 
         Persona persona = personaRepository.findById(dtoActualizado.getIdPersona())
             .orElseThrow(() -> new RuntimeException("Persona no encontrada"));

@@ -22,8 +22,8 @@ public class CategoriaService {
     }
 
     public Categoria guardar(Categoria categoria){
-        categoria.setFecha_alta(LocalDateTime.now());
-        categoria.setFecha_ultima_modificacion(LocalDateTime.now());
+        categoria.setFechaAlta(LocalDateTime.now());
+        categoria.setFechaUltimaModificacion(LocalDateTime.now());
         categoria.setStatus(true);
 
         return categoriaRepository.save(categoria);
@@ -35,7 +35,7 @@ public class CategoriaService {
         if(categoria == null) return null;
 
         categoria.setNombre(categoriaActualizada.getNombre());
-        categoria.setFecha_ultima_modificacion(LocalDateTime.now());
+        categoria.setFechaUltimaModificacion(LocalDateTime.now());
         return categoriaRepository.save(categoria);
     }
 
@@ -43,8 +43,8 @@ public class CategoriaService {
         Categoria categoria = obtenerPorId(id);
         if(categoria != null){
             categoria.setStatus(false);
-            categoria.setFecha_baja(LocalDateTime.now());
-            categoria.setFecha_ultima_modificacion(LocalDateTime.now());
+            categoria.setFechaBaja(LocalDateTime.now());
+            categoria.setFechaUltimaModificacion(LocalDateTime.now());
 
             categoriaRepository.save(categoria);
         }

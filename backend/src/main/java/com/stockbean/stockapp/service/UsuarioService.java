@@ -3,11 +3,16 @@ package com.stockbean.stockapp.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.repository.UsuarioRepository;
-
 @Service
 public class UsuarioService {
     @Autowired
-    private UsuarioRepository usuarioRepository;   
+    private UsuarioRepository usuarioRepository;
+
+    public Usuario findByCuenta(String cuenta) {
+        return usuarioRepository.findByCuenta(cuenta).orElse(null);
+    }
+
     
 }
