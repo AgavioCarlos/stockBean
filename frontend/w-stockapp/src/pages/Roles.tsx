@@ -7,9 +7,9 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-community/styles/ag-theme-material.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
-import { consultarRoles } from "../services/Roles";
+import { consultarRoles, crearRol } from "../services/Roles";
 import Header from "../components/Layouts/Header";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/Layouts/Sidebar";
 import Footer from "../components/Layouts/Footer";
 import "../components/dataTables.css";
 
@@ -48,26 +48,19 @@ const Roles: React.FC = () => {
   const manejarEnvio = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:8080/roles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre: nuevoNombre,
-          descripcion: nuevaDescripcion,
-        }),
+      const nuevoRol = await crearRol({
+        nombre: nuevoNombre,
+        descripcion: nuevaDescripcion,
       });
-      if (!response.ok) throw new Error("Error al crear categoría");
-      const nuevoRol = await response.json();
-      setRoles([...roles, nuevoRol]);
+      setRoles(prev => [...prev, nuevoRol]);
       setMostrarModal(false);
       setNuevoNombre('');
       setNuevaDescripcion('');
     } catch (error) {
+      console.error("Error al guardar rol:", error);
       alert("Error al guardar");
     }
   };
-
-  // Configuración de columnas para AG-Grid
   const columnDefs = [
     { 
       field: "id_rol", 
@@ -117,9 +110,8 @@ const Roles: React.FC = () => {
 
       <div className={`pt-20 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
         <div className="px-6">
-          {/* Header de la página */}
+          
           <div className="flex items-center justify-end mb-6">
-            {/* <h1 className="text-2xl font-bold text-gray-800">Roles</h1> */}
             <div className="flex gap-3">
               <button 
                 className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
@@ -136,8 +128,6 @@ const Roles: React.FC = () => {
               </button>
             </div>
           </div>
-
-          {/* Contenedor de la tabla */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             {loading ? (
               <div className="text-center py-8">
@@ -174,7 +164,6 @@ const Roles: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal */}
       {mostrarModal && (
         <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-xl">
