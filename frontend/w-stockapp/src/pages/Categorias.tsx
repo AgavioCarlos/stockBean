@@ -9,9 +9,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
 import { consultarCategorias } from "../services/Categoria";
 import Header from "../components/Layouts/Header";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/Layouts/Sidebar";
+import Tabs from '../components/Tabs';
 
-// Registrar AllCommunityModule
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface Categoria {
@@ -23,11 +23,17 @@ interface Categoria {
 const Categorias: React.FC = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
+  const [vista, setVista] = useState("lista");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   // Estados para el formulario
   const [nuevoNombre, setNuevoNombre] = useState('');
   const [nuevoStatus, setNuevoStatus] = useState(true);
 
+    const pestañas = [
+    { key: "lista", label: "Lista" },
+    { key: "detalle", label: "Detalle" },
+  ];
+  
   useEffect(() => {
     consultarCategorias()
       .then((data: Categoria[]) => {
@@ -70,32 +76,50 @@ const Categorias: React.FC = () => {
   };
 
   return (
-  <div>
-    <Header/>
-    <button
-      className="text-3xl p-4"
-      onClick={() => setIsSidebarOpen(true)}
-    >
-      ☰
-    </button>
-    <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+    <div>
+      <Header />
+      <button className="text-3xl p-4" onClick={() => setIsSidebarOpen(true)}>
+        ☰
+      </button>
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+      <div className="flex items-center justify-between px-6 mb-2">
+        <Tabs tabs={pestañas} activeTab={vista} onChange={setVista} />
+        <div className="flex items-center gap-3">
+          <button
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-3 rounded-lg shadow-sm transition-colors flex items-center gap-2"
+            type="button"
+            onClick={() => {
+            }}
+          >
+          </button>
+        </div>
+      </div>
 
       <div
         className={`transition-all duration-300 ${
-          isSidebarOpen
-            ? 'ml-[265px]'
-            : 'ml-[30px]'
+          isSidebarOpen ? "ml-[265px]" : "ml-[30px]"
         }`}
       >
-          <h1>Categorias</h1>
-          <button className = "bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded btnNuevo" type='button' onClick={abrirModal}>Nuevo</button>
-          <button className= "ml-5 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded btnEliminar" type='button'>Eliminar</button>
-
+        <h1>Categorias</h1>
+        <button
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded btnNuevo"
+          type="button"
+          onClick={abrirModal}
+        >
+          Nuevo
+        </button>
+        <button
+          className="ml-5 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded btnEliminar"
+          type="button"
+        >
+          Eliminar
+        </button>
       </div>
 
       <div
         className={`transition-all duration-300 ease-in-out 
-          ${isSidebarOpen ? 'ml-[265px]' : 'ml-[30px]'}`}
+          ${isSidebarOpen ? "ml-[265px]" : "ml-[30px]"}`}
       >
         {categorias && categorias.length > 0 ? (
           <div className="ag-theme-alpine w-220 h-96 bg-white rounded-xl shadow-md p-4">
@@ -103,10 +127,30 @@ const Categorias: React.FC = () => {
               theme="legacy"
               rowData={categorias}
               columnDefs={[
-                { field: "idCategoria", headerName: "ID", editable: false, filter: false },
-                { field: "nombre", headerName: "Nombre", editable: true, filter: false },
-                { field: "fechaAlta", headerName: "Fecha", editable: false, filter: false },
-                { field: "status", headerName: "Activo", editable: true, filter: false },
+                {
+                  field: "idCategoria",
+                  headerName: "ID",
+                  editable: false,
+                  filter: false,
+                },
+                {
+                  field: "nombre",
+                  headerName: "Nombre",
+                  editable: true,
+                  filter: false,
+                },
+                {
+                  field: "fechaAlta",
+                  headerName: "Fecha",
+                  editable: false,
+                  filter: false,
+                },
+                {
+                  field: "status",
+                  headerName: "Activo",
+                  editable: true,
+                  filter: false,
+                },
               ]}
               defaultColDef={{
                 sortable: true,
@@ -118,15 +162,17 @@ const Categorias: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="text-center text-gray-500 mt-4">No hay datos para mostrar</div>
+          <div className="text-center text-gray-500 mt-4">
+            No hay datos para mostrar
+          </div>
         )}
-
       </div>
 
-
       {mostrarModal && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-                        bg-white w-80 p-6 rounded-lg shadow-2xl z-50">
+        <div
+          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+                        bg-white w-80 p-6 rounded-lg shadow-2xl z-50"
+        >
           <h2 className="text-lg font-bold mb-4">Categoria</h2>
           <form onSubmit={manejarEnvio}>
             <input
@@ -134,7 +180,7 @@ const Categorias: React.FC = () => {
               placeholder="Nombre"
               className="w-full border px-3 py-2 mb-3 rounded"
               value={nuevoNombre}
-              onChange={e => setNuevoNombre(e.target.value)}
+              onChange={(e) => setNuevoNombre(e.target.value)}
               required
             />
             <label className="inline-flex items-center cursor-pointer">
@@ -166,7 +212,7 @@ const Categorias: React.FC = () => {
           </form>
         </div>
       )}
-  </div>
+    </div>
   );
 };
 

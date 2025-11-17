@@ -1,50 +1,33 @@
-/* import React from 'react'; */
 import Planes from '../components/Planes';
 import { useState } from 'react';
-/* import FormularioRegistro from "../components/FormularioRegistro"; */
-import Sidebar from "../components/SideBar";
+import Sidebar from "../components/Layouts/Sidebar";
+import Header from "../components/Layouts/Header";
+import Footer from "../components/Layouts/Footer";
 
+interface Planes {
+  id_plan: number;
+  nombre: string;
+  descripcion: string;
+  precioMensual: number; 
+  precioAnual: number;
+  caracteristicas: string;
+}
 function Home(){
-    const [mostrarFormulario, setMostrarFormulario] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    return (
+  return (
 
     <div>
-        <nav className='bg-gray-800 text-white p-4 flex justify-between items-center'>
-            <ul className="flex space-x-4">
-                <li><a href="/" className="text-blue-500 hover:underline">Home</a></li>
-                <li><a href="/persona" className="text-blue-500 hover:underline">Persona</a></li>
-            </ul>
-
-            <button 
-                 onClick={() => window.location.href = '/login'}
-                className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'>
-                Iniciar Sesión
-            </button>
-        </nav>
-
-        {/* <Sidebar /> */}
-
-        {/* Botón de menú hamburguesa */}
-      <button
-        className="text-3xl p-4"
-        onClick={() => setIsSidebarOpen(true)}
-      >
-        ☰
-      </button>
-
-      {/* Sidebar */}
+      <Header/>
+      <button className="text-3xl p-4" onClick={() => setIsSidebarOpen(true)}>☰</button>
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
         <div className="home-container">
-            <h1>Welcome to the Home Page</h1>
             <Planes />
-            <p>This is the main page of the application.</p>
         </div>
+        <Footer />
     </div>
-        
-    )
+  )
 }
 
 export default Home;
