@@ -1,0 +1,22 @@
+<svg width="200" height="250" viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+    <!-- Icono del Grano -->
+    <g transform="translate(30, 10) scale(1.4)">
+        <defs>
+            <clipPath id="beanClipSVG">
+                <path d="M50,5 C25,5 10,25 10,50 C10,75 25,95 50,95 C75,95 90,75 90,50 C90,25 75,5 50,5 Z" />
+            </clipPath>
+        </defs>
+        <path d="M50,5 C25,5 10,25 10,50 C10,75 25,95 50,95 C75,95 90,75 90,50 C90,25 75,5 50,5 Z" fill="#4CAF50"/>
+        <path d="M50,10 C60,35 60,65 50,90" fill="none" stroke="#388E3C" stroke-width="5" />
+        <path d="M50,10 C40,35 40,65 50,90" fill="none" stroke="#66BB6A" stroke-width="2" />
+        <g clip-path="url(#beanClipSVG)">
+            <rect x="20" y="30" width="3" height="40" fill="#FFFFFF" fill-opacity="0.8"/>
+            <rect x="26" y="30" width="5" height="40" fill="#FFFFFF" fill-opacity="0.8"/>
+            <rect x="34" y="30" width="2" height="40" fill="#FFFFFF" fill-opacity="0.8"/>
+            <rect x="39" y="30" width="4" height="40" fill="#FFFFFF" fill-opacity="0.8"/>
+        </g>
+        <!-- Etiqueta de tienda -->
+        <line x1="70" y1="32" x2="78" y2="22" stroke="#388E3C" stroke-width="1.5"/>
+        <circle cx="80" cy="20" r="3" fill="#FFFFFF" stroke="#388E3C" stroke-width="1.5"/>
+    </g>
+    </svg>
