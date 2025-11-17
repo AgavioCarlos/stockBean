@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface PersonaRepository extends JpaRepository<Persona, Integer>{
     List<Persona> findByStatus(Boolean status);   
+    boolean existsByEmail(String email);
 }

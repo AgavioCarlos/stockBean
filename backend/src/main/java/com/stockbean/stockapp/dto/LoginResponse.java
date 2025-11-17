@@ -1,17 +1,15 @@
 package com.stockbean.stockapp.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class LoginResponse {
-    private Boolean success;
-    private String mensaje;
-
-    public LoginResponse(Boolean success, String mensaje) {
-        this.success = success;
-        this.mensaje = mensaje;
-    }
+    private String token;
     
 }
