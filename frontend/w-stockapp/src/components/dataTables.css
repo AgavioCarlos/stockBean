@@ -1,0 +1,51 @@
+/* Estilos compactos para AG-Grid */
+.compact-grid .ag-root-wrapper {
+  border: none;
+  border-radius: 8px;
+}
+
+.compact-grid .ag-header {
+  background-color: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.compact-grid .ag-header-cell {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  padding: 0 12px;
+}
+
+.compact-grid .ag-cell {
+  font-size: 13px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  line-height: 1.4;
+}
+
+.compact-grid .ag-row {
+  border-bottom: 1px solid #e2e8f0;
+  min-height: 40px;
+}
+
+.compact-grid .ag-row:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.compact-grid .ag-row-selected {
+  background-color: #e0f2fe !important;
+}
+
+/* Mejoras visuales generales */
+.ag-theme-alpine {
+  --ag-border-color: #e2e8f0;
+  --ag-header-background-color: #f8fafc;
+  --ag-odd-row-background-color: #fafafa;
+  --ag-row-hover-color: #f1f5f9;
+}
+
+/* Asegurar que la tabla ocupe todo el espacio disponible */
+.ag-theme-alpine .ag-root-wrapper {
+  flex: 1;
+}
