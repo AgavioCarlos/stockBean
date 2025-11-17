@@ -13,5 +13,5 @@ public class ProductoRequest {
     private Integer idMarca; 
     private String codigoBarras;
     private String imagenUrl;
-    
+    private Boolean status;
 }
