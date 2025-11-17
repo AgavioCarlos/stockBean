@@ -10,14 +10,24 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fortawesome/free-solid-svg-icons": "^7.0.0",
+    "@fortawesome/react-fontawesome": "^0.2.3",
+    "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.1.11",
+    "ag-grid-community": "^34.1.0",
+    "ag-grid-enterprise": "^34.1.0",
+    "ag-grid-react": "^34.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "tailwindcss": "^4.1.11"
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^7.6.3",
+    "sweetalert2": "^11.22.3",
+    "tailwindcss": "^4.1.11",
+    "vite-plugin-svgr": "^4.5.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
-    "@types/react-dom": "^18.2.22",
+    "@types/react-dom": "^18.3.7",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
