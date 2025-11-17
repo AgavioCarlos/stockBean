@@ -2,10 +2,13 @@ package com.stockbean.stockapp.model.tablas;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,11 +23,24 @@ import lombok.NoArgsConstructor;
 public class Cliente {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id_cliente;
-    private Integer id_persona;
-    private LocalDateTime fecha_alta;
-    private LocalDateTime fecha_baja;
-    private LocalDateTime fecha_ultima_modificacion;
+    @Column(name = "id_cliente")
+    private Integer idCliente;
+
+    @OneToOne 
+    @JoinColumn(name = "id_persona", nullable = false)
+    private Persona persona;
+
+    @Column(name = "fecha_alta")
+    private LocalDateTime fechaAlta;
+
+    @Column(name = "fecha_baja")
+    private LocalDateTime fechaBaja;
+
+    @Column(name = "fecha_ultima_modificacion")
+    private LocalDateTime fechaUltimaModificacion;
+
     private Boolean status;
-    private String tipo_cliente;
+
+    @Column(name = "tipo_cliente")
+    private String tipoCliente;
 }

@@ -2,6 +2,7 @@ package com.stockbean.stockapp.model.catalogos;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,12 +21,18 @@ import lombok.NoArgsConstructor;
 public class Marca {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id_marca;
+
+    @Column(name = "id_marca")
+    private Integer idMarca;
     private String nombre;
     private Boolean status;
 
-    private LocalDateTime fecha_alta;
-    private LocalDateTime fecha_baja;
-    private LocalDateTime fecha_ultima_modificacion;
-    
+    @Column(name = "fecha_alta")
+    private LocalDateTime fechaAlta;
+
+    @Column(name = "fecha_baja")
+    private LocalDateTime fechaBaja;
+
+    @Column(name = "fecha_ultima_modificacion")
+    private LocalDateTime fechaUltimaModificacion;
 }
