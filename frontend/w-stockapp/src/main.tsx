@@ -15,6 +15,7 @@ import Clientes from './pages/Clientes'
 import Proveedores from './pages/Proveedores'
 import PuntoVenta from './pages/PuntoVenta'
 import ProtectedRoute from "./components/ProtectedRoute";
+import Configuracion from './pages/Configuracion';
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,12 @@ const router = createBrowserRouter([
       <ProtectedRoute>
         <Home />
       </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/configuracion",
+    element: (
+        <Configuracion />
     ),
   },
   {
@@ -100,9 +107,9 @@ const router = createBrowserRouter([
   {
     path: "/punto-venta",
     element: (
-      <ProtectedRoute>
+      // <ProtectedRoute>
         <PuntoVenta/>
-      </ProtectedRoute>
+      // </ProtectedRoute>
     ),
   },
 ]);
