@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { IoIosSettings } from "react-icons/io";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -120,6 +121,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     </li>
           
   </ul>
+      </div>
+      <div className="">
+        {/* Contenido */}
+
+        <NavLink
+          to="/configuracion"
+          className="fixed bottom-4 right-4 p-3 rounded-full"
+        >
+          <IoIosSettings className="w-8 h-8" />
+        </NavLink>
       </div>
     </div>
   );
