@@ -5,7 +5,7 @@ function Footer(){
         <div>
             <div className="home-container flex items-center justify-center gap-2 mt-4">
               <span className="font-semibold">Made by Agavio</span>
-              <a href="/persona"  target="_blank" rel="noopener noreferrer">
+              <a href="https://www.linkedin.com/in/agaviocarlos"  target="_blank" rel="noopener noreferrer">
                 <AiFillLinkedin size={25} className="hover:text-blue-500 cursor-pointer" />
               </a>
             </div>
