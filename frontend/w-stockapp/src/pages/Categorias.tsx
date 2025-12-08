@@ -1,39 +1,38 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
-import { AgGridReact } from 'ag-grid-react';
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
-import 'ag-grid-community/styles/ag-theme-material.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
-import { consultarCategorias } from "../services/Categoria";
-import Header from "../components/Layouts/Header";
-import Sidebar from "../components/Layouts/Sidebar";
+import React, { useState, useEffect } from 'react';
+import Breadcrumb from "../components/Breadcrumb";
+import Pagination from "../components/Pagination";
+import MainLayout from "../components/Layouts/MainLayout";
 import Tabs from '../components/Tabs';
+import { consultarCategorias, crearCategoria, actualizarCategoria } from "../services/Categoria";
+import { Categoria } from "../interfaces/categoria.interface";
+import CategoriasTable from "../components/CategoriasTable";
+import CategoriasDetalle from "../components/CategoriasDetalle";
+import { IoMdList, IoMdAddCircle } from "react-icons/io";
+import { MdDescription } from "react-icons/md";
+import Swal from 'sweetalert2';
 
-ModuleRegistry.registerModules([AllCommunityModule]);
-
-interface Categoria {
-  idCategoria: number;
-  nombre: string;
-  fechaAlta: string;
-  status: boolean;
-}
 const Categorias: React.FC = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [vista, setVista] = useState("lista");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  // Estados para el formulario
-  const [nuevoNombre, setNuevoNombre] = useState('');
-  const [nuevoStatus, setNuevoStatus] = useState(true);
 
-    const pestañas = [
-    { key: "lista", label: "Lista" },
-    { key: "detalle", label: "Detalle" },
-  ];
-  
+  // State for filtering
+  const [rowDataFiltrada, setRowDataFiltrada] = useState<Categoria[]>([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState(true);
+
+  // State for selection/editing
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<Categoria | null>(null);
+
+  // State for form
+  const [nombre, setNombre] = useState('');
+  const [status, setStatus] = useState(true);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Load data
   useEffect(() => {
     consultarCategorias()
       .then((data: Categoria[]) => {
@@ -46,173 +45,212 @@ const Categorias: React.FC = () => {
       });
   }, []);
 
-  const [mostrarModal, setMostrarModal] = useState(false);
+  // Filter logic
+  useEffect(() => {
+    let datosFiltrados = categorias;
 
-  const abrirModal = () => setMostrarModal(true);
-  const cerrarModal = () => setMostrarModal(false);
+    if (busqueda.trim() !== "") {
+      datosFiltrados = datosFiltrados.filter((item) =>
+        item.nombre.toLowerCase().includes(busqueda.toLowerCase())
+      );
+    }
 
-  // POST al backend
+    datosFiltrados = datosFiltrados.filter((item) => item.status === filtroEstado);
+
+    setRowDataFiltrada(datosFiltrados);
+    setCurrentPage(1);
+  }, [busqueda, filtroEstado, categorias]);
+
+  const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBusqueda(e.target.value);
+  };
+
+  const handleFiltrarEstado = (valor: string) => {
+    setFiltroEstado(valor === "true");
+  };
+
+  const handleRowClick = (event: any) => {
+    const c = event.data;
+    setCategoriaSeleccionada(c);
+    setNombre(c.nombre);
+    setStatus(c.status);
+    setVista("detalle");
+  };
+
+  const nuevoDesdeDetalle = () => {
+    setCategoriaSeleccionada(null);
+    setNombre("");
+    setStatus(true);
+    setVista("detalle");
+  };
+
+  const handleDelete = async (id: number, newStatus: boolean = false) => {
+    try {
+      const cat = categorias.find((c) => c.idCategoria === id);
+      if (!cat) {
+        await Swal.fire({ icon: 'error', title: 'No encontrado', text: 'Categoría no encontrada' });
+        return;
+      }
+
+      const payload = {
+        nombre: cat.nombre,
+        status: newStatus
+      };
+
+      await actualizarCategoria(id, payload);
+
+      setCategorias((prev) => prev.map((c) => (c.idCategoria === id ? { ...c, status: newStatus } : c)));
+      await Swal.fire({ icon: 'success', title: newStatus ? 'Categoría activada' : 'Categoría desactivada', text: newStatus ? 'La categoría se activó correctamente.' : 'La categoría se desactivó correctamente.', timer: 1500, showConfirmButton: false });
+      setVista('lista');
+
+    } catch (error) {
+      console.error("Error al cambiar estado:", error);
+      await Swal.fire({ icon: 'error', title: 'Error', text: 'Error al cambiar el estado de la categoría.' });
+    }
+  };
+
+  // POST/PUT to backend
   const manejarEnvio = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:8080/categorias", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre: nuevoNombre,
-          status: nuevoStatus,
-        }),
-      });
-      if (!response.ok) throw new Error("Error al crear categoría");
-      // Recargar categorías
-      const nuevaCategoria = await response.json();
-      setCategorias([...categorias, nuevaCategoria]);
-      setMostrarModal(false);
-      setNuevoNombre('');
-      setNuevoStatus(true);
+      const payload = {
+        nombre,
+        status
+      };
+
+      if (categoriaSeleccionada) {
+        // Update
+        const actualizada = await actualizarCategoria(categoriaSeleccionada.idCategoria, payload);
+        // Only update local state if we get a response, but we can optimistically update or re-fetch.
+        // Assuming backend returns the updated object or we use properties.
+        // Using optimistic update for smoother UX or mapping based on successful response.
+        // Ideally backend returns the updated object.
+
+        // Re-fetch or map:
+        // Let's assume we want to update the local list
+        setCategorias(prev => prev.map(p => p.idCategoria === categoriaSeleccionada.idCategoria ? { ...p, ...payload } : p));
+
+        await Swal.fire({ icon: 'success', title: 'Categoría actualizada', text: 'La categoría se actualizó correctamente.', timer: 1500, showConfirmButton: false });
+        setVista("lista");
+
+      } else {
+        // Create
+        const response: any = await crearCategoria(payload);
+        // Ensure response is the object
+        if (response && response.idCategoria) {
+          setCategorias([...categorias, response]);
+          nuevoDesdeDetalle(); // Clear form
+          await Swal.fire({ icon: 'success', title: 'Categoría creada', text: 'La categoría se creó correctamente.', timer: 1500, showConfirmButton: false });
+        } else {
+          // Fallback if response structure is different (e.g. wrapper)
+          // Reloading all might be safer if unsure, but let's trust standard return
+          const nueva = await response; // In case it wasn't awaited properly in service (it is)
+          // If service returns response object, we might need .json()? 
+          // Service uses apiFetch which presumably returns parsed JSON.
+          if (nueva) setCategorias([...categorias, nueva]);
+        }
+      }
     } catch (error) {
+      console.error(error);
       alert("Error al guardar la categoría");
     }
   };
 
-  return (
-    <div>
-      <Header />
-      <button className="text-3xl p-4" onClick={() => setIsSidebarOpen(true)}>
-        ☰
-      </button>
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-
-      <div className="flex items-center justify-between px-6 mb-2">
-        <Tabs tabs={pestañas} activeTab={vista} onChange={setVista} />
-        <div className="flex items-center gap-3">
-          <button
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-3 rounded-lg shadow-sm transition-colors flex items-center gap-2"
-            type="button"
-            onClick={() => {
-            }}
-          >
-          </button>
-        </div>
-      </div>
-
-      <div
-        className={`transition-all duration-300 ${
-          isSidebarOpen ? "ml-[265px]" : "ml-[30px]"
-        }`}
-      >
-        <h1>Categorias</h1>
-        <button
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded btnNuevo"
-          type="button"
-          onClick={abrirModal}
-        >
-          Nuevo
-        </button>
-        <button
-          className="ml-5 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded btnEliminar"
-          type="button"
-        >
-          Eliminar
-        </button>
-      </div>
-
-      <div
-        className={`transition-all duration-300 ease-in-out 
-          ${isSidebarOpen ? "ml-[265px]" : "ml-[30px]"}`}
-      >
-        {categorias && categorias.length > 0 ? (
-          <div className="ag-theme-alpine w-220 h-96 bg-white rounded-xl shadow-md p-4">
-            <AgGridReact
-              theme="legacy"
-              rowData={categorias}
-              columnDefs={[
-                {
-                  field: "idCategoria",
-                  headerName: "ID",
-                  editable: false,
-                  filter: false,
-                },
-                {
-                  field: "nombre",
-                  headerName: "Nombre",
-                  editable: true,
-                  filter: false,
-                },
-                {
-                  field: "fechaAlta",
-                  headerName: "Fecha",
-                  editable: false,
-                  filter: false,
-                },
-                {
-                  field: "status",
-                  headerName: "Activo",
-                  editable: true,
-                  filter: false,
-                },
-              ]}
-              defaultColDef={{
-                sortable: true,
-                filter: true,
-                resizable: false,
-                editable: true,
-                floatingFilter: false,
-              }}
-            />
-          </div>
-        ) : (
-          <div className="text-center text-gray-500 mt-4">
-            No hay datos para mostrar
-          </div>
-        )}
-      </div>
-
-      {mostrarModal && (
-        <div
-          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-                        bg-white w-80 p-6 rounded-lg shadow-2xl z-50"
-        >
-          <h2 className="text-lg font-bold mb-4">Categoria</h2>
-          <form onSubmit={manejarEnvio}>
-            <input
-              type="text"
-              placeholder="Nombre"
-              className="w-full border px-3 py-2 mb-3 rounded"
-              value={nuevoNombre}
-              onChange={(e) => setNuevoNombre(e.target.value)}
-              required
-            />
-            <label className="inline-flex items-center cursor-pointer">
-              <span className="mr-2 text-sm">Activo</span>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={nuevoStatus}
-                  onChange={() => setNuevoStatus(!nuevoStatus)}
-                />
-                <div className="w-11 h-6 bg-gray-300 peer-checked:bg-green-500 rounded-full transition-colors"></div>
-                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
-              </div>
-            </label>
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                type="button"
-                onClick={cerrarModal}
-                className="bg-gray-300 px-3 py-1 rounded"
+  const pestañas = [
+    {
+      key: "lista",
+      label: "Lista",
+      icon: <IoMdList />,
+      content: (
+        <div className="h-full flex flex-col">
+          <div className="flex justify-between items-center mb-2 mt-2">
+            <div className="flex gap-4 items-center">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                onChange={handleBuscar}
+                className="border border-gray-300 rounded-lg px-3 py-2 w-60"
+              />
+              <select
+                value={String(filtroEstado)}
+                onChange={(e) => handleFiltrarEstado(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2"
               >
-                Cancelar
-              </button>
-              <button className="bg-green-500 text-white px-3 py-1 rounded flex items-center gap-2">
-                <FontAwesomeIcon icon={faFloppyDisk} className="w-5 h-5" />
-                Guardar
-              </button>
+                <option value="true">Activos</option>
+                <option value="false">Inactivos</option>
+              </select>
             </div>
-          </form>
+            <button
+              className="px-4 py-2 text-blue-600 text-sm font-medium rounded-md border-2 border-blue-600 bg-white hover:bg-blue-600 hover:text-white transition-colors flex items-center gap-2"
+              type="button"
+              onClick={nuevoDesdeDetalle}
+            >
+              <IoMdAddCircle size={20} />
+              <span>Agregar</span>
+            </button>
+          </div>
+
+          <div className="flex-grow">
+            {loading ? (
+              <div className="text-center text-gray-500 mt-4">
+                Cargando...
+              </div>
+            ) : rowDataFiltrada && rowDataFiltrada.length > 0 ? (
+              <div>
+                <CategoriasTable
+                  categorias={rowDataFiltrada.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)}
+                  onRowClick={handleRowClick}
+                  onDelete={handleDelete}
+                />
+                <Pagination
+                  totalItems={rowDataFiltrada.length}
+                  itemsPerPage={itemsPerPage}
+                  currentPage={currentPage}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            ) : (
+              <div className="text-center text-gray-500 mt-4">
+                No hay datos para mostrar
+              </div>
+            )}
+          </div>
         </div>
-      )}
-    </div>
+      ),
+    },
+    {
+      key: "detalle",
+      label: "Detalle",
+      icon: <MdDescription />,
+      content: (
+        <CategoriasDetalle
+          categoriaSeleccionada={categoriaSeleccionada}
+          nombre={nombre}
+          setNombre={setNombre}
+          status={status}
+          setStatus={setStatus}
+          manejarEnvio={manejarEnvio}
+          onDelete={handleDelete}
+          nuevoDesdeDetalle={nuevoDesdeDetalle}
+        />
+      ),
+    },
+  ];
+
+  return (
+    <MainLayout>
+      <div>
+        <Breadcrumb
+          items={[
+            { label: "Proyectos", onClick: () => { } },
+            { label: "Catálogo", onClick: () => { } },
+            { label: "Categorías" }
+          ]}
+          onBack={() => console.log("Back")}
+        />
+        <Tabs tabs={pestañas} activeTab={vista} onChange={setVista} />
+      </div>
+    </MainLayout>
   );
 };
 

@@ -7,8 +7,7 @@ function Inicio() {
   };
   
   return (
-    <div className="min-h-screen flex flex-col"> {/* Contenedor principal flex */}
-      {/* Contenedor con margen inferior */}
+    <div className="min-h-screen flex flex-col"> 
       <div className='flex items-center justify-end mb-12 p-4'>
         <button
           onClick={handleLogin}
@@ -17,14 +16,11 @@ function Inicio() {
         </button>
       </div>
 
-      {/* Contenido que se expande */}
       <div className="flex-grow">
         <div className="home-container">
           <Planes />
         </div>
       </div>
-
-      {/* Footer al final */}
       <Footer />
     </div>
   );

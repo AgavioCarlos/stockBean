@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -8,9 +8,10 @@ import 'ag-grid-community/styles/ag-theme-material.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
 import { consultarRoles, crearRol } from "../services/Roles";
-import Header from "../components/Layouts/Header";
-import Sidebar from "../components/Layouts/Sidebar";
+import MainLayout from "../components/Layouts/MainLayout";
 import Footer from "../components/Layouts/Footer";
+import Breadcrumb from "../components/Breadcrumb";
+import { FaHome } from "react-icons/fa";
 import "../components/dataTables.css";
 
 // Registrar AllCommunityModule
@@ -23,9 +24,9 @@ interface Roles {
 }
 
 const Roles: React.FC = () => {
+  const navigate = useNavigate();
   const [roles, setRoles] = useState<Roles[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [nuevoNombre, setNuevoNombre] = useState('');
   const [nuevaDescripcion, setNuevaDescripcion] = useState('');
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -62,24 +63,24 @@ const Roles: React.FC = () => {
     }
   };
   const columnDefs = [
-    { 
-      field: "id_rol", 
-      headerName: "ID", 
+    {
+      field: "id_rol",
+      headerName: "ID",
       width: 80,
       suppressSizeToFit: true,
       editable: false,
       filter: false
     },
-    { 
-      field: "nombre", 
-      headerName: "Nombre ↑", 
+    {
+      field: "nombre",
+      headerName: "Nombre ↑",
       width: 150,
       editable: true,
       filter: false,
       cellStyle: { fontWeight: '500' }
     },
-    { 
-      field: "descripcion", 
+    {
+      field: "descripcion",
       headerName: "Descripción",
       width: 250,
       editable: false,
@@ -98,29 +99,28 @@ const Roles: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header/>
-      <button
-        className="fixed top-20 left-4 z-40 text-3xl p-2 bg-white rounded-md shadow-md hover:bg-gray-100 transition-colors"
-        onClick={() => setIsSidebarOpen(true)}
-      >
-        ☰
-      </button>
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+    <MainLayout>
+      <div className="min-h-screen bg-gray-50">
+        <div className="px-6 py-4">
+          <Breadcrumb
+            items={[
+              { label: "", icon: <FaHome />, onClick: () => navigate("/dashboard") },
+              { label: "Administrador", onClick: () => navigate("/administrador") },
+              { label: "Roles" }
+            ]}
+            onBack={() => navigate(-1)}
+          />
 
-      <div className={`pt-20 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
-        <div className="px-6">
-          
           <div className="flex items-center justify-end mb-6">
             <div className="flex gap-3">
-              <button 
+              <button
                 className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
-                type='button' 
+                type='button'
                 onClick={abrirModal}
               >
                 Nuevo
               </button>
-              <button 
+              <button
                 className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
                 type='button'
               >
@@ -135,16 +135,16 @@ const Roles: React.FC = () => {
                 <p className="text-gray-600 mt-2">Cargando datos...</p>
               </div>
             ) : roles && roles.length > 0 ? (
-              <div 
-                className="ag-theme-alpine compact-grid" 
-                style={{ 
+              <div
+                className="ag-theme-alpine compact-grid"
+                style={{
                   height: '500px',
                   width: '100%'
                 }}
               >
                 <AgGridReact
                   rowData={roles}
-                  columnDefs={columnDefs}
+                  columnDefs={columnDefs as any}
                   defaultColDef={defaultColDef}
                   rowHeight={40}
                   headerHeight={45}
@@ -182,7 +182,7 @@ const Roles: React.FC = () => {
                   required
                 />
               </div>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Descripción
@@ -220,7 +220,7 @@ const Roles: React.FC = () => {
                 >
                   Cancelar
                 </button>
-                <button 
+                <button
                   type="submit"
                   className="px-4 py-2 bg-green-500 text-white hover:bg-green-600 rounded-md transition-colors flex items-center gap-2"
                 >
@@ -233,7 +233,8 @@ const Roles: React.FC = () => {
         </div>
       )}
 
-      <Footer />    </div>
+      <Footer />
+    </MainLayout>
   );
 };
 
