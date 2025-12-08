@@ -4,9 +4,8 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.stockbean.stockapp.model.tablas.Producto;
 import com.stockbean.stockapp.model.tablas.Proveedor;
 
-public interface ProveedorRepository extends JpaRepository<Proveedor, Integer>{
-    List<Producto> findByStatus(Boolean status);
+public interface ProveedorRepository extends JpaRepository<Proveedor, Integer> {
+    List<Proveedor> findByStatus(Boolean status);
 }
