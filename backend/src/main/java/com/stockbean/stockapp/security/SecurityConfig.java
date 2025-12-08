@@ -41,23 +41,22 @@ public class SecurityConfig {
             JwtRequestFilter jwtRequestFilter) throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable())
-            // ⬇️ HABILITA CORS dentro de la cadena de filtros
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // ⬇️ PERMITIR preflight
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // Públicos
-                .requestMatchers("/auth/login", "/auth/registro", "/planes").permitAll()
-                // El resto autenticado
-                .anyRequest().authenticated()
-            )
-            .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, e) -> {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"mensaje\":\"No autenticado. Proporcione token válido.\"}");
-            }));
+                .csrf(csrf -> csrf.disable())
+                // ⬇️ HABILITA CORS dentro de la cadena de filtros
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // ⬇️ PERMITIR preflight
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Públicos
+                        .requestMatchers("/auth/login", "/auth/registro", "/planes").permitAll()
+                        // El resto autenticado
+                        .anyRequest().authenticated())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, e) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"mensaje\":\"No autenticado. Proporcione token válido.\"}");
+                }));
 
         // ⬇️ Tu filtro JWT antes del UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
@@ -71,13 +70,16 @@ public class SecurityConfig {
         CorsConfiguration cfg = new CorsConfiguration();
 
         // IMPORTANTE: si usas Authorization o cookies, NO uses "*"
-        cfg.setAllowedOrigins(List.of("http://192.168.100.6:5173"));
-        // Si necesitas patrones usa: cfg.setAllowedOriginPatterns(List.of("http://localhost:*"));
+        cfg.setAllowedOrigins(List.of("http://10.225.16.248:5173"));
+        // Si necesitas patrones usa:
+        // cfg.setAllowedOriginPatterns(List.of("http://localhost:*"));
 
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With")); // o enumera: "Content-Type","Authorization", ...
-        cfg.setExposedHeaders(List.of("Location","Content-Disposition"));
-        cfg.setAllowCredentials(true);       // si envías Authorization/cookies
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With")); // o enumera:
+                                                                                                       // "Content-Type","Authorization",
+                                                                                                       // ...
+        cfg.setExposedHeaders(List.of("Location", "Content-Disposition"));
+        cfg.setAllowCredentials(true); // si envías Authorization/cookies
         cfg.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
