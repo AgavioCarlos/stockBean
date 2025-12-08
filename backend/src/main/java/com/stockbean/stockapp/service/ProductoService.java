@@ -73,6 +73,36 @@ public class ProductoService {
         return productoRepository.save(producto);
     }
 
+    // Nuevo método que acepta ProductoRequest (DTO) para actualizar
+    public Producto actualizar(Integer id, ProductoRequest dto){
+        Producto producto = obtenerPorId(id);
+        if(producto == null) return null;
+
+        producto.setNombre(dto.getNombre());
+        producto.setDescripcion(dto.getDescripcion());
+        
+        if(dto.getIdCategoria() != null){
+            producto.setCategoria(categoriaRepository.findById(dto.getIdCategoria())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
+        }
+        
+        if(dto.getIdUnidad() != null){
+            producto.setUnidad(unidadRepository.findById(dto.getIdUnidad())
+                .orElseThrow(() -> new RuntimeException("Unidad no encontrada")));
+        }
+        
+        if(dto.getIdMarca() != null){
+            producto.setMarca(marcaRepository.findById(dto.getIdMarca()).orElse(null));
+        }
+        
+        producto.setCodigoBarras(dto.getCodigoBarras());
+        producto.setImagenUrl(dto.getImagenUrl());
+        producto.setStatus(dto.getStatus());
+        producto.setFechaUltimaModificacion(LocalDateTime.now());
+
+        return productoRepository.save(producto);
+    }
+
     public void eliminar(Integer id){
         Producto producto = obtenerPorId(id);
         if(producto != null){
