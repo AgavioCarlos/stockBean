@@ -1,5 +1,5 @@
 export async function consultarPlanes(){
-    const response = await fetch("http://192.168.100.6:8080/planes")
+    const response = await fetch("http://10.225.16.248:8080/planes")
     if(!response.ok) {
         throw new Error("Error al consultar planes");
     }

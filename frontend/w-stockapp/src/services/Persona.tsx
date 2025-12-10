@@ -1,19 +1,7 @@
-export async function consultarPersonas(signal?: AbortSignal) {
-    const token = localStorage.getItem("token");
-    const response = await fetch("http://192.168.100.6:8080/personas", {
-        method: "GET",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        signal,
-    });
-     if (response.status === 401) {
-    localStorage.removeItem("token");
-    throw new Error("Sesión expirada. Vuelve a iniciar sesión.");
-  }
-    if (!response.ok) {
-        const msg = await response.text().catch(() => "");
-        throw new Error(msg || "Error al consultar categorías");
-    }
-  return response.json();
+import { apiFetch } from "./Api";
+
+export async function consultarPersonas() {
+    return apiFetch("/personas")
 }
 
 export async function consultarPersona() {
