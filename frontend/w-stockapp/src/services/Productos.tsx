@@ -2,7 +2,7 @@ import { apiFetch } from "./Api";
 
 export async function consultarProductos(signal?: AbortSignal) {
   console.log("Token en localStorage:", localStorage.getItem("token"));
-  return apiFetch("http://192.168.100.6:8080/productos", { signal });
+  return apiFetch("/productos", { signal });
 }
 
 export async function crearProducto(payload: {
@@ -15,14 +15,31 @@ export async function crearProducto(payload: {
   codigoBarras: string;
   status: boolean;
 }) {
-  return apiFetch("http://192.168.100.6:8080/productos", {
+  return apiFetch("/productos", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
+export async function actualizarProducto(id_producto: number, payload: {
+  nombre: string;
+  descripcion: string;
+  idCategoria: number | null;
+  idUnidad: number | null;
+  idMarca: number | null;
+  codigoBarras: string;
+  imagenUrl: string;
+  status: boolean;
+}) {
+  return apiFetch(`/productos/${id_producto}`, {
+    method: "PUT",
+    body: JSON.stringify(payload)
+  });
+}
+
+
 export async function eliminarProducto(id: number) {
-  return apiFetch(`http://192.168.100.6:8080/productos/${id}`, {
+  return apiFetch(`/productos/${id}`, {
     method: "DELETE",
   });
 }
