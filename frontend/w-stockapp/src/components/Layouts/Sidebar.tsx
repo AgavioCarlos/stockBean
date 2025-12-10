@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { IoIosSettings } from "react-icons/io";
-import { FiBox, FiLayers, FiUsers, FiTag, FiTruck, FiX, FiChevronRight, FiChevronLeft, FiMapPin } from "react-icons/fi";
+import { FiBox, FiLayers, FiUsers, FiTag, FiTruck, FiX, FiChevronRight, FiChevronLeft, FiMapPin, FiClipboard } from "react-icons/fi";
 import { BsMenuButton } from "react-icons/bs";
 import { MdOutlinePointOfSale } from "react-icons/md";
 import { RiAdminLine } from "react-icons/ri";
@@ -116,6 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, collapsed: collapsed
             <NavItem to="/dashboard" label={collapsed ? "" : "Dashboard"} icon={<FiLayers />} />
             <NavItem to="/catalogos" label={collapsed ? "" : "Catálogos"} icon={<BsMenuButton />} />
             <NavItem to="/productos" label={collapsed ? "" : "Productos"} icon={<FiBox />} />
+            <NavItem to="/inventario" label={collapsed ? "" : "Inventario"} icon={<FiClipboard />} />
             <NavItem to="/persona" label={collapsed ? "" : "Personas"} icon={<FiUsers />} />
             <NavItem to="/proveedores" label={collapsed ? "" : "Proveedores"} icon={<FiTruck />} />
             <NavItem to="/marcas" label={collapsed ? "" : "Marcas"} icon={<FiTag />} />
