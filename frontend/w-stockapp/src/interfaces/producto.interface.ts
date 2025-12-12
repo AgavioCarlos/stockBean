@@ -6,6 +6,10 @@ export interface Categoria {
 export interface Unidad {
   idUnidad: number;
   nombre: string;
+  abreviatura: string;
+  fechaAlta: Date;
+  fechaBaja: Date;
+  fechaUltimaModificacion: Date;
 }
 
 export interface Marca {
