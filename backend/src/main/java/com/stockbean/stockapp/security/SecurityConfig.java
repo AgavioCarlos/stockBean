@@ -49,7 +49,8 @@ public class SecurityConfig {
                         // ⬇️ PERMITIR preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Públicos
-                        .requestMatchers("/auth/login", "/auth/registro", "/planes").permitAll()
+                        .requestMatchers("/auth/login", "/auth/registro", "/planes", "/historial-precios/**")
+                        .permitAll()
                         // El resto autenticado
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, e) -> {
