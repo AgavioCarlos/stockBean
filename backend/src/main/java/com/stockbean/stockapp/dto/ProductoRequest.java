@@ -15,3 +15,4 @@ public class ProductoRequest {
     private String imagenUrl;
     private Boolean status;
 }
+
