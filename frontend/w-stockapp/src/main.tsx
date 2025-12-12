@@ -4,9 +4,11 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 import Persona from './pages/Persona/Persona'
 import Home from './pages/Home'
+import Dashboard from './pages/Dashboard'
 import Login from './pages/Login/Login';
 import Perfil from './pages/Perfil';
 import Categorias from './pages/Categorias';
+import Unidades from './pages/Unidades'
 import Roles from './pages/Roles';
 import Inicio from './pages/Inicio';
 import Productos from './pages/Productos'
@@ -16,12 +18,19 @@ import Proveedores from './pages/Proveedores'
 import PuntoVenta from './pages/PuntoVenta'
 import ProtectedRoute from "./components/ProtectedRoute";
 import Configuracion from './pages/Configuracion';
+import Catalogos from './pages/Catalogos';
+import Administrador from './pages/Administrador';
+import Sucursales from './pages/Sucursales';
+import Usuarios from './pages/Usuarios';
+import UsuariosSucursales from './pages/UsuariosSucursales';
+import Inventario from './pages/Inventario';
+import HistorialPrecios from './pages/HistorialPrecios';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <Inicio/>
+      <Inicio />
     ),
   },
   {
@@ -33,9 +42,23 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/catalogos",
+    element: (
+      <Catalogos />
+    ),
+  },
+  {
     path: "/configuracion",
     element: (
-        <Configuracion />
+      <Configuracion />
     ),
   },
   {
@@ -50,10 +73,10 @@ const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
-    {
+  {
     path: "/productos",
     element: (
-      <Productos/>
+      <Productos />
     ),
   },
   {
@@ -73,6 +96,14 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/unidades",
+    element: (
+      <ProtectedRoute>
+        <Unidades />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "/roles",
     element: (
       <ProtectedRoute>
@@ -84,7 +115,7 @@ const router = createBrowserRouter([
     path: "/marcas",
     element: (
       <ProtectedRoute>
-        <Marcas/>
+        <Marcas />
       </ProtectedRoute>
     ),
   },
@@ -92,7 +123,7 @@ const router = createBrowserRouter([
     path: "/clientes",
     element: (
       <ProtectedRoute>
-        <Clientes/>
+        <Clientes />
       </ProtectedRoute>
     ),
   },
@@ -100,7 +131,7 @@ const router = createBrowserRouter([
     path: "/proveedores",
     element: (
       <ProtectedRoute>
-        <Proveedores/>
+        <Proveedores />
       </ProtectedRoute>
     ),
   },
@@ -108,8 +139,56 @@ const router = createBrowserRouter([
     path: "/punto-venta",
     element: (
       // <ProtectedRoute>
-        <PuntoVenta/>
+      <PuntoVenta />
       // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/administrador",
+    element: (
+      <ProtectedRoute>
+        <Administrador />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/sucursales",
+    element: (
+      <ProtectedRoute>
+        <Sucursales />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/usuarios",
+    element: (
+      <ProtectedRoute>
+        <Usuarios />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/usuarios-sucursales",
+    element: (
+      <ProtectedRoute>
+        <UsuariosSucursales />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/inventario",
+    element: (
+      <ProtectedRoute>
+        <Inventario />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/historial-precios",
+    element: (
+      <ProtectedRoute>
+        <HistorialPrecios />
+      </ProtectedRoute>
     ),
   },
 ]);
@@ -118,6 +197,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     {/* <Login />
     <Persona /> */}
-    <RouterProvider router={router}/>
+    <RouterProvider router={router} />
   </React.StrictMode>,
 );

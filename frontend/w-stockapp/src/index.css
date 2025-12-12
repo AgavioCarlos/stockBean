@@ -69,3 +69,8 @@ button:focus-visible {
  */
 
 @import "tailwindcss";
+
+/* Evita scroll horizontal cuando elementos (ej. flyouts) se salen del viewport */
+html, body, #root {
+  overflow-x: hidden;
+}
