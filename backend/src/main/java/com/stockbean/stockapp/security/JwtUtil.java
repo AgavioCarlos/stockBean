@@ -14,7 +14,6 @@ import io.jsonwebtoken.security.Keys;
 
 import java.util.function.Function;
 
-
 @Component
 public class JwtUtil {
 
@@ -30,7 +29,7 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public<T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
@@ -63,12 +62,13 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 horas
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10)) // 10 min
                 .signWith(getSigningKey()) // El algoritmo se infiere de la clave
                 .compact();
     }
 
-    // Valida el token: verifica que el nombre de usuario coincida y que el token no haya expirado.
+    // Valida el token: verifica que el nombre de usuario coincida y que el token no
+    // haya expirado.
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
