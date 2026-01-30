@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import com.stockbean.stockapp.model.catalogos.Rol;
-import com.stockbean.stockapp.repository.RolRepository; 
+import com.stockbean.stockapp.repository.RolRepository;
+import org.springframework.lang.NonNull;
 
 
 @Service 
@@ -18,7 +19,7 @@ public class RolService {
         return rolRepository.findAll();
     }
 
-    public Rol obtenerPorId(Integer id){
+    public Rol obtenerPorId(@NonNull Integer id){
         return rolRepository.findById(id).orElse(null);
     }
 
@@ -28,7 +29,7 @@ public class RolService {
         return rolRepository.save(rol);
     }
 
-    public Rol actualizar(Integer id, Rol rolActualizado){
+    public Rol actualizar(@NonNull Integer id, Rol rolActualizado){
         Rol rol = obtenerPorId(id);
         if(rol == null) return null;
         rol.setNombre(rolActualizado.getNombre());
