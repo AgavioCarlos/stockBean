@@ -25,6 +25,9 @@ import Usuarios from './pages/Usuarios';
 import UsuariosSucursales from './pages/UsuariosSucursales';
 import Inventario from './pages/Inventario';
 import HistorialPrecios from './pages/HistorialPrecios';
+import Empresas from './pages/Empresas';
+import EmpresaUsuario from './pages/EmpresaUsuario';
+import TestData from './pages/TestData';
 
 const router = createBrowserRouter([
   {
@@ -35,39 +38,23 @@ const router = createBrowserRouter([
   },
   {
     path: "/home",
-    element: (
-      <ProtectedRoute>
-        <Home />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Home /></ProtectedRoute>),
   },
   {
     path: "/dashboard",
-    element: (
-      <ProtectedRoute>
-        <Dashboard />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Dashboard /></ProtectedRoute>)
   },
   {
     path: "/catalogos",
-    element: (
-      <Catalogos />
-    ),
+    element: (<ProtectedRoute><Catalogos /></ProtectedRoute>)
   },
   {
     path: "/configuracion",
-    element: (
-      <Configuracion />
-    ),
+    element: (<ProtectedRoute><Configuracion /></ProtectedRoute>)
   },
   {
     path: "/perfil",
-    element: (
-      <ProtectedRoute>
-        <Perfil />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Perfil /></ProtectedRoute>)
   },
   {
     path: "/login",
@@ -75,121 +62,75 @@ const router = createBrowserRouter([
   },
   {
     path: "/productos",
-    element: (
-      <Productos />
-    ),
+    element: (<ProtectedRoute><Productos /></ProtectedRoute>)
   },
   {
     path: "/persona",
-    element: (
-      <ProtectedRoute>
-        <Persona />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Persona /></ProtectedRoute>)
   },
   {
     path: "/categorias",
-    element: (
-      <ProtectedRoute>
-        <Categorias />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Categorias /></ProtectedRoute>)
   },
   {
     path: "/unidades",
-    element: (
-      <ProtectedRoute>
-        <Unidades />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Unidades /></ProtectedRoute>)
   },
   {
     path: "/roles",
-    element: (
-      <ProtectedRoute>
-        <Roles />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Roles /></ProtectedRoute>)
   },
   {
     path: "/marcas",
-    element: (
-      <ProtectedRoute>
-        <Marcas />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Marcas /></ProtectedRoute>)
   },
   {
     path: "/clientes",
-    element: (
-      <ProtectedRoute>
-        <Clientes />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Clientes /></ProtectedRoute>)
   },
   {
     path: "/proveedores",
-    element: (
-      <ProtectedRoute>
-        <Proveedores />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Proveedores /></ProtectedRoute>)
   },
   {
     path: "/punto-venta",
-    element: (
-      // <ProtectedRoute>
-      <PuntoVenta />
-      // </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><PuntoVenta /></ProtectedRoute>)
   },
   {
     path: "/administrador",
-    element: (
-      <ProtectedRoute>
-        <Administrador />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Administrador /></ProtectedRoute>)
   },
   {
     path: "/sucursales",
-    element: (
-      <ProtectedRoute>
-        <Sucursales />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Sucursales /></ProtectedRoute>)
   },
   {
     path: "/usuarios",
-    element: (
-      <ProtectedRoute>
-        <Usuarios />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Usuarios /></ProtectedRoute>)
   },
   {
     path: "/usuarios-sucursales",
-    element: (
-      <ProtectedRoute>
-        <UsuariosSucursales />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><UsuariosSucursales /></ProtectedRoute>)
   },
   {
     path: "/inventario",
-    element: (
-      <ProtectedRoute>
-        <Inventario />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><Inventario /></ProtectedRoute>)
   },
   {
     path: "/historial-precios",
-    element: (
-      <ProtectedRoute>
-        <HistorialPrecios />
-      </ProtectedRoute>
-    ),
+    element: (<ProtectedRoute><HistorialPrecios /></ProtectedRoute>)
+  },
+  {
+    path: "/empresas",
+    element: (<ProtectedRoute><Empresas /></ProtectedRoute>)
+  },
+  {
+    path: "/empresa-usuarios",
+    element: (<ProtectedRoute><EmpresaUsuario /></ProtectedRoute>)
+  },
+  {
+    path: "/test-data",
+    element: (<ProtectedRoute><TestData /></ProtectedRoute>)
   },
 ]);
 

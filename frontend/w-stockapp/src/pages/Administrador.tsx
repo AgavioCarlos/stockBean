@@ -103,6 +103,24 @@ function Administrador() {
                         path="/sucursales"
                         stats="Catálogo"
                     />
+
+                    <AdminCard
+                        title="Empresas"
+                        description="Administración de las empresas del negocio."
+                        icon={<FaBuilding size={24} />}
+                        color="bg-green-500"
+                        path="/empresas"
+                        stats="Gestión"
+                    />
+
+                    <AdminCard
+                        title="Empresa-Usuario"
+                        description="Administración de las empresas del negocio."
+                        icon={<FaBuilding size={24} />}
+                        color="bg-green-500"
+                        path="/empresa-usuarios"
+                        stats="Gestión"
+                    />
                 </div>
             </div>
         </MainLayout>
