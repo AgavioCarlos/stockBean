@@ -1,4 +1,7 @@
-const BASE_URL = import.meta.env.VITE_URL || "http://10.225.16.248:8080"
+console.log("🔥 USANDO Api.ts");
+// const BASE_URL = import.meta.env.VITE_URL || "http://10.225.16.248:8080"
+const BASE_URL = import.meta.env.VITE_API_URL || "http://10.225.16.248:8080";
+
 
 export async function apiFetch<T = any>(url: string, options: RequestInit = {}): Promise<T | null> {
     const token = localStorage.getItem("token");
@@ -20,8 +23,7 @@ export async function apiFetch<T = any>(url: string, options: RequestInit = {}):
     });
 
     if (response.status === 401) {
-        // localStorage.removeItem("token");
-        // throw new Error("Sesión expirada. Vuelve a iniciar sesión.");
+        // logout();
     }
 
     if (!response.ok) {
@@ -33,5 +35,10 @@ export async function apiFetch<T = any>(url: string, options: RequestInit = {}):
     }
 
     return response.json();
+}
+
+function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
 }
 
