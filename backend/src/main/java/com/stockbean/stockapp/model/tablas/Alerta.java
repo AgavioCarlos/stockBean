@@ -2,7 +2,7 @@ package com.stockbean.stockapp.model.tablas;
 
 import java.time.LocalDateTime;
 
-import com.stockbean.stockapp.model.tablas.Sucursal;
+import com.stockbean.stockapp.model.catalogos.TipoAlerta;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,8 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,13 +18,14 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@Table(name = "tbl_inventario")
+@Table(name = "tbl_alertas")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Inventario {
+public class Alerta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id_inventario;
+    @Column(name = "id_alerta")
+    private Integer idAlerta;
 
     @ManyToOne
     @JoinColumn(name = "id_producto", nullable = false)
@@ -36,32 +35,17 @@ public class Inventario {
     @JoinColumn(name = "id_sucursal", nullable = false)
     private Sucursal sucursal;
 
-    private Integer stock_actual;
-    private Integer stock_minimo;
+    @ManyToOne
+    @JoinColumn(name = "id_tipo_alerta", nullable = false)
+    private TipoAlerta tipoAlerta;
+
+    private LocalDateTime fecha;
+    private String mensaje;
     private Boolean status;
 
-    @ManyToOne
-    @JoinColumn(name = "id_lote_inventario")
-    private LoteInventario loteInventario;
-
-    private LocalDateTime fecha_caducidad;
-
-    @Column(name = "fecha_alta", updatable = false)
+    @Column(name = "fecha_alta")
     private LocalDateTime fechaAlta;
-
-    @Column(name = "fecha_baja")
-    private LocalDateTime fechaBaja;
 
     @Column(name = "fecha_ultima_modificacion")
     private LocalDateTime fechaUltimaModificacion;
-
-    @PrePersist
-    protected void onCreate() {
-        fechaAlta = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        fechaUltimaModificacion = LocalDateTime.now();
-    }
 }

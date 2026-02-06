@@ -7,36 +7,31 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Entity
 @Data
-@Table(name="tbl_compras")
+@Table(name = "tbl_configuracion_sistema")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Compras{
+public class ConfigurarSistema {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    
-    @Column(name = "id_compra")
-    private Integer idCompra;
+    @Column(name = "id_config")
+    private Integer idConfig;
 
-    @Column(name = "id_sucursal")
-    private Integer idSucursal;
+    @ManyToOne
+    @JoinColumn(name = "id_sucursal", nullable = false)
+    private Sucursal sucursal;
 
-    @Column(name = "id_proveedor")
-    private Integer idProveedor;
-
-    @Column(name = "fecha_compra")
-    private LocalDateTime fechaCompra;
-
-    private Integer total;
-
-    private String observaciones;
+    private String parametro;
+    private String valor;
+    private String descripcion;
 
     @Column(name = "fecha_alta")
     private LocalDateTime fechaAlta;
@@ -47,4 +42,3 @@ public class Compras{
     @Column(name = "fecha_ultima_modificacion")
     private LocalDateTime fechaUltimaModificacion;
 }
-
