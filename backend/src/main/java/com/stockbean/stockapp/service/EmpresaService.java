@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.stockbean.stockapp.dto.EmpresaUsuarioDTO;
 import com.stockbean.stockapp.model.admin.Empresa;
 import com.stockbean.stockapp.repository.EmpresaRepository;
 import org.springframework.lang.NonNull;
@@ -44,5 +45,11 @@ public class EmpresaService {
             empresaRepository.save(empresa);
         }
     }
+
+    public List<EmpresaUsuarioDTO> obtenerEmpresasPorUsuario(@NonNull Integer idEmpresa) {
+        return empresaRepository.findEmpresasUsuariosId(idEmpresa);
+    }
+
+    
 
 }

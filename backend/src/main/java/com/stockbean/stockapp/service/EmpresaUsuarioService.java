@@ -3,6 +3,8 @@ package com.stockbean.stockapp.service;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.stockbean.stockapp.dto.EmpresaUsuarioDTO;
 import com.stockbean.stockapp.model.admin.EmpresaUsuario;
 import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
 import lombok.NonNull;
@@ -42,6 +44,10 @@ public class EmpresaUsuarioService {
             empresaUsuario.setActivo(false);
             empresaUsuarioRepository.save(empresaUsuario);
         }
+    }
+
+    public List<EmpresaUsuarioDTO> validarEmpresaUsuario(@NonNull Integer id_usuario) {
+        return empresaUsuarioRepository.validarEmpresaUsuario(id_usuario);
     }
 
 }
