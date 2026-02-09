@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.stockbean.stockapp.repository.ClienteRepository;
 import com.stockbean.stockapp.repository.PersonaRepository;
+import lombok.NonNull;
 import com.stockbean.stockapp.dto.ClienteRequest;
 import com.stockbean.stockapp.model.tablas.Cliente;
 import com.stockbean.stockapp.model.tablas.Persona;
@@ -21,11 +22,11 @@ public class ClienteService {
         return clienteRepository.findAll();
     }
 
-    public Cliente obtenerPorId(Integer id){
+    public Cliente obtenerPorId(@NonNull Integer id){
         return clienteRepository.findById(id).orElseThrow(() -> new RuntimeException("Cliente no encontrado con id: " + id));
     }
 
-    public Cliente guardar (ClienteRequest dto){
+    public Cliente guardar (@NonNull ClienteRequest dto){
         Cliente cliente = new Cliente();
         Persona persona = personaRepository.findById(dto.getIdPersona())
             .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
@@ -37,7 +38,7 @@ public class ClienteService {
         return clienteRepository.save(cliente);
     }
 
-    public Cliente actualizar (Integer id, ClienteRequest dtoActualizado){
+    public Cliente actualizar (@NonNull Integer id, ClienteRequest dtoActualizado){
         Cliente cliente = obtenerPorId(id); // Esto ya lanza una excepción si no lo encuentra.
 
         Persona persona = personaRepository.findById(dtoActualizado.getIdPersona())
