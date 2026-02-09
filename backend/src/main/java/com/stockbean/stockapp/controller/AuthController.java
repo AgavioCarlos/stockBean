@@ -1,6 +1,7 @@
 package com.stockbean.stockapp.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,10 +16,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.stockbean.stockapp.dto.EmpresaUsuarioDTO;
 import com.stockbean.stockapp.dto.LoginRequest;
 import com.stockbean.stockapp.dto.RegistroRequest;
 import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.security.JwtUtil;
+import com.stockbean.stockapp.service.EmpresaUsuarioService;
 import com.stockbean.stockapp.service.RegistroService;
 import com.stockbean.stockapp.service.UsuarioService;
 
@@ -43,6 +47,9 @@ public class AuthController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private EmpresaUsuarioService empresaUsuarioService;
 
     @PostMapping("/registro")
     public ResponseEntity<Map<String, String>> registrar(@RequestBody RegistroRequest request) {
@@ -77,14 +84,21 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(respuesta);
         }
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getCuenta());
-        final String jwt = jwtUtil.generateToken(userDetails);
 
         Usuario user = usuarioService.findByCuenta(request.getCuenta());
+
+        // Consultar empresa
+        System.out.println("Usuario: " + user.getId_usuario());
+        List<EmpresaUsuarioDTO> empresaUsuario = empresaUsuarioService.validarEmpresaUsuario(user.getId_usuario());
+
+        // Generar el token JWT con el id_rol incluido
+        final String jwt = jwtUtil.generateToken(userDetails, user.getId_rol());
 
         Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("success", true);
         respuesta.put("mensaje", "Autenticación exitosa");
         respuesta.put("token", jwt);
+        respuesta.put("empresa", empresaUsuario);
 
         // Datos del Usuario
         respuesta.put("id_usuario", user.getId_usuario());
@@ -113,19 +127,29 @@ public class AuthController {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
             if (jwtUtil.validateToken(token, userDetails)) {
-                String newToken = jwtUtil.generateToken(userDetails);
+                // ✅ CORRECCIÓN: Obtener el usuario completo para incluir id_rol
+                Usuario user = usuarioService.findByCuenta(username);
+
+                // ✅ CORRECCIÓN: Generar nuevo token con id_rol (igual que en login)
+                String newToken = jwtUtil.generateToken(userDetails, user.getId_rol());
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
                 response.put("token", newToken);
                 response.put("mensaje", "Token refrescado correctamente");
+
+                System.out.println("✅ Token refrescado para usuario: " + username + ", id_rol: " + user.getId_rol());
+
                 return ResponseEntity.ok(response);
             } else {
+                System.out.println("⚠️ Token inválido o expirado para usuario: " + username);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                        Map.of("mensaje", "Token inválido o expirado"));
+                        Map.of("success", false, "mensaje", "Token inválido o expirado"));
             }
         } catch (Exception e) {
+            System.err.println("❌ Error al procesar el token: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    Map.of("mensaje", "Error al procesar el token"));
+                    Map.of("success", false, "mensaje", "Error al procesar el token: " + e.getMessage()));
         }
     }
 }

@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.stockbean.stockapp.model.catalogos.Rol;
 import com.stockbean.stockapp.service.RolService;
+
+import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +30,7 @@ public class RolController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Rol> obtener(@PathVariable Integer id) {
+    public ResponseEntity<Rol> obtener(@PathVariable @NonNull Integer id) {
         Rol rol = rolService.obtenerPorId(id);
         return rol != null ? ResponseEntity.ok(rol) : ResponseEntity.notFound().build();
     }
@@ -39,7 +41,7 @@ public class RolController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Rol> actualizar(@PathVariable Integer id, @RequestBody Rol rol) {
+    public ResponseEntity<Rol> actualizar(@PathVariable @NonNull Integer id, @RequestBody Rol rol) {
         Rol actualizado = rolService.actualizar(id, rol);
         return actualizado != null ? ResponseEntity.ok(actualizado) : ResponseEntity.notFound().build();
     }

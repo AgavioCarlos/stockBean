@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
+import com.stockbean.stockapp.dto.EmpresaUsuarioDTO;
 import com.stockbean.stockapp.model.admin.Empresa;
 import com.stockbean.stockapp.service.EmpresaService;
+import lombok.NonNull;
 
 @RestController
 @RequestMapping("/empresas")
@@ -24,12 +26,6 @@ public class EmpresaController {
 
     @Autowired
     private EmpresaService empresaService;
-
-    @GetMapping("/ping")
-    public String ping() {
-        logger.info("🔹 PING recibido en /empresas/ping");
-        return "EMPRESAS OK";
-    }
 
     @GetMapping
     public List<Empresa> listarTodos() {
@@ -45,7 +41,7 @@ public class EmpresaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Empresa> obtenerPorId(@PathVariable Integer id) {
+    public ResponseEntity<Empresa> obtenerPorId(@PathVariable @NonNull Integer id) {
         Empresa empresa = empresaService.obtenerPorId(id);
         return ResponseEntity.ok(empresa);
     }
@@ -57,15 +53,22 @@ public class EmpresaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Empresa> actualizar(@PathVariable Integer id, @RequestBody Empresa empresaActualizado) {
+    public ResponseEntity<Empresa> actualizar(@PathVariable @NonNull Integer id, @RequestBody Empresa empresaActualizado) {
         Empresa empresa = empresaService.actualizar(id, empresaActualizado);
         return ResponseEntity.ok(empresa);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Empresa> eliminar(@PathVariable Integer id) {
+    public ResponseEntity<Empresa> eliminar(@PathVariable @NonNull Integer id) {
         empresaService.eliminar(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/usuario/{idEmpresa}")
+    public ResponseEntity<List<EmpresaUsuarioDTO>> obtenerEmpresasPorUsuario(
+            @PathVariable @NonNull Integer idEmpresa) {
+        List<EmpresaUsuarioDTO> empresas = empresaService.obtenerEmpresasPorUsuario(idEmpresa);
+        return ResponseEntity.ok(empresas);
     }
 
 }
