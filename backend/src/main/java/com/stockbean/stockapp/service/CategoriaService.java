@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import com.stockbean.stockapp.model.catalogos.Categoria;
 import com.stockbean.stockapp.repository.CategoriaRepository;
 
+import lombok.NonNull;
+
 @Service
 public class CategoriaService {
     @Autowired
@@ -17,7 +19,7 @@ public class CategoriaService {
         return categoriaRepository.findAll();
     }
 
-    public Categoria obtenerPorId(Integer id){
+    public Categoria obtenerPorId(@NonNull Integer id){
         return categoriaRepository.findById(id).orElse( null);  
     }
 

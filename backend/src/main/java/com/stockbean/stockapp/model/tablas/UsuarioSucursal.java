@@ -2,8 +2,7 @@ package com.stockbean.stockapp.model.tablas;
 
 import java.time.LocalDateTime;
 
-import com.stockbean.stockapp.model.catalogos.Sucursales;
-
+import com.stockbean.stockapp.model.tablas.Sucursal;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -44,7 +43,7 @@ public class UsuarioSucursal {
     @ManyToOne
     @JoinColumn(name = "id_sucursal", nullable = false)
     @NonNull
-    private Sucursales sucursal;
+    private Sucursal sucursal;
 
     @Column(name = "status")
     private Boolean status = true;

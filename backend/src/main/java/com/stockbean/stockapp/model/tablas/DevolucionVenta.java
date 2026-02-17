@@ -2,7 +2,7 @@ package com.stockbean.stockapp.model.tablas;
 
 import java.time.LocalDateTime;
 
-import com.stockbean.stockapp.model.tablas.Sucursal;
+import com.stockbean.stockapp.model.catalogos.Motivo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,42 +11,49 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "tbl_devolucion_venta")
 @Data
-@Table(name = "tbl_inventario")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Inventario {
+public class DevolucionVenta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id_inventario;
+    @Column(name = "id_devolucion")
+    private Integer idDevolucion;
 
     @ManyToOne
-    @JoinColumn(name = "id_producto", nullable = false)
+    @JoinColumn(name = "id_venta")
+    private Venta venta;
+
+    @ManyToOne
+    @JoinColumn(name = "id_producto")
     private Producto producto;
 
+    private Integer cantidad;
+
+    private LocalDateTime fecha;
+
     @ManyToOne
-    @JoinColumn(name = "id_sucursal", nullable = false)
+    @JoinColumn(name = "id_motivo")
+    private Motivo motivo;
+
+    @ManyToOne
+    @JoinColumn(name = "id_usuario")
+    private Usuario usuario;
+
+    @ManyToOne
+    @JoinColumn(name = "id_sucursal")
     private Sucursal sucursal;
 
-    private Integer stock_actual;
-    private Integer stock_minimo;
     private Boolean status;
 
-    @ManyToOne
-    @JoinColumn(name = "id_lote_inventario")
-    private LoteInventario loteInventario;
-
-    private LocalDateTime fecha_caducidad;
-
-    @Column(name = "fecha_alta", updatable = false)
+    @Column(name = "fecha_alta")
     private LocalDateTime fechaAlta;
 
     @Column(name = "fecha_baja")
@@ -55,13 +62,4 @@ public class Inventario {
     @Column(name = "fecha_ultima_modificacion")
     private LocalDateTime fechaUltimaModificacion;
 
-    @PrePersist
-    protected void onCreate() {
-        fechaAlta = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        fechaUltimaModificacion = LocalDateTime.now();
-    }
 }
