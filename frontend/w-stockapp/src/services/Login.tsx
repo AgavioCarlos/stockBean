@@ -1,3 +1,5 @@
+import { apiFetch } from "./Api";
+
 export interface LoginData {
   cuenta: string;
   password: string;
@@ -20,18 +22,20 @@ export interface LoginResponse {
 }
 
 export const login = async (data: LoginData): Promise<LoginResponse> => {
-  const response = await fetch("http://10.225.16.248:8080/auth/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  // Usamos apiFetch para respetar baseURL y añadir token si existe
+  try {
+    const result = await apiFetch<LoginResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    throw new Error("Error al iniciar sesión");
+    if (!result) {
+      throw new Error("Respuesta vacía del servidor al iniciar sesión");
+    }
+
+    return result as LoginResponse;
+  } catch (err) {
+    // Re-lanzamos con mensaje genérico para que la UI lo muestre
+    throw new Error((err as Error).message || "Error al iniciar sesión");
   }
-
-  const result: LoginResponse = await response.json();
-  return result;
 };
