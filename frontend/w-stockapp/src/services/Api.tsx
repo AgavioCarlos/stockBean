@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_URL || "http://10.225.16.248:8080"
+const BASE_URL = import.meta.env.VITE_URL || "http://10.225.16.51:8080"
 
 export async function apiFetch<T = any>(url: string, options: RequestInit = {}): Promise<T | null> {
     const token = localStorage.getItem("token");
@@ -6,13 +6,15 @@ export async function apiFetch<T = any>(url: string, options: RequestInit = {}):
     const isAbsolute = url.startsWith("http://") || url.startsWith("https://");
     const finalUrl = isAbsolute ? url : `${BASE_URL}${url}`;
 
-    const headers = {
-        ...options.headers,
-        Authorization: token ? `Bearer ${token}` : "",
+    const headers: Record<string, string> = {
         "Content-Type": "application/json",
+        ...(options.headers as Record<string, string> || {}),
     };
 
-    console.log("Headers que se enviarán:", headers);
+    // Añadir Authorization solo si existe token
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
 
     const response = await fetch(finalUrl, {
         ...options,
@@ -20,8 +22,8 @@ export async function apiFetch<T = any>(url: string, options: RequestInit = {}):
     });
 
     if (response.status === 401) {
-        // localStorage.removeItem("token");
-        // throw new Error("Sesión expirada. Vuelve a iniciar sesión.");
+        localStorage.removeItem("token");
+        throw new Error("Sesión expirada. Vuelve a iniciar sesión.");
     }
 
     if (!response.ok) {

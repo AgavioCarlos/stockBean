@@ -1,7 +1,7 @@
 import { apiFetch } from "./Api";
 
 export async function consultarRoles() {
-  return apiFetch("http://localhost:8080/roles");
+  return apiFetch("/roles");
 }
 
 export async function crearRol(payload: { nombre: string; descripcion: string }) {
