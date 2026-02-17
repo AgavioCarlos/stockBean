@@ -9,13 +9,15 @@ export async function apiFetch<T = any>(url: string, options: RequestInit = {}):
     const isAbsolute = url.startsWith("http://") || url.startsWith("https://");
     const finalUrl = isAbsolute ? url : `${BASE_URL}${url}`;
 
-    const headers = {
-        ...options.headers,
-        Authorization: token ? `Bearer ${token}` : "",
+    const headers: Record<string, string> = {
         "Content-Type": "application/json",
+        ...(options.headers as Record<string, string> || {}),
     };
 
-    console.log("Headers que se enviarán:", headers);
+    // Añadir Authorization solo si existe token
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
 
     const response = await fetch(finalUrl, {
         ...options,

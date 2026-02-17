@@ -45,14 +45,15 @@ public class SecurityConfig {
                 // ⬇️ HABILITA CORS dentro de la cadena de filtros
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        // ⬇️ PERMITIR preflight
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Públicos
-                        .requestMatchers("/auth/login", "/auth/registro", "/planes", "/historial-precios/**")
-                        .permitAll()
-                        // El resto autenticado
-                        .anyRequest().authenticated())
+        .authorizeHttpRequests(auth -> auth
+            // ⬇️ PERMITIR preflight
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            // Públicos
+            .requestMatchers("/auth/login", "/auth/registro", "/planes", "/historial-precios/**").permitAll()
+            // Permitir GET públicos para endpoints de LOVs (roles, etc.) sin abrir otros métodos
+            .requestMatchers(HttpMethod.GET, "/roles", "/roles/**").permitAll()
+            // El resto autenticado
+            .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, e) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
@@ -71,7 +72,7 @@ public class SecurityConfig {
         CorsConfiguration cfg = new CorsConfiguration();
 
         // IMPORTANTE: si usas Authorization o cookies, NO uses "*"
-        cfg.setAllowedOrigins(List.of("http://10.225.16.248:5173"));
+        cfg.setAllowedOrigins(List.of("http://10.225.16.51:5173"));
         // Si necesitas patrones usa:
         // cfg.setAllowedOriginPatterns(List.of("http://localhost:*"));
 

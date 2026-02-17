@@ -1,0 +1,8 @@
+CREATE TABLE admin_empresas (
+id_empresa SERIAL PRIMARY KEY, 
+razon_social VARCHAR(150) NOT NULL,
+nombre_comercial VARCHAR(150), 
+rfc VARCHAR(13), 
+activo BOOLEAN NOT NULL DEFAULT TRUE, 
+fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

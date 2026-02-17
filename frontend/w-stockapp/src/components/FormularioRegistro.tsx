@@ -1,7 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Swal from 'sweetalert2';
+import {useLOVs} from '../hooks/useLOVs';
+import {Rol} from '../interfaces/roles.interface'
 
 export default function FormularioRegistro({ mostrarFormulario, setMostrarFormulario }) {
+  
+  const { data, loading } = useLOVs(['roles']);
   const [paso, setPaso] = useState(1);
   const [formData, setFormData] = useState({
     nombre: "",
@@ -10,6 +14,7 @@ export default function FormularioRegistro({ mostrarFormulario, setMostrarFormul
     email: "",
     cuenta: "",
     password: "",
+    rol: "",
   });
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -23,39 +28,14 @@ export default function FormularioRegistro({ mostrarFormulario, setMostrarFormul
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    try {
-      const response = await fetch("http://localhost:8080/auth/registro", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-          Swal.fire({
-          icon: 'success',
-          title: '¡Registro exitoso!',
-          text: 'Tu cuenta ha sido creada correctamente.',
-          confirmButtonText: 'Aceptar'
-        });
-
-        console.log("Respuesta del backend:", data);
-      } else {
-        Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Error al registrar.',
-        confirmButtonText: 'Aceptar'
-      });
-
-      }
-    } catch (error) {
-      console.error("Error en la petición:", error);
-      /* alert("Error de conexión con el servidor"); */
-    }
+    // Por ahora no hacemos la petición POST. Solo simulamos el envío y mostramos los datos seleccionados.
+    console.log('Datos de registro (simulación):', formData);
+    Swal.fire({
+      icon: 'info',
+      title: 'Simulación',
+      html: `<pre style="text-align:left">${JSON.stringify(formData, null, 2)}</pre>`,
+      confirmButtonText: 'Cerrar'
+    });
   };
 
   return (
@@ -136,6 +116,18 @@ export default function FormularioRegistro({ mostrarFormulario, setMostrarFormul
 
             {paso === 2 && (
               <>
+                <label>Rol:</label>
+                <select name="rol" value={formData.rol} onChange={handleChange} className="w-full px-3 py-2 border rounded-md">
+                  {loading ? (
+                    <option value="">Cargando...</option>
+                  ) : data.roles && data.roles.length > 0 ? (
+                    data.roles.map((r: Rol) => (
+                      <option key={r.id_rol} value={r.id_rol}>{r.nombre}</option>
+                    ))
+                  ) : (
+                    <option value="">No hay roles disponibles</option>
+                  )}
+                </select>
                 <label className="block text-sm font-medium text-gray-700">
                   Cuenta:
                   <input
