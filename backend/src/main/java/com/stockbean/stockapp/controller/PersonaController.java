@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import com.stockbean.stockapp.service.PersonaService;
 import java.util.List;
 import com.stockbean.stockapp.model.tablas.Persona;
+
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/personas")
@@ -21,6 +22,11 @@ public class PersonaController {
 
     @Autowired
     private PersonaService personaService;
+
+    @GetMapping("/solicitante/{idUsuarioSolicitante}")
+    public ResponseEntity<List<Persona>> listarPersonasPorSolicitante(@PathVariable Integer idUsuarioSolicitante) {
+        return ResponseEntity.ok(personaService.listarPersonasPorSolicitante(idUsuarioSolicitante));
+    }
 
     @GetMapping
     public List<Persona> listar() {
@@ -40,11 +46,11 @@ public class PersonaController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Persona> actualizar(@PathVariable Integer id, @RequestBody Persona persona) {
-        Persona actualizada = personaService.actualizar(id, persona); 
+        Persona actualizada = personaService.actualizar(id, persona);
         return actualizada != null ? ResponseEntity.ok(actualizada) : ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/{id}") 
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         personaService.eliminar(id);
         return ResponseEntity.noContent().build();

@@ -69,13 +69,23 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest request) throws Exception {
+
+        // 1. Verificar si el usuario existe antes de autenticar
+        Usuario user = usuarioService.findByCuenta(request.getCuenta());
+
+        if (user == null) {
+            Map<String, String> respuesta = new HashMap<>();
+            respuesta.put("mensaje", "El usuario no existe");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(respuesta);
+        }
+
         try {
             // Autentica al usuario utilizando el AuthenticationManager de Spring Security.
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getCuenta(), request.getPassword()));
         } catch (BadCredentialsException e) {
             Map<String, String> respuesta = new HashMap<>();
-            respuesta.put("mensaje", "Usuario o contraseña incorrectos");
+            respuesta.put("mensaje", "Contraseña incorrecta");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(respuesta);
 
         } catch (Exception e) {
@@ -85,7 +95,8 @@ public class AuthController {
         }
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getCuenta());
 
-        Usuario user = usuarioService.findByCuenta(request.getCuenta());
+        // Usuario user = usuarioService.findByCuenta(request.getCuenta()); // Ya
+        // obtenido arriba
 
         // Consultar empresa
         System.out.println("Usuario: " + user.getId_usuario());

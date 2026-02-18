@@ -53,7 +53,8 @@ public class EmpresaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Empresa> actualizar(@PathVariable @NonNull Integer id, @RequestBody Empresa empresaActualizado) {
+    public ResponseEntity<Empresa> actualizar(@PathVariable @NonNull Integer id,
+            @RequestBody Empresa empresaActualizado) {
         Empresa empresa = empresaService.actualizar(id, empresaActualizado);
         return ResponseEntity.ok(empresa);
     }
@@ -69,6 +70,13 @@ public class EmpresaController {
             @PathVariable @NonNull Integer idEmpresa) {
         List<EmpresaUsuarioDTO> empresas = empresaService.obtenerEmpresasPorUsuario(idEmpresa);
         return ResponseEntity.ok(empresas);
+    }
+
+    @PostMapping("/configurar/{idUsuario}")
+    public ResponseEntity<Empresa> configurarEmpresa(@RequestBody Empresa empresa,
+            @PathVariable @NonNull Integer idUsuario) {
+        Empresa resultado = empresaService.configurarEmpresa(empresa, idUsuario);
+        return ResponseEntity.ok(resultado);
     }
 
 }
