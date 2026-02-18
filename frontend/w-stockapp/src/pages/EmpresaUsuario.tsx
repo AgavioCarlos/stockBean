@@ -133,12 +133,12 @@ function EmpresaUsuario() {
             valueGetter: (params) => params.data?.usuario?.cuenta || ''
         },
         {
-            field: "empresa.razonSocial",
+            field: "empresa.nombreComercial",
             headerName: "Empresa",
             width: 300,
             editable: false,
             filter: true,
-            valueGetter: (params) => params.data?.empresa?.razonSocial || ''
+            valueGetter: (params) => params.data?.empresa?.nombreComercial || ''
         },
         {
             field: "activo",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/Layouts/MainLayout";
-import { consultarSucursales, crearSucursal, actualizarSucursal, eliminarSucursal, Sucursal } from "../services/SucursalService";
+import { consultarSucursales, consultarSucursalesPorSolicitante, crearSucursal, actualizarSucursal, eliminarSucursal, Sucursal } from "../services/SucursalService";
 import Swal from 'sweetalert2';
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { IoMdAddCircle, IoMdList } from "react-icons/io";
@@ -53,8 +53,33 @@ function Sucursales() {
 
     const cargarDatos = async () => {
         setLoading(true);
-        const data = await consultarSucursales();
-        setSucursales(data);
+        try {
+            const userDataString = localStorage.getItem('user_data');
+            if (userDataString) {
+                const userData = JSON.parse(userDataString);
+                // Try id_usuario first, fallback to id (some implementations vary)
+                const idUsuario = userData.id_usuario || userData.id;
+
+                if (idUsuario) {
+                    const data = await consultarSucursalesPorSolicitante(idUsuario);
+                    setSucursales(data);
+                } else {
+                    console.warn("No user ID found in user_data");
+                    // Fallback to fetch all or empty
+                    const data = await consultarSucursales();
+                    setSucursales(data);
+                }
+            } else {
+                console.warn("No user_data found in localStorage");
+                const data = await consultarSucursales();
+                setSucursales(data);
+            }
+        } catch (error) {
+            console.error("Error loading sucursales", error);
+            // Fallback
+            const data = await consultarSucursales();
+            setSucursales(data);
+        }
         setLoading(false);
     };
 
@@ -75,10 +100,18 @@ function Sucursales() {
 
         try {
             if (sucursalSeleccionada) {
-                await actualizarSucursal(sucursalSeleccionada.idSucursal, payload);
+                await actualizarSucursal(sucursalSeleccionada.idSucursal, payload); // Update
                 await Swal.fire({ icon: 'success', title: 'Actualizado', text: 'Sucursal actualizada correctamente', timer: 1500, showConfirmButton: false });
             } else {
-                await crearSucursal(payload);
+                // Get User ID for creation
+                const userDataString = localStorage.getItem('user_data');
+                let idUsuario = 0;
+                if (userDataString) {
+                    const userData = JSON.parse(userDataString);
+                    idUsuario = userData.id_usuario || userData.id;
+                }
+
+                await crearSucursal(payload, idUsuario); // Create with user ID
                 await Swal.fire({ icon: 'success', title: 'Creado', text: 'Sucursal creada correctamente', timer: 1500, showConfirmButton: false });
             }
             cargarDatos();

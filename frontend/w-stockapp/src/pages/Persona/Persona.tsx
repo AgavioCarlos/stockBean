@@ -39,8 +39,19 @@ function Persona() {
     cargarPersonas();
   }, []);
 
+  /* 
+    Updated to fetch personas based on current user's role/company
+  */
   const cargarPersonas = () => {
-    consultarPersonas()
+    const userDataString = localStorage.getItem('user_data');
+    if (!userDataString) {
+      // Handle error or redirect
+      return;
+    }
+    const userData = JSON.parse(userDataString);
+    const idUsuario = userData.id_usuario || userData.id;
+
+    consultarPersonas(idUsuario)
       .then((data: Persona[]) => {
         setPersonas(data);
         setLoading(false);

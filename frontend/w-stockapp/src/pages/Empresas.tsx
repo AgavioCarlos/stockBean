@@ -206,6 +206,7 @@ function Empresas() {
                                         </div>
                                     </div>
 
+
                                     <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
                                         <button
                                             type="button"
@@ -237,6 +238,81 @@ function Empresas() {
                                         </button>
                                     </div>
                                 </form>
+
+                                {/* Recuadro de Usuarios Asignados */}
+                                <div style={{
+                                    marginTop: '40px',
+                                    padding: '20px',
+                                    backgroundColor: '#ffffff',
+                                    border: '1px solid #E5E7EB',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+                                }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '16px',
+                                        paddingBottom: '12px',
+                                        borderBottom: '2px solid #E5E7EB'
+                                    }}>
+                                        <h3 style={{
+                                            margin: 0,
+                                            fontSize: '18px',
+                                            fontWeight: '600',
+                                            color: '#111827'
+                                        }}>
+                                            Usuarios Asignados
+                                        </h3>
+                                        <button
+                                            type="button"
+                                            style={{
+                                                padding: '6px 12px',
+                                                backgroundColor: '#ffffff',
+                                                color: '#4F46E5',
+                                                border: '1px solid #4F46E5',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                fontWeight: '500',
+                                                fontSize: '14px',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#4F46E5';
+                                                e.currentTarget.style.color = '#ffffff';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#ffffff';
+                                                e.currentTarget.style.color = '#4F46E5';
+                                            }}
+                                        >
+                                            + Asignar Usuario
+                                        </button>
+                                    </div>
+
+                                    {/* Contenedor para la tabla de usuarios */}
+                                    <div style={{
+                                        minHeight: '200px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: '#6B7280',
+                                        fontSize: '14px'
+                                    }}>
+                                        {/* Placeholder temporal hasta que se implemente el endpoint */}
+                                        <div style={{
+                                            textAlign: 'center',
+                                            padding: '40px'
+                                        }}>
+                                            <p style={{ margin: 0, fontStyle: 'italic' }}>
+                                                No hay usuarios asignados a esta empresa
+                                            </p>
+                                            <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#9CA3AF' }}>
+                                                Utiliza el botón "Asignar Usuario" para agregar usuarios
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                     },
                 ]}

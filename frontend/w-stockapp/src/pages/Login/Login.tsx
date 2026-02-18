@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react"
 import FormularioRegistro from "../../components/FormularioRegistro";
 import { login } from "../../services/Login"
+import { getPantallasUsuario, savePantallasToLocalStorage } from "../../services/Pantallas"; // Importar servicio de pantallas
 import Swal from 'sweetalert2';
+
 
 function Login() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -33,13 +35,36 @@ function Login() {
         // Guardar informacion completa del usuario para el perfil
         localStorage.setItem("user_data", JSON.stringify(data));
 
+        try {
+          // **Cargar pantallas del usuario basadas en su rol**
+          // El token JWT ya contiene el id_rol, el backend lo extrae automáticamente
+          const pantallas = await getPantallasUsuario();
+          console.log("✅ Pantallas cargadas:", pantallas);
+
+          // Guardar pantallas en localStorage para construir el menú dinámicamente
+          savePantallasToLocalStorage(pantallas);
+        } catch (pantallasError) {
+          console.error("⚠️ Error al cargar pantallas:", pantallasError);
+          // No bloqueamos el login si falla la carga de pantallas
+          // El usuario podrá navegar igualmente
+        }
+
         Swal.fire({
           icon: "success",
           title: "¡Éxito!",
           text: data.mensaje,
           confirmButtonText: "Aceptar",
         }).then(() => {
-          window.location.href = "/home";
+          //Valida si la respuesta del login viene con empresa
+          if (data.empresa.length > 0) {
+            // Usuario tiene empresa, acceso normal
+            localStorage.removeItem("requiresEmpresaConfig");
+            window.location.href = "/home";
+          } else {
+            // Usuario sin empresa - marcar para mostrar modal obligatorio
+            localStorage.setItem("requiresEmpresaConfig", "true");
+            window.location.href = "/home";
+          }
         });
       } else {
         Swal.fire({
@@ -50,11 +75,11 @@ function Login() {
         });
       }
 
-    } catch (err) {
+    } catch (err: any) {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "No se pudo conectar con el servidor",
+        text: err.message || "No se pudo conectar con el servidor",
         confirmButtonText: "Cerrar",
       });
     }
