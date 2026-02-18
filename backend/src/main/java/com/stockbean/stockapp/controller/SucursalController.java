@@ -16,7 +16,7 @@ import com.stockbean.stockapp.service.SucursalService;
 
 @RestController
 @RequestMapping("/sucursales")
-public class SucursalCotroller {
+public class SucursalController {
 
     @Autowired
     private SucursalService sucursalService;
@@ -26,6 +26,11 @@ public class SucursalCotroller {
         return sucursalService.listarTodos();
     }
 
+    @GetMapping("/solicitante/{idUsuarioSolicitante}")
+    public ResponseEntity<List<Sucursal>> listarSucursalesPorSolicitante(@PathVariable Integer idUsuarioSolicitante) {
+        return ResponseEntity.ok(sucursalService.listarSucursalesPorSolicitante(idUsuarioSolicitante));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Sucursal> obtener(@PathVariable Integer id) {
         Sucursal sucursal = sucursalService.obtenerPorId(id);
@@ -33,8 +38,9 @@ public class SucursalCotroller {
     }
 
     @PostMapping
-    public ResponseEntity<Sucursal> guardar(@RequestBody Sucursal sucursal) {
-        Sucursal nuevaSucursal = sucursalService.guardar(sucursal);
+    public ResponseEntity<Sucursal> guardar(@RequestBody Sucursal sucursal,
+            @org.springframework.web.bind.annotation.RequestParam Integer idUsuario) {
+        Sucursal nuevaSucursal = sucursalService.guardar(sucursal, idUsuario);
         return ResponseEntity.ok(nuevaSucursal);
     }
 
