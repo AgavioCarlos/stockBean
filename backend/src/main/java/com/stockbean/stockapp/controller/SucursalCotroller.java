@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.stockbean.stockapp.model.catalogos.Sucursales;
+import com.stockbean.stockapp.model.tablas.Sucursal;
 import com.stockbean.stockapp.service.SucursalService;
 
 @RestController
@@ -22,25 +22,25 @@ public class SucursalCotroller {
     private SucursalService sucursalService;
 
     @GetMapping
-    public List<Sucursales> listar() {
+    public List<Sucursal> listar() {
         return sucursalService.listarTodos();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Sucursales> obtener(@PathVariable Integer id) {
-        Sucursales sucursal = sucursalService.obtenerPorId(id);
+    public ResponseEntity<Sucursal> obtener(@PathVariable Integer id) {
+        Sucursal sucursal = sucursalService.obtenerPorId(id);
         return sucursal != null ? ResponseEntity.ok(sucursal) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    public ResponseEntity<Sucursales> guardar(@RequestBody Sucursales sucursal) {
-        Sucursales nuevaSucursal = sucursalService.guardar(sucursal);
+    public ResponseEntity<Sucursal> guardar(@RequestBody Sucursal sucursal) {
+        Sucursal nuevaSucursal = sucursalService.guardar(sucursal);
         return ResponseEntity.ok(nuevaSucursal);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Sucursales> actualizar(@PathVariable Integer id, @RequestBody Sucursales sucursal) {
-        Sucursales actualizada = sucursalService.actualizar(id, sucursal);
+    public ResponseEntity<Sucursal> actualizar(@PathVariable Integer id, @RequestBody Sucursal sucursal) {
+        Sucursal actualizada = sucursalService.actualizar(id, sucursal);
         return actualizada != null ? ResponseEntity.ok(actualizada) : ResponseEntity.notFound().build();
     }
 

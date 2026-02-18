@@ -7,12 +7,26 @@ import org.springframework.stereotype.Service;
 import com.stockbean.stockapp.dto.EmpresaUsuarioDTO;
 import com.stockbean.stockapp.model.admin.Empresa;
 import com.stockbean.stockapp.repository.EmpresaRepository;
+import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
+import com.stockbean.stockapp.repository.UsuarioRepository;
+
+import jakarta.annotation.Nonnull;
+
+import com.stockbean.stockapp.model.admin.EmpresaUsuario;
+import com.stockbean.stockapp.model.tablas.Usuario;
 import org.springframework.lang.NonNull;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EmpresaService {
     @Autowired
     private EmpresaRepository empresaRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private EmpresaUsuarioRepository empresaUsuarioRepository;
 
     public List<Empresa> listarTodos() {
         return empresaRepository.findAll();
@@ -50,6 +64,24 @@ public class EmpresaService {
         return empresaRepository.findEmpresasUsuariosId(idEmpresa);
     }
 
-    
+    @Transactional
+    public Empresa configurarEmpresa(Empresa empresa, @Nonnull Integer idUsuario) {
+        empresa.setFechaCreacion(LocalDateTime.now());
+        empresa.setActivo(true);
+        Empresa empresaGuardada = empresaRepository.save(empresa);
+
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + idUsuario));
+
+        EmpresaUsuario empresaUsuario = new EmpresaUsuario();
+        empresaUsuario.setEmpresa(empresaGuardada);
+        empresaUsuario.setUsuario(usuario);
+        empresaUsuario.setActivo(true);
+        empresaUsuario.setFechaAlta(LocalDateTime.now());
+
+        empresaUsuarioRepository.save(empresaUsuario);
+
+        return empresaGuardada;
+    }
 
 }
