@@ -127,7 +127,7 @@ export default function InventarioDetalle({
                                     >
                                         <option value="">Seleccionar Sucursal...</option>
                                         {sucursalesList.map((s: any) => (
-                                            <option key={s.idSucursal} value={s.idSucursal}>
+                                            <option key={s.id_sucursal || s.idSucursal} value={s.id_sucursal || s.idSucursal}>
                                                 {s.nombre}
                                             </option>
                                         ))}
