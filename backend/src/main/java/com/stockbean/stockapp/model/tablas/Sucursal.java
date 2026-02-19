@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@Table (name = "tbl_sucursales")
+@Table(name = "tbl_sucursales")
 @NoArgsConstructor
 @AllArgsConstructor
 
@@ -26,8 +26,8 @@ public class Sucursal {
     private String telefono;
     private String email;
     private Boolean status;
-    
+
     private LocalDateTime fecha_alta;
     private LocalDateTime fecha_baja;
-    private LocalDateTime fecha_ultima_modificacion;    
+    private LocalDateTime fecha_ultima_modificacion;
 }
