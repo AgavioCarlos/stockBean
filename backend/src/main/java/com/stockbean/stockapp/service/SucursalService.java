@@ -23,6 +23,10 @@ public class SucursalService {
         return sucursalRepository.findAll();
     }
 
+    public List<Sucursal> listarPorEmpresa(Integer idEmpresa) {
+        return sucursalRepository.findByEmpresaId(idEmpresa);
+    }
+
     public List<Sucursal> listarSucursalesPorSolicitante(Integer idUsuarioSolicitante) {
         com.stockbean.stockapp.model.tablas.Usuario solicitante = usuarioRepository.findById(idUsuarioSolicitante)
                 .orElse(null);
