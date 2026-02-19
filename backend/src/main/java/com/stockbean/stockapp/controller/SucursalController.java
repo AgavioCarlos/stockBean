@@ -31,6 +31,11 @@ public class SucursalController {
         return ResponseEntity.ok(sucursalService.listarSucursalesPorSolicitante(idUsuarioSolicitante));
     }
 
+    @GetMapping("/empresa/{idEmpresa}")
+    public ResponseEntity<List<Sucursal>> listarPorEmpresa(@PathVariable Integer idEmpresa) {
+        return ResponseEntity.ok(sucursalService.listarPorEmpresa(idEmpresa));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Sucursal> obtener(@PathVariable Integer id) {
         Sucursal sucursal = sucursalService.obtenerPorId(id);
