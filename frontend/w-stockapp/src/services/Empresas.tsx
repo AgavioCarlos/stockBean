@@ -25,3 +25,14 @@ export async function actualizarEmpresa(id: number, empresa: any, signal?: Abort
         signal,
     });
 }
+
+export async function configurarEmpresa(empresa: any, idUsuario: number, signal?: AbortSignal) {
+    return apiFetch(`/empresas/configurar/${idUsuario}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(empresa),
+        signal,
+    });
+}

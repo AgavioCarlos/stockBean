@@ -19,6 +19,7 @@ export interface LoginResponse {
   status?: boolean;
   mensaje: string;
   token: string;
+  empresa: string[];
 }
 
 export const login = async (data: LoginData): Promise<LoginResponse> => {
