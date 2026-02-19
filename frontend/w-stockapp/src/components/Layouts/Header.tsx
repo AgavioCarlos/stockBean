@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
 import { RiLogoutCircleLine } from "react-icons/ri";
 import { FaUserCircle } from "react-icons/fa";
 import { IoNotifications } from "react-icons/io5";
@@ -36,7 +35,7 @@ function Header({ isSidebarOpen = false, sidebarCollapsed = false }: { isSidebar
 
     return (
         <div>
-            <nav style={{ marginLeft: left, transition: 'margin-left 300ms' }} className="bg-gray-800 text-white p-5 flex justify-between items-center">
+            <nav style={{ marginLeft: left, transition: 'margin-left 300ms' }} className="bg-gray-800 text-white p-5 flex justify-between items-center relative z-50">
 
                 {/* Notifications and Messages */}
                 <div className="flex items-center space-x-3 ml-auto">
