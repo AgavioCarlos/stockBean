@@ -1,6 +1,6 @@
 console.log("🔥 USANDO Api.ts");
 // const BASE_URL = import.meta.env.VITE_URL || "http://10.225.16.248:8080"
-const BASE_URL = import.meta.env.VITE_API_URL || "http://10.225.16.248:8080";
+const BASE_URL = import.meta.env.VITE_API_URL || "";
 
 
 export async function apiFetch<T = any>(url: string, options: RequestInit = {}): Promise<T | null> {
@@ -29,7 +29,16 @@ export async function apiFetch<T = any>(url: string, options: RequestInit = {}):
     }
 
     if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        let errorMessage = `Error: ${response.status}`;
+        try {
+            const errorBody = await response.json();
+            if (errorBody && errorBody.mensaje) {
+                errorMessage = errorBody.mensaje;
+            }
+        } catch (e) {
+            // Ignorar error de parsing, usar mensaje por defecto
+        }
+        throw new Error(errorMessage);
     }
 
     if (response.status === 204) {

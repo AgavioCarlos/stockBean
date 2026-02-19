@@ -3,7 +3,8 @@ import { apiFetch } from "./Api";
 const API_URL = "/sucursales";
 
 export interface Sucursal {
-    idSucursal: number;
+    idSucursal?: number;
+    id_sucursal?: number;
     nombre: string;
     direccion: string;
     telefono: string;
@@ -22,9 +23,34 @@ export const consultarSucursales = async (): Promise<Sucursal[]> => {
     }
 };
 
-export const crearSucursal = async (sucursal: Omit<Sucursal, "idSucursal">): Promise<Sucursal> => {
+export const consultarSucursalesPorSolicitante = async (idUsuario: number): Promise<Sucursal[]> => {
     try {
-        const data = await apiFetch<Sucursal>(API_URL, {
+        const data = await apiFetch<Sucursal[]>(`${API_URL}/solicitante/${idUsuario}`);
+        return data || [];
+    } catch (error) {
+        console.error("Error al consultar sucursales por solicitante", error);
+        return [];
+    }
+};
+
+export const consultarSucursalesPorEmpresa = async (idEmpresa: number): Promise<Sucursal[]> => {
+    try {
+        const data = await apiFetch<Sucursal[]>(`${API_URL}/empresa/${idEmpresa}`);
+        return data || [];
+    } catch (error) {
+        console.error("Error al consultar sucursales por empresa", error);
+        return [];
+    }
+};
+
+export const crearSucursal = async (sucursal: Omit<Sucursal, "idSucursal">, idUsuario?: number): Promise<Sucursal> => {
+    try {
+        let url = API_URL;
+        if (idUsuario) {
+            url += `?idUsuario=${idUsuario}`;
+        }
+
+        const data = await apiFetch<Sucursal>(url, {
             method: "POST",
             body: JSON.stringify(sucursal),
         });
