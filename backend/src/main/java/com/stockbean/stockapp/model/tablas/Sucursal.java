@@ -26,7 +26,6 @@ public class Sucursal {
     private String telefono;
     private String email;
     private Boolean status;
-
     private LocalDateTime fecha_alta;
     private LocalDateTime fecha_baja;
     private LocalDateTime fecha_ultima_modificacion;
