@@ -108,7 +108,7 @@ function Persona() {
 
   const handleDelete = async (id: number, newStatus: boolean = false) => {
     try {
-      const res = await fetch(`http://localhost:8080/personas/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/personas/${id}`, {
         method: 'PUT', // Assuming PUT for soft-delete/status update or DELETE if hard delete. 
         // Based on prompt "de acuerdo a su endPoint", user showed Controller.
         // Controller has update at PUT /{id} and delete at DELETE /{id}.
@@ -156,14 +156,14 @@ function Persona() {
       let response;
       if (personaSeleccionada) {
         // Update
-        response = await fetch(`http://localhost:8080/personas/${personaSeleccionada.id_persona}`, {
+        response = await fetch(`${import.meta.env.VITE_API_URL || ""}/personas/${personaSeleccionada.id_persona}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
       } else {
         // Create
-        response = await fetch("http://localhost:8080/personas", {
+        response = await fetch(`${import.meta.env.VITE_API_URL || ""}/personas`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
