@@ -16,10 +16,11 @@ import com.stockbean.stockapp.model.catalogos.Rol;
 import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.repository.RolRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
+import com.stockbean.stockapp.security.UsuarioPrincipal;
 
 @Service
 public class LoginService implements UserDetailsService { // <-- Implements UserDetailsService
-    
+
     @Autowired
     private UsuarioRepository usuarioRepository;
 
@@ -36,36 +37,31 @@ public class LoginService implements UserDetailsService { // <-- Implements User
         Usuario usuario = usuarioRepository.findByCuenta(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con la cuenta: " + username));
 
-        // Buscamos el rol del usuario para agregarlo a sus permisos (authorities).
-        Rol rol = rolRepository.findById(usuario.getId_rol())
-                .orElseThrow(() -> new UsernameNotFoundException("Rol no encontrado para el usuario: " + username));
+        if (usuario.getRol() == null) {
+            throw new UsernameNotFoundException("Rol no asignado para el usuario: " + username);
+        }
 
-        // Creamos la autoridad. Spring Security suele esperar el formato "ROLE_NOMBRE".
-        // Ejemplo: "ROLE_ADMINISTRADOR"
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + rol.getNombre().toUpperCase());
-
-        // Devolvemos el objeto User de Spring Security con su permiso.
-        return new User(usuario.getCuenta(), usuario.getPassword(), Collections.singletonList(authority));
+        return new UsuarioPrincipal(usuario);
     }
 
     /**
-     * This method is part of your original custom login logic. 
+     * This method is part of your original custom login logic.
      * It is NOT used by the current Spring Security setup but is kept here.
      * The active /login endpoint uses the loadUserByUsername method above.
      */
     public LoginResponse login(LoginRequest request) {
-        if(request.getCuenta() == null || request.getCuenta().isEmpty()) {
-            return new LoginResponse("Cuenta vacía"); 
+        if (request.getCuenta() == null || request.getCuenta().isEmpty()) {
+            return new LoginResponse("Cuenta vacía");
         }
 
         return usuarioRepository.findByCuenta(request.getCuenta())
-            .map(usuario -> {
-                if (passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
-                    return new LoginResponse("Login exitoso");
-                } else {
-                    return new LoginResponse("Contraseña incorrecta");
-                }
-            })
-            .orElse(new LoginResponse("Usuario no encontrado"));
+                .map(usuario -> {
+                    if (passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
+                        return new LoginResponse("Login exitoso");
+                    } else {
+                        return new LoginResponse("Contraseña incorrecta");
+                    }
+                })
+                .orElse(new LoginResponse("Usuario no encontrado"));
     }
 }

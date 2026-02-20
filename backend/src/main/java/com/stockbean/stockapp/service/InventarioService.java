@@ -2,11 +2,8 @@ package com.stockbean.stockapp.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.stockbean.stockapp.model.tablas.Inventario;
 import com.stockbean.stockapp.model.tablas.Sucursal;
 import com.stockbean.stockapp.model.tablas.Usuario;
@@ -15,6 +12,8 @@ import com.stockbean.stockapp.repository.InventarioRepository;
 import com.stockbean.stockapp.repository.SucursalRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
 import com.stockbean.stockapp.repository.UsuarioSucursalRepository;
+
+import lombok.NonNull;
 
 @Service
 public class InventarioService {
@@ -34,7 +33,7 @@ public class InventarioService {
     @Autowired
     private EmpresaUsuarioRepository empresaUsuarioRepository;
 
-    public List<Inventario> listarPorUsuarioYSucursal(Integer idUsuario, Integer idSucursal) {
+    public List<Inventario> listarPorUsuarioYSucursal(@NonNull Integer idUsuario, @NonNull Integer idSucursal) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
 
@@ -43,7 +42,7 @@ public class InventarioService {
         return inventarioRepository.findBySucursalIdAndStatusTrue(idSucursal);
     }
 
-    public Inventario guardar(Inventario inventario, Integer idUsuario) {
+    public Inventario guardar(Inventario inventario, @NonNull Integer idUsuario) {
         if (inventario.getSucursal() == null || inventario.getSucursal().getId_sucursal() == null) {
             throw new RuntimeException("Sucursal es requerida para registrar inventario.");
         }
@@ -106,22 +105,23 @@ public class InventarioService {
         return inventarioRepository.findAll();
     }
 
-    // Kept generic method in case controller still uses it temporarily,
-    // but controller should switch to authenticated one.
-
     private void validarAccesoSucursal(Usuario usuario, Integer idSucursal) {
-        Integer rol = usuario.getId_rol();
+        String rol = usuario.getNombre_rol();
 
-        // 1: SISTEMAS (Root)
-        if (Integer.valueOf(1).equals(rol)) {
+        if (rol == null) {
+            throw new RuntimeException("El usuario no tiene un rol asignado.");
+        }
+
+        // SISTEM: Acceso total
+        if ("SISTEM".equalsIgnoreCase(rol)) {
             return;
         }
 
         Sucursal sucursalTarget = sucursalRepository.findById(idSucursal)
                 .orElseThrow(() -> new RuntimeException("Sucursal no encontrada con ID: " + idSucursal));
 
-        // 3: ADMINISTRADOR
-        if (Integer.valueOf(3).equals(rol)) {
+        // ADMIN: Acceso total a su Empresa
+        if ("ADMIN".equalsIgnoreCase(rol)) {
             List<Integer> companyIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(usuario.getId_usuario());
             if (companyIds.isEmpty()) {
                 throw new RuntimeException("El usuario administrador no tiene empresa asignada.");
@@ -140,8 +140,9 @@ public class InventarioService {
             return;
         }
 
-        // 4: GERENTE
-        if (Integer.valueOf(4).equals(rol)) {
+        // GERENTE: Solo su Sucursal asignada
+        // CAJERO: Solo su Sucursal asignada (permisos operativos)
+        if ("GERENTE".equalsIgnoreCase(rol) || "CAJERO".equalsIgnoreCase(rol)) {
             // Check if specific user-sucursal link exists
             boolean access = usuarioSucursalRepository.existsByUsuarioAndSucursal(usuario, sucursalTarget);
 

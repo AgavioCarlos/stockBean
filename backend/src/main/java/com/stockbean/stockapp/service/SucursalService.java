@@ -5,7 +5,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.stockbean.stockapp.model.tablas.Sucursal;
+import com.stockbean.stockapp.model.tablas.Usuario;
+import com.stockbean.stockapp.model.tablas.UsuarioSucursal;
 import com.stockbean.stockapp.repository.SucursalRepository;
+import lombok.NonNull;
 
 @Service
 public class SucursalService {
@@ -27,23 +30,22 @@ public class SucursalService {
         return sucursalRepository.findByEmpresaId(idEmpresa);
     }
 
-    public List<Sucursal> listarSucursalesPorSolicitante(Integer idUsuarioSolicitante) {
-        com.stockbean.stockapp.model.tablas.Usuario solicitante = usuarioRepository.findById(idUsuarioSolicitante)
+    public List<Sucursal> listarSucursales(@NonNull Integer idUsuario) {
+        Usuario solicitante = usuarioRepository.findById(idUsuario)
                 .orElse(null);
-
         if (solicitante == null) {
-            throw new RuntimeException("Usuario solicitante no encontrado");
+            throw new RuntimeException("Usuario no encontrado");
         }
 
-        // Si es ROOT / SISTEMAS (id_rol = 1), ve todas las sucursales
-        if (Integer.valueOf(1).equals(solicitante.getId_rol())) {
+        // Si es ROOT / SISTEMAS (SISTEM), ve todas las sucursales
+        if ("SISTEM".equals(solicitante.getNombre_rol())) {
             return sucursalRepository.findAll();
         }
 
         // Si no es ROOT, obtenemos su empresa y mostramos solo las sucursales de esa
         // empresa
         // (asumiendo que las sucursales están vinculadas a usuarios de esa empresa)
-        List<Integer> companyIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuarioSolicitante);
+        List<Integer> companyIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);
 
         if (companyIds.isEmpty()) {
             return List.of();
@@ -57,7 +59,7 @@ public class SucursalService {
     @Autowired
     private com.stockbean.stockapp.repository.UsuarioSucursalRepository usuarioSucursalRepository;
 
-    public Sucursal guardar(Sucursal sucursal, Integer idUsuarioCreador) {
+    public Sucursal guardar(Sucursal sucursal, @NonNull Integer idUsuarioCreador) {
         // Asignar valores por defecto al crear
         if (sucursal.getStatus() == null) {
             sucursal.setStatus(true);
@@ -70,10 +72,10 @@ public class SucursalService {
         Sucursal nuevaSucursal = sucursalRepository.save(sucursal);
 
         // Crear relación Usuario-Sucursal para el creador
-        com.stockbean.stockapp.model.tablas.Usuario creador = usuarioRepository.findById(idUsuarioCreador)
+        Usuario creador = usuarioRepository.findById(idUsuarioCreador)
                 .orElseThrow(() -> new RuntimeException("Usuario creador no encontrado"));
 
-        com.stockbean.stockapp.model.tablas.UsuarioSucursal relacion = new com.stockbean.stockapp.model.tablas.UsuarioSucursal();
+        UsuarioSucursal relacion = new UsuarioSucursal();
         relacion.setUsuario(creador);
         relacion.setSucursal(nuevaSucursal);
         relacion.setStatus(true);

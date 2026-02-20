@@ -7,13 +7,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.stockbean.stockapp.dto.RegistroRequest;
+import com.stockbean.stockapp.model.catalogos.Rol;
 import com.stockbean.stockapp.model.tablas.Persona;
 import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.repository.PersonaRepository;
+import com.stockbean.stockapp.repository.RolRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
 
-@Service 
+@Service
 public class RegistroService {
     @Autowired
     private PersonaRepository personaRepository;
@@ -22,11 +24,14 @@ public class RegistroService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private PasswordEncoder  passwordEncoder;
+    private RolRepository rolRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Transactional
-    public String registrar(RegistroRequest request){
-        if(personaRepository.existsByEmail(request.getEmail())){
+    public String registrar(RegistroRequest request) {
+        if (personaRepository.existsByEmail(request.getEmail())) {
             return "El correo ya está registrado.";
         }
 
@@ -44,7 +49,11 @@ public class RegistroService {
         usuario.setCuenta(request.getCuenta());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         usuario.setPersona(persona);
-        usuario.setId_rol(1); //Administrador
+
+        Rol rolAdmin = rolRepository.findById(1)
+                .orElseThrow(() -> new RuntimeException("Error: Rol 'Administrador' no encontrado."));
+        usuario.setRol(rolAdmin);
+
         usuario.setFecha_alta(LocalDateTime.now());
         usuario.setFecha_ultima_modificacion(LocalDateTime.now());
         usuario.setStatus(true);
