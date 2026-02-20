@@ -155,7 +155,7 @@ const RegistroModal: React.FC<RegistroModalProps> = ({ isOpen, onClose, selected
         setIsProcessing(true);
 
         try {
-            const response = await fetch('http://10.225.16.248:8080/auth/registro', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/auth/registro`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -191,7 +191,7 @@ const RegistroModal: React.FC<RegistroModalProps> = ({ isOpen, onClose, selected
 
                 // Auto-login después del registro
                 try {
-                    const loginResponse = await fetch('http://10.225.16.248:8080/auth/login', {
+                    const loginResponse = await fetch(`${import.meta.env.VITE_API_URL || ""}/auth/login`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -460,8 +460,8 @@ const RegistroModal: React.FC<RegistroModalProps> = ({ isOpen, onClose, selected
                                     type="submit"
                                     disabled={isProcessing}
                                     className={`flex-1 py-3 px-6 rounded-xl font-semibold text-white transition-all duration-300 transform flex items-center justify-center gap-2 ${isProcessing
-                                            ? 'bg-gray-400 cursor-not-allowed'
-                                            : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl hover:scale-105'
+                                        ? 'bg-gray-400 cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl hover:scale-105'
                                         }`}
                                 >
                                     {isProcessing ? (

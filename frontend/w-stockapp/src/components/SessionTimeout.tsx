@@ -38,7 +38,7 @@ const SessionTimeout: React.FC = () => {
             console.log('🔄 Intentando refrescar token...');
 
             // ✅ CORRECCIÓN: Usar la IP correcta del servidor (antes era localhost:8080)
-            const response = await fetch("http://10.225.16.248:8080/auth/refresh", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/auth/refresh`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
