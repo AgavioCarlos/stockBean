@@ -22,7 +22,7 @@ public interface PantallaRepository extends JpaRepository<Pantallas, Integer> {
             FROM RolPermisos rp
             INNER JOIN PantallasPermisos pp ON pp.permiso.idPermiso = rp.permiso.idPermiso
             INNER JOIN pp.pantalla pt
-            WHERE rp.rol.id_rol = :idRol
+            WHERE rp.rol.id_rol = :idRol AND pp.status = true
             """)
     List<PantallaDTO> findByIdPantalla(@Param("idRol") Integer idRol);
 
