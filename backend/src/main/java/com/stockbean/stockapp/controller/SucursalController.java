@@ -12,10 +12,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.stockbean.stockapp.model.tablas.Sucursal;
+import com.stockbean.stockapp.security.UsuarioPrincipal;
 import com.stockbean.stockapp.service.SucursalService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequestMapping("/sucursales")
+@PreAuthorize("hasAnyRole('SISTEM', 'ADMIN', 'GERENTE')")
 public class SucursalController {
 
     @Autowired
@@ -26,9 +30,9 @@ public class SucursalController {
         return sucursalService.listarTodos();
     }
 
-    @GetMapping("/solicitante/{idUsuarioSolicitante}")
-    public ResponseEntity<List<Sucursal>> listarSucursalesPorSolicitante(@PathVariable Integer idUsuarioSolicitante) {
-        return ResponseEntity.ok(sucursalService.listarSucursalesPorSolicitante(idUsuarioSolicitante));
+    @GetMapping("/user")
+    public ResponseEntity<List<Sucursal>> listarSucursales(@AuthenticationPrincipal UsuarioPrincipal principal) {
+        return ResponseEntity.ok(sucursalService.listarSucursales(principal.getId()));
     }
 
     @GetMapping("/empresa/{idEmpresa}")
@@ -44,8 +48,8 @@ public class SucursalController {
 
     @PostMapping
     public ResponseEntity<Sucursal> guardar(@RequestBody Sucursal sucursal,
-            @org.springframework.web.bind.annotation.RequestParam Integer idUsuario) {
-        Sucursal nuevaSucursal = sucursalService.guardar(sucursal, idUsuario);
+            @AuthenticationPrincipal UsuarioPrincipal principal) {
+        Sucursal nuevaSucursal = sucursalService.guardar(sucursal, principal.getId());
         return ResponseEntity.ok(nuevaSucursal);
     }
 

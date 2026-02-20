@@ -17,10 +17,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.stockbean.stockapp.model.tablas.Inventario;
 import com.stockbean.stockapp.service.InventarioService;
+import org.springframework.security.access.prepost.PreAuthorize;
+
+import com.stockbean.stockapp.security.UsuarioPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequestMapping("/inventario")
 @CrossOrigin("*")
+@PreAuthorize("hasAnyRole('SISTEM', 'ADMIN', 'GERENTE', 'CAJERO')")
 public class InventarioController {
 
     @Autowired
@@ -28,11 +33,11 @@ public class InventarioController {
 
     @GetMapping
     public ResponseEntity<?> listar(
-            @RequestParam(required = true) Integer idUsuario,
+            @AuthenticationPrincipal UsuarioPrincipal principal,
             @RequestParam(required = true) Integer idSucursal) {
 
         try {
-            List<Inventario> inventario = inventarioService.listarPorUsuarioYSucursal(idUsuario, idSucursal);
+            List<Inventario> inventario = inventarioService.listarPorUsuarioYSucursal(principal.getId(), idSucursal);
             return ResponseEntity.ok(inventario);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -42,9 +47,9 @@ public class InventarioController {
     @PostMapping
     public ResponseEntity<?> guardar(
             @RequestBody Inventario inventario,
-            @RequestParam Integer idUsuario) {
+            @AuthenticationPrincipal UsuarioPrincipal principal) {
         try {
-            return ResponseEntity.ok(inventarioService.guardar(inventario, idUsuario));
+            return ResponseEntity.ok(inventarioService.guardar(inventario, principal.getId()));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -53,23 +58,14 @@ public class InventarioController {
     @PutMapping
     public ResponseEntity<?> actualizar(
             @RequestBody Inventario inventario,
-            @RequestParam Integer idUsuario) {
-        // Assuming ID is inside the body, or add @PathVariable ID logic if preferred.
-        // But previous controller body-based.
-        // It's better to align with previous controller `actualizar`.
-        // Previous controller had `actualizar(@RequestBody Inventario)` where `id` is
-        // in body.
-        // But PUT convention usually has ID in URL.
-        // Let's support ID in body for now as existing code implied.
-        // Wait, existing controller had `@PutMapping public ResponseEntity<Inventario>
-        // actualizar(@RequestBody Inventario inventario)`.
+            @AuthenticationPrincipal UsuarioPrincipal principal) {
 
         try {
             if (inventario.getId_inventario() == null) {
                 return ResponseEntity.badRequest().body("ID de inventario es requerido para actualizar");
             }
             return ResponseEntity
-                    .ok(inventarioService.actualizar(inventario.getId_inventario(), inventario, idUsuario));
+                    .ok(inventarioService.actualizar(inventario.getId_inventario(), inventario, principal.getId()));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -79,9 +75,9 @@ public class InventarioController {
     public ResponseEntity<?> actualizarPorId(
             @PathVariable Integer id,
             @RequestBody Inventario inventario,
-            @RequestParam Integer idUsuario) {
+            @AuthenticationPrincipal UsuarioPrincipal principal) {
         try {
-            return ResponseEntity.ok(inventarioService.actualizar(id, inventario, idUsuario));
+            return ResponseEntity.ok(inventarioService.actualizar(id, inventario, principal.getId()));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -90,9 +86,9 @@ public class InventarioController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(
             @PathVariable Integer id,
-            @RequestParam Integer idUsuario) {
+            @AuthenticationPrincipal UsuarioPrincipal principal) {
         try {
-            inventarioService.eliminar(id, idUsuario);
+            inventarioService.eliminar(id, principal.getId());
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

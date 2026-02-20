@@ -102,8 +102,8 @@ public class AuthController {
         System.out.println("Usuario: " + user.getId_usuario());
         List<EmpresaUsuarioDTO> empresaUsuario = empresaUsuarioService.validarEmpresaUsuario(user.getId_usuario());
 
-        // Generar el token JWT con el id_rol incluido
-        final String jwt = jwtUtil.generateToken(userDetails, user.getId_rol());
+        // Generar el token JWT con el id_rol y nombre_rol incluidos
+        final String jwt = jwtUtil.generateToken(userDetails, user.getId_rol(), user.getNombre_rol());
 
         Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("success", true);
@@ -141,8 +141,8 @@ public class AuthController {
                 // ✅ CORRECCIÓN: Obtener el usuario completo para incluir id_rol
                 Usuario user = usuarioService.findByCuenta(username);
 
-                // ✅ CORRECCIÓN: Generar nuevo token con id_rol (igual que en login)
-                String newToken = jwtUtil.generateToken(userDetails, user.getId_rol());
+                // ✅ CORRECCIÓN: Generar nuevo token con id_rol y nombre_rol
+                String newToken = jwtUtil.generateToken(userDetails, user.getId_rol(), user.getNombre_rol());
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
                 response.put("token", newToken);

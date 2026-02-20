@@ -11,7 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import com.stockbean.stockapp.security.UsuarioPrincipal;
 import com.stockbean.stockapp.service.PersonaService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import lombok.NonNull;
+
 import java.util.List;
 import com.stockbean.stockapp.model.tablas.Persona;
 
@@ -23,9 +27,9 @@ public class PersonaController {
     @Autowired
     private PersonaService personaService;
 
-    @GetMapping("/solicitante/{idUsuarioSolicitante}")
-    public ResponseEntity<List<Persona>> listarPersonasPorSolicitante(@PathVariable Integer idUsuarioSolicitante) {
-        return ResponseEntity.ok(personaService.listarPersonasPorSolicitante(idUsuarioSolicitante));
+    @GetMapping("/mis-personas")
+    public ResponseEntity<List<Persona>> listarMisPersonas(@AuthenticationPrincipal UsuarioPrincipal principal) {
+        return ResponseEntity.ok(personaService.listarPersonasPorSolicitante(principal.getId()));
     }
 
     @GetMapping
