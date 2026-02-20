@@ -2,6 +2,7 @@ package com.stockbean.stockapp.model.admin;
 
 import com.stockbean.stockapp.model.catalogos.Permiso;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -32,4 +33,6 @@ public class PantallasPermisos {
     @JoinColumn(name = "id_permiso")
     private Permiso permiso;
 
+    @Column(name = "status")
+    private Boolean status;
 }

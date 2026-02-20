@@ -1,7 +1,8 @@
 package com.stockbean.stockapp.model.tablas;
 
-
 import java.time.LocalDateTime;
+
+import com.stockbean.stockapp.model.catalogos.Rol;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "tbl_usuarios")
-@Data 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Usuario {
@@ -28,13 +29,26 @@ public class Usuario {
     @JoinColumn(name = "id_persona", nullable = false)
 
     private Persona persona;
-    
+
     private String cuenta;
     private String password;
-    private Integer id_rol;
+
+    @ManyToOne
+    @JoinColumn(name = "id_rol")
+    private Rol rol;
+
     private Boolean status;
 
-    private LocalDateTime fecha_alta; 
+    private LocalDateTime fecha_alta;
     private LocalDateTime fecha_baja;
     private LocalDateTime fecha_ultima_modificacion;
+
+    // Métodos de conveniencia para compatibilidad y acceso fácil al rol
+    public Integer getId_rol() {
+        return (rol != null) ? rol.getId_rol() : null;
+    }
+
+    public String getNombre_rol() {
+        return (rol != null) ? rol.getNombre() : null;
+    }
 }
