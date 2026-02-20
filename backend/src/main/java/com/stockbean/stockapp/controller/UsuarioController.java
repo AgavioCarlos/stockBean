@@ -11,9 +11,10 @@ import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.service.UsuarioService;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.stockbean.stockapp.security.UsuarioPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -22,13 +23,16 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    @GetMapping("/solicitante/{idUsuarioSolicitante}")
-    public ResponseEntity<List<Usuario>> listarUsuarios(@PathVariable Integer idUsuarioSolicitante) {
-        return ResponseEntity.ok(usuarioService.listarUsuariosPorSolicitante(idUsuarioSolicitante));
+    @PreAuthorize("hasAnyRole('SISTEM', 'ADMIN')")
+    @GetMapping("/mis-usuarios")
+    public ResponseEntity<List<Usuario>> listarUsuarios(@AuthenticationPrincipal UsuarioPrincipal principal) {
+        return ResponseEntity.ok(usuarioService.listarUsuariosPorSolicitante(principal.getId()));
     }
 
-    @PostMapping("/crear/{idUsuarioCreador}")
-    public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario, @PathVariable Integer idUsuarioCreador) {
-        return ResponseEntity.ok(usuarioService.crearUsuario(usuario, idUsuarioCreador));
+    @PreAuthorize("hasAnyRole('SISTEM', 'ADMIN')")
+    @PostMapping("/crear")
+    public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario,
+            @AuthenticationPrincipal UsuarioPrincipal principal) {
+        return ResponseEntity.ok(usuarioService.crearUsuario(usuario, principal.getId()));
     }
 }

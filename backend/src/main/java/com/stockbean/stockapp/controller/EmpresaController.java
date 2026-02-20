@@ -15,8 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import com.stockbean.stockapp.dto.EmpresaUsuarioDTO;
 import com.stockbean.stockapp.model.admin.Empresa;
+import com.stockbean.stockapp.security.UsuarioPrincipal;
 import com.stockbean.stockapp.service.EmpresaService;
 import lombok.NonNull;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequestMapping("/empresas")
@@ -27,6 +30,7 @@ public class EmpresaController {
     @Autowired
     private EmpresaService empresaService;
 
+    @PreAuthorize("hasRole('SISTEM')")
     @GetMapping
     public List<Empresa> listarTodos() {
         logger.info("🔹 GET /empresas - Iniciando listarTodos()");
@@ -40,18 +44,21 @@ public class EmpresaController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('SISTEM', 'ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<Empresa> obtenerPorId(@PathVariable @NonNull Integer id) {
         Empresa empresa = empresaService.obtenerPorId(id);
         return ResponseEntity.ok(empresa);
     }
 
+    @PreAuthorize("hasRole('SISTEM')")
     @PostMapping
     public ResponseEntity<Empresa> guardar(@RequestBody Empresa empresa) {
         Empresa resultado = empresaService.guardar(empresa);
         return ResponseEntity.ok(resultado);
     }
 
+    @PreAuthorize("hasAnyRole('SISTEM', 'ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<Empresa> actualizar(@PathVariable @NonNull Integer id,
             @RequestBody Empresa empresaActualizado) {
@@ -59,6 +66,7 @@ public class EmpresaController {
         return ResponseEntity.ok(empresa);
     }
 
+    @PreAuthorize("hasRole('SISTEM')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Empresa> eliminar(@PathVariable @NonNull Integer id) {
         empresaService.eliminar(id);
@@ -72,10 +80,10 @@ public class EmpresaController {
         return ResponseEntity.ok(empresas);
     }
 
-    @PostMapping("/configurar/{idUsuario}")
+    @PostMapping("/configurar")
     public ResponseEntity<Empresa> configurarEmpresa(@RequestBody Empresa empresa,
-            @PathVariable @NonNull Integer idUsuario) {
-        Empresa resultado = empresaService.configurarEmpresa(empresa, idUsuario);
+            @AuthenticationPrincipal UsuarioPrincipal principal) {
+        Empresa resultado = empresaService.configurarEmpresa(empresa, principal.getId());
         return ResponseEntity.ok(resultado);
     }
 
