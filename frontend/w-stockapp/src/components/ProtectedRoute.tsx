@@ -33,8 +33,11 @@ const ProtectedRoute = ({
     const location = useLocation();
     const { hasAccess, loading } = usePantallas();
 
+    console.log(`ProtectedRoute: Checking access for ${location.pathname}. Auth: ${isAuthenticated}, Loading: ${loading}, RequirePerm: ${requirePermission}`);
+
     // 1️⃣ Si no está autenticado, redirigir a login
     if (!isAuthenticated) {
+        console.warn("ProtectedRoute: Not authenticated. Redirecting to login.");
         return <Navigate to="/login" replace />;
     }
 
@@ -45,6 +48,7 @@ const ProtectedRoute = ({
 
     // 3️⃣ Esperar a que carguen las pantallas
     if (loading) {
+        console.log("ProtectedRoute: Loading permissions...");
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
@@ -66,12 +70,16 @@ const ProtectedRoute = ({
     }
 
     // 5️⃣ Validar si tiene acceso a la ruta
-    if (!hasAccess(currentPath)) {
+    const access = hasAccess(currentPath);
+    console.log(`ProtectedRoute: hasAccess(${currentPath}) = ${access}`);
+
+    if (!access) {
         console.warn(`⛔ Acceso denegado a: ${currentPath}`);
         return <Navigate to="/unauthorized" replace />;
     }
 
     // 6️⃣ Si pasa todas las validaciones, renderizar el componente hijo
+    console.log(`ProtectedRoute: Access granted to ${currentPath}. Rendering children.`);
     return children;
 };
 

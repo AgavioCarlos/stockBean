@@ -1,21 +1,3 @@
-/**
- * PaymentGateway - Componente de pasarela de pago simulada
- * 
- * Características:
- * - Simulación de PayPal
- * - Formulario de tarjeta de crédito
- * - Validaciones de tarjeta
- * - Proceso de pago simulado con loader
- * - Confirmación de pago exitoso
- * - Diseño moderno con glassmorphism
- * 
- * Props:
- * - plan: Plan seleccionado para contratar
- * - isOpen: Estado del modal
- * - onClose: Función para cerrar el modal
- * - onPaymentSuccess: Callback cuando el pago es exitoso
- */
-
 import { useState } from 'react';
 import { FaCreditCard, FaPaypal, FaTimes, FaCheckCircle, FaSpinner } from 'react-icons/fa';
 import Swal from 'sweetalert2';
