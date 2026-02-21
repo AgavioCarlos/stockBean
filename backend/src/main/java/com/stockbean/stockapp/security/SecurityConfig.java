@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -75,7 +77,8 @@ public class SecurityConfig {
 
         // IMPORTANTE: si usas Authorization o cookies, NO uses "*"
         cfg.setAllowedOrigins(
-                List.of("http://10.225.16.51:5173", "http://10.225.16.248:5173", "http://localhost:5173"));
+                List.of("http://10.225.16.51:5173", "http://10.225.16.248:5173", "http://localhost:5173",
+                        "https://stockapp.agaviocarlos.com", "https://stockapp.agaviocarlos.com:5173"));
         // Si necesitas patrones usa:
         // cfg.setAllowedOriginPatterns(List.of("http://localhost:*"));
 

@@ -33,6 +33,10 @@ public class JwtUtil {
         return extractClaim(token, claims -> claims.get("id_rol", Integer.class));
     }
 
+    public String extractNombreRol(String token) {
+        return extractClaim(token, claims -> claims.get("nombre_rol", String.class));
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -58,12 +62,14 @@ public class JwtUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        // Extraer rol de las authorities si es necesario, o pasar null
         return createToken(claims, userDetails.getUsername());
     }
 
-    public String generateToken(UserDetails userDetails, Integer idRol) {
+    public String generateToken(UserDetails userDetails, Integer idRol, String nombreRol) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id_rol", idRol);
+        claims.put("nombre_rol", nombreRol);
         return createToken(claims, userDetails.getUsername());
     }
 
