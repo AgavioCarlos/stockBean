@@ -30,8 +30,12 @@ const SucursalesTable: React.FC<SucursalesTableProps> = ({ sucursales, onRowClic
                 cancelButtonText: "Cancelar",
             }).then((result) => {
                 if (result.isConfirmed) {
-                    onDelete(data.idSucursal, !data.status);
-                    // The notification is handled in the parent component
+                    const id = data.idSucursal ?? data.id_sucursal;
+                    if (id !== undefined) {
+                        onDelete(id, !data.status);
+                    } else {
+                        Swal.fire('Error', 'No se pudo identificar la sucursal.', 'error');
+                    }
                 }
             });
         };

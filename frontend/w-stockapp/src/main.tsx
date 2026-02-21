@@ -23,11 +23,12 @@ import Administrador from './pages/Administrador';
 import Sucursales from './pages/Sucursales';
 import Usuarios from './pages/Usuarios';
 import UsuariosSucursales from './pages/UsuariosSucursales';
-import Inventario from './pages/Inventario';
+import Inventario from './features/inventario/Inventario';
 import HistorialPrecios from './pages/HistorialPrecios';
 import Empresas from './pages/Empresas';
 import EmpresaUsuario from './pages/EmpresaUsuario';
 import TestData from './pages/TestData';
+import Unauthorized from './pages/Unauthorized'; // Página de acceso denegado
 
 const router = createBrowserRouter([
   {
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/unauthorized",
+    element: <Unauthorized />, // No requiere ProtectedRoute porque necesitamos mostrarla
   },
   {
     path: "/productos",
@@ -134,10 +139,12 @@ const router = createBrowserRouter([
   },
 ]);
 
+import { AlertProvider } from './context/AlertContext';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    {/* <Login />
-    <Persona /> */}
-    <RouterProvider router={router} />
+    <AlertProvider>
+      <RouterProvider router={router} />
+    </AlertProvider>
   </React.StrictMode>,
 );

@@ -60,15 +60,8 @@ function Usuarios() {
     const itemsPerPage = 8;
 
     useEffect(() => {
-        const userDataString = localStorage.getItem('user_data');
-        if (!userDataString) {
-            Swal.fire('Error', 'No se encontró información del usuario.', 'error');
-            return;
-        }
-        const userData = JSON.parse(userDataString);
-        const idUsuario = userData.id_usuario || userData.id;
-
-        Promise.all([consultarUsuarios(idUsuario), consultarRoles()])
+        setLoading(true);
+        Promise.all([consultarUsuarios(), consultarRoles()])
             .then(([usersData, rolesData]) => {
                 setUsuarios(usersData);
                 setRoles(rolesData);
@@ -139,24 +132,20 @@ function Usuarios() {
         };
 
         try {
-            const userDataString = localStorage.getItem('user_data');
-            const userData = JSON.parse(userDataString || '{}');
-            const idUsuario = userData.id_usuario || userData.id;
-
             if (usuarioSeleccionado) {
                 // Update
                 // Note: Updating password might require specific handling if empty
                 await actualizarUsuario(usuarioSeleccionado.id_usuario, payload);
                 Swal.fire('Actualizado', 'Usuario actualizado correctamente', 'success');
                 // Refresh list
-                const updatedUsers = await consultarUsuarios(idUsuario);
+                const updatedUsers = await consultarUsuarios();
                 setUsuarios(updatedUsers);
                 setVista("lista");
             } else {
                 // Create
-                await crearUsuario(payload, idUsuario);
+                await crearUsuario(payload);
                 Swal.fire('Creado', 'Usuario creado correctamente', 'success');
-                const updatedUsers = await consultarUsuarios(idUsuario);
+                const updatedUsers = await consultarUsuarios();
                 setUsuarios(updatedUsers);
                 setVista("lista");
             }

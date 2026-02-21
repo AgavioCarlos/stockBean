@@ -26,8 +26,8 @@ export async function actualizarEmpresa(id: number, empresa: any, signal?: Abort
     });
 }
 
-export async function configurarEmpresa(empresa: any, idUsuario: number, signal?: AbortSignal) {
-    return apiFetch(`/empresas/configurar/${idUsuario}`, {
+export async function configurarEmpresa(empresa: any, signal?: AbortSignal) {
+    return apiFetch(`/empresas/configurar`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
