@@ -6,6 +6,8 @@ type FetcherMap = Record<string, (signal?: AbortSignal) => Promise<any>>;
 const fetchers: FetcherMap = {
   roles: Lovs.Roles,
   unidades: Lovs.Unidades,
+  productos: Lovs.Productos,
+  sucursales: Lovs.Sucursales,
 };
 
 export const useLOVs = (keys: string[] = []) => {
@@ -21,7 +23,7 @@ export const useLOVs = (keys: string[] = []) => {
     const controller = new AbortController();
     const signal = controller.signal;
 
-  const keysToFetch = keys && keys.length > 0 ? keys : Object.keys(fetchers);
+    const keysToFetch = keys && keys.length > 0 ? keys : Object.keys(fetchers);
 
     let mounted = true;
 

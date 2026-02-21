@@ -9,6 +9,11 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    allowedHosts: ['stockapp', 'localhost']
+    allowedHosts: ['stockapp', 'localhost', 'stockapp.agaviocarlos.com']
+  },
+  preview: {
+    host: true,
+    port: 5173,
+    allowedHosts: ['stockapp', 'localhost', 'stockapp.agaviocarlos.com']
   }
 })

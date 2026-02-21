@@ -4,7 +4,7 @@ import MainLayout from "../../components/Layouts/MainLayout";
 import Tabs, { TabItem } from "../../components/Tabs";
 import { IoMdList, IoMdAddCircle } from "react-icons/io";
 import { MdDescription } from "react-icons/md";
-import Swal from 'sweetalert2';
+import { useAlerts } from "../../hooks/useAlerts";
 import PersonaTable from "../../components/PersonaTable";
 import PersonaDetalle from "../../components/PersonaDetalle";
 
@@ -21,6 +21,7 @@ function Persona() {
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [loading, setLoading] = useState(true);
   const [vista, setVista] = useState("lista");
+  const { success, error: showError } = useAlerts();
 
   // Filter state
   const [rowDataFiltrada, setRowDataFiltrada] = useState<Persona[]>([]);
@@ -43,15 +44,8 @@ function Persona() {
     Updated to fetch personas based on current user's role/company
   */
   const cargarPersonas = () => {
-    const userDataString = localStorage.getItem('user_data');
-    if (!userDataString) {
-      // Handle error or redirect
-      return;
-    }
-    const userData = JSON.parse(userDataString);
-    const idUsuario = userData.id_usuario || userData.id;
-
-    consultarPersonas(idUsuario)
+    setLoading(true);
+    consultarPersonas()
       .then((data: Persona[]) => {
         setPersonas(data);
         setLoading(false);
@@ -122,13 +116,10 @@ function Persona() {
 
       if (res.ok) {
         setPersonas(prev => prev.map(p => p.id_persona === id ? { ...p, status: newStatus } : p));
-        Swal.fire({
-          icon: 'success',
-          title: newStatus ? 'Reactivado' : 'Desactivado',
-          text: `La persona ha sido ${newStatus ? 'reactivada' : 'desactivada'} correctamente.`,
-          timer: 1500,
-          showConfirmButton: false
-        });
+        success(
+          newStatus ? 'Reactivado' : 'Desactivado',
+          `La persona ha sido ${newStatus ? 'reactivada' : 'desactivada'} correctamente.`
+        );
         if (!newStatus) setVista("lista");
       } else {
         throw new Error("Error updating status");
@@ -136,7 +127,7 @@ function Persona() {
 
     } catch (error) {
       console.error("Error al cambiar estado:", error);
-      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cambiar el estado.' });
+      showError('Error', 'No se pudo cambiar el estado.');
     }
   };
 
@@ -176,16 +167,16 @@ function Persona() {
 
       if (personaSeleccionada) {
         setPersonas(prev => prev.map(p => p.id_persona === data.id_persona ? data : p));
-        Swal.fire({ icon: 'success', title: 'Actualizado', text: 'Persona actualizada correctamente.', timer: 1500, showConfirmButton: false });
+        success('Actualizado', 'Persona actualizada correctamente.');
       } else {
         setPersonas(prev => [...prev, data]);
-        Swal.fire({ icon: 'success', title: 'Creado', text: 'Persona creada correctamente.', timer: 1500, showConfirmButton: false });
+        success('Creado', 'Persona creada correctamente.');
         nuevoDesdeDetalle();
       }
 
     } catch (error) {
       console.error(error);
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Hubo un error al guardar los datos.' });
+      showError('Error', 'Hubo un error al guardar los datos.');
     }
   };
 

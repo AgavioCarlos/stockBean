@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/Layouts/MainLayout";
 import { consultarSucursales, consultarSucursalesPorSolicitante, crearSucursal, actualizarSucursal, eliminarSucursal, Sucursal } from "../services/SucursalService";
-import Swal from 'sweetalert2';
+import { useAlerts } from "../hooks/useAlerts";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { IoMdAddCircle, IoMdList } from "react-icons/io";
 import { MdDescription } from "react-icons/md";
@@ -19,6 +19,7 @@ function Sucursales() {
     const navigate = useNavigate();
     const [sucursales, setSucursales] = useState<Sucursal[]>([]);
     const [loading, setLoading] = useState(true);
+    const { success, error: showError, confirm } = useAlerts();
 
     // Form State
     const [nombre, setNombre] = useState("");
@@ -54,29 +55,11 @@ function Sucursales() {
     const cargarDatos = async () => {
         setLoading(true);
         try {
-            const userDataString = localStorage.getItem('user_data');
-            if (userDataString) {
-                const userData = JSON.parse(userDataString);
-                // Try id_usuario first, fallback to id (some implementations vary)
-                const idUsuario = userData.id_usuario || userData.id;
-
-                if (idUsuario) {
-                    const data = await consultarSucursalesPorSolicitante(idUsuario);
-                    setSucursales(data);
-                } else {
-                    console.warn("No user ID found in user_data");
-                    // Fallback to fetch all or empty
-                    const data = await consultarSucursales();
-                    setSucursales(data);
-                }
-            } else {
-                console.warn("No user_data found in localStorage");
-                const data = await consultarSucursales();
-                setSucursales(data);
-            }
+            const data = await consultarSucursalesPorSolicitante();
+            setSucursales(data);
         } catch (error) {
             console.error("Error loading sucursales", error);
-            // Fallback
+            // Fallback to fetch all or empty
             const data = await consultarSucursales();
             setSucursales(data);
         }
@@ -100,52 +83,41 @@ function Sucursales() {
 
         try {
             if (sucursalSeleccionada) {
-                await actualizarSucursal(sucursalSeleccionada.idSucursal, payload); // Update
-                await Swal.fire({ icon: 'success', title: 'Actualizado', text: 'Sucursal actualizada correctamente', timer: 1500, showConfirmButton: false });
-            } else {
-                // Get User ID for creation
-                const userDataString = localStorage.getItem('user_data');
-                let idUsuario = 0;
-                if (userDataString) {
-                    const userData = JSON.parse(userDataString);
-                    idUsuario = userData.id_usuario || userData.id;
+                const id = sucursalSeleccionada.idSucursal ?? sucursalSeleccionada.id_sucursal;
+                if (id === undefined) {
+                    showError('Error', 'No se pudo identificar la sucursal para actualizar');
+                    return;
                 }
-
-                await crearSucursal(payload, idUsuario); // Create with user ID
-                await Swal.fire({ icon: 'success', title: 'Creado', text: 'Sucursal creada correctamente', timer: 1500, showConfirmButton: false });
+                await actualizarSucursal(id, payload);
+                success('Actualizado', 'Sucursal actualizada correctamente');
+            } else {
+                await crearSucursal(payload);
+                success('Creado', 'Sucursal creada correctamente');
             }
             cargarDatos();
             setVista("lista");
             limpiarFormulario();
         } catch (error) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo guardar la sucursal' });
+            showError('Error', 'No se pudo guardar la sucursal');
         }
     };
 
     const handleDelete = async (id: number, currentStatus?: boolean) => {
-        const confirm = await Swal.fire({
-            title: '¿Estás seguro?',
-            text: "Cambiarás el estado de la sucursal",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, cambiar',
-            cancelButtonText: 'Cancelar'
-        });
+        const isConfirmed = await confirm(
+            '¿Estás seguro?',
+            "Cambiarás el estado de la sucursal",
+            'Sí, cambiar',
+            'Cancelar'
+        );
 
-        if (confirm.isConfirmed) {
+        if (isConfirmed) {
             try {
-                // If logic is just to toggle status, ideally backend handles or we send update. 
-                // Assuming logic delete in service (eliminar calls delete endpoint which does logical delete)
-                // However, onDelete prop in table passes usually just ID.
-                // We will use eliminarSucursal which maps to DELETE endpoint (logical delete)
                 await eliminarSucursal(id);
-                await Swal.fire('Estado cambiado', 'La sucursal ha sido actualizada.', 'success');
+                success('Estado cambiado', 'La sucursal ha sido actualizada.');
                 cargarDatos();
                 if (vista === 'detalle') setVista('lista');
             } catch (error) {
-                Swal.fire('Error', 'No se pudo eliminar la sucursal', 'error');
+                showError('Error', 'No se pudo eliminar la sucursal');
             }
         }
     };
