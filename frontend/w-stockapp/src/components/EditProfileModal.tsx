@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaUser, FaEnvelope, FaIdCard, FaCheckCircle, FaSave } from 'react-icons/fa';
 import Swal from 'sweetalert2';
-import { actualizarPersona } from '../services/Persona';
+import { actualizarPersona } from '../features/persona/PersonaService';
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -242,8 +242,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pe
                             type="submit"
                             disabled={isProcessing}
                             className={`flex-[2] py-4 px-6 rounded-2xl font-bold text-white transition-all duration-300 flex items-center justify-center gap-2 shadow-lg ${isProcessing
-                                    ? 'bg-gray-400 cursor-not-allowed shadow-none'
-                                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-[1.02] hover:shadow-blue-200 active:scale-[0.98]'
+                                ? 'bg-gray-400 cursor-not-allowed shadow-none'
+                                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-[1.02] hover:shadow-blue-200 active:scale-[0.98]'
                                 }`}
                         >
                             {isProcessing ? (
