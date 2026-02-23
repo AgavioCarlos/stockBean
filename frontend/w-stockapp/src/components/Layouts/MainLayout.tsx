@@ -6,9 +6,10 @@ import { useResponsive } from '../../hooks/useResponsive';
 
 interface MainLayoutProps {
     children: React.ReactNode;
+    rightPanel?: React.ReactNode;
 }
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const MainLayout: React.FC<MainLayoutProps> = ({ children, rightPanel }) => {
     const { isMobile } = useResponsive();
     const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -62,8 +63,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     marginLeft: desktopMargin
                 }}
             >
-                <div className="max-w-[1600px] mx-auto">
-                    {children}
+                <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row gap-6 items-start">
+                    <div className="flex-1 w-full min-w-0">
+                        {children}
+                    </div>
+                    {rightPanel && (
+                        <aside className="w-full lg:w-[320px] xl:w-[380px] shrink-0 lg:sticky lg:top-24 max-h-[calc(100vh-8rem)] overflow-y-auto hidden lg:flex flex-col gap-6">
+                            {rightPanel}
+                        </aside>
+                    )}
                 </div>
             </main>
         </div>

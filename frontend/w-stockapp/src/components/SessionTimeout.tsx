@@ -11,9 +11,8 @@ interface DecodedToken {
 
 const SessionTimeout: React.FC = () => {
     const navigate = useNavigate();
-    // Use a ref to track if the warning modal is currently shown to prevent duplicates
-    const isWarningShownRef = useRef(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastActivityRef = useRef<number>(Date.now());
 
     const logout = () => {
         // Limpiar todo el localStorage al hacer logout
@@ -68,17 +67,18 @@ const SessionTimeout: React.FC = () => {
                     }
 
                     Swal.fire({
+                        toast: true,
+                        position: 'bottom-end',
                         icon: 'success',
-                        title: 'Sesión Extendida',
-                        text: 'Tu sesión ha sido extendida exitosamente.',
-                        timer: 1500,
-                        showConfirmButton: false
+                        title: 'Sesión extendida',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        background: '#f8fafc',
+                        color: '#1e293b'
                     });
 
                     console.log('✅ Token refrescado exitosamente');
-
-                    // Reset the check loop
-                    startSessionCheck();
                 } else {
                     console.error('❌ Refresh falló: respuesta sin token válido', data);
                     throw new Error("Token refresh failed: " + (data.mensaje || 'Unknown error'));
@@ -120,61 +120,17 @@ const SessionTimeout: React.FC = () => {
             const currentTime = Date.now() / 1000;
             const timeLeft = decoded.exp - currentTime;
 
-            // Ensure we are not already showing the warning
-            if (timeLeft < 300 && timeLeft > 0 && !isWarningShownRef.current) { // Less than 5 minutes
-                isWarningShownRef.current = true;
+            // Ensure we check when less than 5 minutes remain
+            if (timeLeft < 300 && timeLeft > 0) {
+                const idleTime = Date.now() - lastActivityRef.current;
 
-                let timerInterval: ReturnType<typeof setTimeout>;
-                Swal.fire({
-                    title: 'Tu sesión está por expirar',
-                    html: 'Se cerrará la sesión en <b>5:00</b> minutos.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Extender sesión',
-                    cancelButtonText: 'Cerrar sesión',
-                    allowOutsideClick: false,
-                    timer: timeLeft * 1000, // Auto close when expired
-                    timerProgressBar: true,
-                    didOpen: () => {
-                        const b = Swal.getHtmlContainer()?.querySelector('b');
-                        timerInterval = setInterval(() => {
-                            const newToken = localStorage.getItem('token');
-                            // If token changed externally (e.g. another tab), close this
-                            if (newToken !== token) {
-                                Swal.close();
-                                return;
-                            }
-
-                            // Recalculate time left
-                            const freshDecoded: DecodedToken = jwtDecode(newToken!);
-                            const freshTimeLeft = freshDecoded.exp - (Date.now() / 1000);
-
-                            if (b) {
-                                const minutes = Math.floor(freshTimeLeft / 60);
-                                const seconds = Math.floor(freshTimeLeft % 60);
-                                b.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                            }
-                        }, 1000);
-                    },
-                    willClose: () => {
-                        clearInterval(timerInterval);
-                        isWarningShownRef.current = false;
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Usuario hizo clic en "Extender sesión"
-                        console.log('👤 Usuario quiere extender sesión');
-                        refreshToken();
-                    } else if (result.dismiss === Swal.DismissReason.cancel) {
-                        // Usuario hizo clic en "Cerrar sesión"
-                        console.log('👤 Usuario cerró sesión manualmente');
-                        logout();
-                    } else if (result.dismiss === Swal.DismissReason.timer) {
-                        // El timer expiró
-                        console.log('⏰ Timer expiró');
-                        logout();
-                    }
-                });
+                // If user was active in the last 2 minutes, refresh automatically
+                if (idleTime < 2 * 60 * 1000) {
+                    console.log('👤 Usuario activo, extendiendo sesión automáticamente');
+                    refreshToken();
+                } else {
+                    console.log(`⏱️ Usuario inactivo. La sesión expirará en ${Math.floor(timeLeft)}s`);
+                }
             } else if (timeLeft <= 0) {
                 console.log('⏰ Sesión expirada');
                 logout();
@@ -195,10 +151,18 @@ const SessionTimeout: React.FC = () => {
     };
 
     useEffect(() => {
+        const handleUserActivity = () => {
+            lastActivityRef.current = Date.now();
+        };
+
+        const activityEvents = ['mousemove', 'keydown', 'scroll', 'click'];
+        activityEvents.forEach(event => window.addEventListener(event, handleUserActivity));
+
         startSessionCheck();
 
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
+            activityEvents.forEach(event => window.removeEventListener(event, handleUserActivity));
         };
     }, []);
 

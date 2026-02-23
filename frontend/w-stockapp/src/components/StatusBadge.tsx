@@ -17,8 +17,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     className = ""
 }) => {
     // If status is boolean, use trueText/falseText. If string, just use the string.
-    const isPositive = typeof status === 'boolean' ? status : !status.toLowerCase().includes('bajo');
-    const text = typeof status === 'boolean' ? (status ? trueText : falseText) : status;
+    const isPositive = typeof status === 'boolean' ? status : (status ? !String(status).toLowerCase().includes('bajo') : false);
+    const text = typeof status === 'boolean' ? (status ? trueText : falseText) : String(status || '');
 
     const baseStyles = "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all duration-300";
     const colors = isPositive

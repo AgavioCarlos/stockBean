@@ -33,12 +33,15 @@ interface Props<T> {
   columns: Column<T>[];
   title?: string;
   onRowClick?: (item: T) => void;
+  actionContent?: React.ReactNode;
 }
 
-export const DataTable = <T extends Record<string, any>>({ data, columns, title, onRowClick }: Props<T>) => {
+export const DataTable = <T extends Record<string, any>>({ data, columns, title, onRowClick, actionContent }: Props<T>) => {
   const [globalSearch, setGlobalSearch] = useState('');
   const [columnFilters, setColumnFilters] = useState<Record<number, string>>({});
   const [sortConfig, setSortConfig] = useState<{ key: keyof T; direction: 'asc' | 'desc' } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // Lógica de ordenamiento
   const handleSort = (key: keyof T) => {
@@ -87,57 +90,74 @@ export const DataTable = <T extends Record<string, any>>({ data, columns, title,
     return filtered;
   }, [data, globalSearch, columnFilters, sortConfig, columns]);
 
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [globalSearch, columnFilters, sortConfig, data]);
+
+  const totalPages = Math.ceil(processedData.length / ITEMS_PER_PAGE);
+  const paginatedData = processedData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   return (
-    <div className="flex flex-col w-full bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      {/* Header and Global Search */}
-      <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {title && <h3 className="text-lg font-bold text-gray-800">{title}</h3>}
-        <div className="relative max-w-md w-full">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-            <HiOutlineSearch className="h-5 w-5" />
-          </span>
-          <input
-            type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
-            placeholder="Buscar en todos los registros..."
-            value={globalSearch}
-            onChange={(e) => setGlobalSearch(e.target.value)}
-          />
+    <div className="flex flex-col w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      {/* Header, Search, and Actions */}
+      <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {title && <h3 className="text-base font-bold text-slate-800">{title}</h3>}
+
+        <div className={`flex flex-col sm:flex-row items-center gap-4 ${!title ? 'w-full justify-between' : 'ml-auto'}`}>
+          <div className="relative w-full sm:w-72 md:w-80">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+              <HiOutlineSearch className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <input
+              type="text"
+              className="block w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm bg-white placeholder-slate-400 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
+              placeholder="Buscar registros…"
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+            />
+          </div>
+
+          {actionContent && (
+            <div className="w-full sm:w-auto shrink-0">
+              {actionContent}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Table Container */}
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-slate-100">
+          <thead className="bg-slate-50/80">
             <tr>
               {columns.map((col, idx) => (
                 <th
                   key={`${String(col.key)}-${idx}`}
-                  className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider group"
+                  className="px-5 py-3 text-left text-[11px] font-bold text-slate-600 uppercase tracking-widest align-top group space-y-2.5"
                 >
                   <div
-                    className={`flex items-center gap-1 cursor-pointer hover:text-blue-600 transition-colors ${col.sortable !== false ? '' : 'pointer-events-none'}`}
+                    className={`flex items-center gap-1.5 cursor-pointer hover:text-blue-600 transition-colors w-max select-none ${col.sortable !== false ? '' : 'pointer-events-none'}`}
                     onClick={() => col.sortable !== false && handleSort(col.key)}
                   >
                     {col.label}
                     {col.sortable !== false && (
                       <span className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity">
-                        <HiChevronUp className={`h-2.5 w-2.5 ${sortConfig?.key === col.key && sortConfig.direction === 'asc' ? 'text-blue-600' : ''}`} />
-                        <HiChevronDown className={`h-2.5 w-2.5 ${sortConfig?.key === col.key && sortConfig.direction === 'desc' ? 'text-blue-600' : ''}`} />
+                        <HiChevronUp className={`h-[10px] w-[10px] -mb-0.5 ${sortConfig?.key === col.key && sortConfig.direction === 'asc' ? 'text-blue-600 opacity-100' : 'text-slate-400'}`} />
+                        <HiChevronDown className={`h-[10px] w-[10px] -mt-0.5 ${sortConfig?.key === col.key && sortConfig.direction === 'desc' ? 'text-blue-600 opacity-100' : 'text-slate-400'}`} />
                       </span>
                     )}
                   </div>
 
                   {/* Column Specific Filter */}
-                  <div className="mt-2 relative">
-                    <span className="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-400">
+                  <div className="relative w-full max-w-[140px] font-normal">
+                    <span className="absolute inset-y-0 left-0 pl-2 flex items-center text-slate-400 pointer-events-none">
                       <HiOutlineFilter className="h-3 w-3" />
                     </span>
                     <input
                       type="text"
-                      className="block w-full pl-7 pr-2 py-1 border border-gray-200 rounded-md text-[10px] bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 transition-all font-normal"
-                      placeholder={`Filtrar...`}
+                      className="block w-full pl-6 pr-2 py-1.5 border border-transparent rounded-lg text-[11px] bg-slate-100/70 text-slate-700 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      placeholder="Filtrar…"
                       value={columnFilters[idx] || ''}
                       onChange={(e) => setColumnFilters({ ...columnFilters, [idx]: e.target.value })}
                     />
@@ -146,16 +166,16 @@ export const DataTable = <T extends Record<string, any>>({ data, columns, title,
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-100">
-            {processedData.length > 0 ? (
-              processedData.map((row, i) => (
+          <tbody className="bg-white divide-y divide-slate-50">
+            {paginatedData.length > 0 ? (
+              paginatedData.map((row, i) => (
                 <tr
                   key={row.id || row.id_inventario || i}
                   onClick={() => onRowClick && onRowClick(row)}
-                  className={`transition-colors duration-150 group ${onRowClick ? 'cursor-pointer hover:bg-blue-50/50' : 'hover:bg-gray-50/50'}`}
+                  className={`transition-colors duration-200 group ${onRowClick ? 'cursor-pointer hover:bg-blue-50/40' : 'hover:bg-slate-50/50'}`}
                 >
                   {columns.map((col, idx) => (
-                    <td key={`${String(col.key)}-${idx}`} className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td key={`${String(col.key)}-${idx}`} className="px-5 py-3.5 whitespace-nowrap text-sm text-slate-600 font-medium align-middle">
                       {col.render ? col.render(row[col.key], row) : String(row[col.key] ?? '')}
                     </td>
                   ))}
@@ -163,12 +183,12 @@ export const DataTable = <T extends Record<string, any>>({ data, columns, title,
               ))
             ) : (
               <tr>
-                <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-400 italic">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="bg-gray-100 p-4 rounded-full">
+                <td colSpan={columns.length} className="px-6 py-16 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="bg-slate-50 p-4 rounded-full text-slate-300">
                       <HiOutlineSearch size={32} />
                     </div>
-                    <span>No se encontraron registros que coincidan con la búsqueda</span>
+                    <span className="text-slate-500 font-medium">No se encontraron registros</span>
                   </div>
                 </td>
               </tr>
@@ -177,10 +197,31 @@ export const DataTable = <T extends Record<string, any>>({ data, columns, title,
         </table>
       </div>
 
-      {/* Footer Info */}
-      <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-        <span>Mostrando {processedData.length} de {data.length} registros</span>
-        {processedData.length > 0 && <span>Total de registros: {processedData.length}</span>}
+      {/* Footer Info & Pagination */}
+      <div className="px-5 py-3.5 bg-white border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-500">
+        <span>Mostrando {paginatedData.length} de {processedData.length} registros (total: {data.length})</span>
+
+        {totalPages > 1 && (
+          <div className="flex items-center gap-4">
+            <span className="font-medium text-slate-400">Página {currentPage} de {totalPages}</span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-600 disabled:cursor-not-allowed"
+              >
+                Anterior
+              </button>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-600 disabled:cursor-not-allowed"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

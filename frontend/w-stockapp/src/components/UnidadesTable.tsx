@@ -1,4 +1,4 @@
-import { Unidad } from "../interfaces/producto.interface";
+import { Unidad } from "../features/producto/producto.interface";
 import Table from "./Table";
 
 interface UnidadesTableProps {

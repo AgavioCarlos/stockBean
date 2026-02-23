@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Unidad } from "../interfaces/producto.interface";
+import { Unidad } from "../features/producto/producto.interface";
 import { IoIosSave } from "react-icons/io";
 import { IoMdArrowBack } from "react-icons/io";
 import { MdBlock } from "react-icons/md";

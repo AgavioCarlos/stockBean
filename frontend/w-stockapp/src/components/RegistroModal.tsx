@@ -136,8 +136,14 @@ const RegistroModal: FC<RegistroModalProps> = ({ isOpen, onClose, selectedPlan }
                         console.warn('No se pudieron cargar pantallas:', err);
                     }
 
+                    if (loginData.empresa && loginData.empresa.length > 0) {
+                        localStorage.removeItem('requiresEmpresaConfig');
+                    } else {
+                        localStorage.setItem('requiresEmpresaConfig', 'true');
+                    }
+
                     success('¡Bienvenido!', 'Tu cuenta ha sido creada y has iniciado sesión correctamente.');
-                    navigate('/home');
+                    window.location.href = '/home'; // using window.location.href just like Login.tsx
                     onClose();
                 } else {
                     showAlert('Cuenta creada', 'Por favor inicia sesión manualmente.', 'info');

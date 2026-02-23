@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export interface TabItem {
   key: string;
@@ -21,42 +21,83 @@ const Tabs: React.FC<TabsProps> = ({
   extraContent,
 }) => {
   const activeContent = tabs.find((tab) => tab.key === activeTab)?.content;
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, opacity: 0 });
+
+  useEffect(() => {
+    const activeElement = tabRefs.current[activeTab];
+    if (activeElement) {
+      setIndicatorStyle({
+        left: activeElement.offsetLeft,
+        width: activeElement.offsetWidth,
+        opacity: 1
+      });
+    }
+  }, [activeTab, tabs]);
 
   return (
-    <div className="flex flex-col h-full w-full">
-      <div className="flex items-end justify-between">
-        {/* Tab Buttons Group */}
-        <div className="flex space-x-1">
+    <div className="flex flex-col h-full w-full bg-white relative">
+      <div className="flex items-center justify-between border-b border-slate-100 px-6 pt-2 bg-slate-50/50">
+        <div
+          role="tablist"
+          aria-label="Pestañas de navegación"
+          className="flex space-x-6 relative"
+        >
+          {/* Animated Indicator */}
+          <div
+            className="absolute bottom-0 h-0.5 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)] transition-all duration-300 ease-out"
+            style={{
+              left: `${indicatorStyle.left}px`,
+              width: `${indicatorStyle.width}px`,
+              opacity: indicatorStyle.opacity
+            }}
+            aria-hidden="true"
+          />
+
           {tabs.map((tab) => {
             const isActive = activeTab === tab.key;
             return (
-              <div
+              <button
                 key={tab.key}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`panel-${tab.key}`}
+                id={`tab-${tab.key}`}
+                ref={(el) => (tabRefs.current[tab.key] = el)}
                 onClick={() => onChange(tab.key)}
-                className={`flex items-center gap-2 px-10 py-2 font-semibold text-sm rounded-t-xl cursor-pointer transition-all duration-200 border-t border-x
+                className={`
+                  group relative flex items-center gap-2 py-4 text-sm font-semibold transition-all duration-300 outline-none
+                  focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50
                   ${isActive
-                    ? "bg-white text-blue-600 border-gray-200 border-b-white translate-y-[1px]"
-                    : "bg-gray-50 text-gray-500 border-transparent hover:bg-gray-100"
-                  }`}
-                style={{
-                  marginBottom: isActive ? -1 : 0,
-                  zIndex: isActive ? 10 : 0,
-                }}
+                    ? "text-blue-600"
+                    : "text-slate-500 hover:text-slate-800"}
+                `}
               >
-                {tab.icon}
-                {tab.label}
-              </div>
+                {tab.icon && (
+                  <span className={`transition-transform duration-300 ${isActive ? 'scale-110 text-blue-600' : 'scale-100 text-slate-400 group-hover:text-slate-600 group-hover:scale-110'}`}>
+                    {tab.icon}
+                  </span>
+                )}
+                <span className="tracking-wide">{tab.label}</span>
+              </button>
             );
           })}
         </div>
 
-        {/* Extra Content (e.g., Add Button) */}
-        <div className="mb-1">{extraContent}</div>
+        {extraContent && (
+          <div className="pb-2">
+            {extraContent}
+          </div>
+        )}
       </div>
 
-      {/* Content Container (The "Div" / "Sheet") */}
-      {/* Content Container (The "Div" / "Sheet") */}
-      <div className="bg-white rounded-xl rounded-tl-none shadow-sm p-6 overflow-auto border border-gray-200">
+      <div
+        role="tabpanel"
+        id={`panel-${activeTab}`}
+        aria-labelledby={`tab-${activeTab}`}
+        className="flex-1 overflow-hidden flex flex-col h-full bg-white outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 relative"
+        tabIndex={0}
+      >
         {activeContent}
       </div>
     </div>
