@@ -11,11 +11,11 @@ import {
     FaEnvelope,
     FaUserTag
 } from "react-icons/fa";
-import { consultarPersona } from "../services/Persona";
-import { consultarProductos } from "../services/Productos";
+import { consultarPersona } from "../features/persona/PersonaService";
+import { consultarProductos } from "../features/producto/ProductosService";
 import Breadcrumb from "../components/Breadcrumb";
-import ProductosTable from "../components/ProductosTable";
-import type { Productos } from "../interfaces/producto.interface";
+import ProductosTable from "../features/producto/components/ProductosTable";
+import type { Productos } from "../features/producto/producto.interface";
 import EditProfileModal from "../components/EditProfileModal";
 
 interface Persona {

@@ -3,7 +3,7 @@ import MainLayout from "../components/Layouts/MainLayout";
 import Tabs from "../components/Tabs";
 import { IoMdList, IoMdAddCircle } from "react-icons/io";
 import { MdDescription } from "react-icons/md";
-import { Unidad } from "../interfaces/producto.interface";
+import { Unidad } from "../features/producto/producto.interface";
 import { consultarUnidades, crearUnidad, actualizarUnidad, eliminarUnidad } from "../services/Unidad";
 import UnidadesTable from "../components/UnidadesTable";
 import UnidadesDetalle from "../components/UnidadesDetalle";
