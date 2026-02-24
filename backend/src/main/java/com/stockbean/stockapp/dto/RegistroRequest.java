@@ -1,4 +1,5 @@
 package com.stockbean.stockapp.dto;
+
 import java.time.LocalDateTime;
 
 import lombok.Getter;
@@ -18,6 +19,6 @@ public class RegistroRequest {
 
     private String cuenta;
     private String password;
-    
-    private Integer id_rol;
+
+    private Integer id_plan;
 }

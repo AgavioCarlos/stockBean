@@ -13,7 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "tbl_metodos_pago")
+@Table(name = "cat_metodos_pago")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,7 +26,7 @@ public class MetodoPago {
     private String nombre;
     private String descripcion;
     private Boolean status;
-    
+
     @Column(name = "fecha_alta")
     private LocalDateTime fechaAlta;
 
@@ -35,5 +35,5 @@ public class MetodoPago {
 
     @Column(name = "fecha_ultima_modificacion")
     private LocalDateTime fechaUltimaModificacion;
-    
+
 }

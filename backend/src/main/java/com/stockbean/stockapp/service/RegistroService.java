@@ -29,6 +29,9 @@ public class RegistroService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private com.stockbean.stockapp.repository.SuscripcionRepository suscripcionRepository;
+
     @Transactional
     public String registrar(RegistroRequest request) {
         if (personaRepository.existsByEmail(request.getEmail())) {
@@ -50,14 +53,51 @@ public class RegistroService {
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         usuario.setPersona(persona);
 
-        Rol rolAdmin = rolRepository.findById(1)
+        Rol rolAdmin = rolRepository.findById(3)
                 .orElseThrow(() -> new RuntimeException("Error: Rol 'Administrador' no encontrado."));
         usuario.setRol(rolAdmin);
 
         usuario.setFecha_alta(LocalDateTime.now());
         usuario.setFecha_ultima_modificacion(LocalDateTime.now());
         usuario.setStatus(true);
-        usuarioRepository.save(usuario);
+        usuario = usuarioRepository.save(usuario); // Guarda y obtiene el ID
+
+        // Crear la suscripción
+        if (request.getId_plan() != null) {
+            try {
+                com.stockbean.stockapp.model.tablas.Suscripcion suscripcion = new com.stockbean.stockapp.model.tablas.Suscripcion();
+                suscripcion.setUsuario(usuario);
+
+                com.stockbean.stockapp.model.catalogos.Plan plan = new com.stockbean.stockapp.model.catalogos.Plan();
+                plan.setId_plan(request.getId_plan());
+                suscripcion.setPlan(plan);
+
+                LocalDateTime fechaInicio = LocalDateTime.now();
+                suscripcion.setFechaInicio(fechaInicio);
+                suscripcion.setFechaFin(fechaInicio.plusMonths(1));
+                suscripcion.setStatus(false);
+
+                com.stockbean.stockapp.model.catalogos.MetodoPago metodoPago = new com.stockbean.stockapp.model.catalogos.MetodoPago();
+                metodoPago.setIdMetodoPago(1);
+                suscripcion.setMetodoPago(metodoPago);
+
+                String randomString = java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                String referenciaPago = "REF-" + usuario.getId_usuario() + "-" + request.getId_plan() + "-" +
+                        fechaInicio.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd")) + "-"
+                        + randomString;
+                suscripcion.setReferenciaPago(referenciaPago);
+                suscripcion.setFechaAlta(fechaInicio);
+                suscripcion.setFechaUltimaModificacion(fechaInicio);
+
+                suscripcionRepository.save(suscripcion);
+            } catch (Exception e) {
+                System.err.println("❌ Error al guardar la suscripción: " + e.getMessage());
+                e.printStackTrace();
+                // Opcional: throw new RuntimeException para forzar el rollback y ver el error
+                throw new RuntimeException("Error al crear la suscripción, verifica que el plan " + request.getId_plan()
+                        + " y el metodo de pago 1 existan.");
+            }
+        }
 
         return "Registro exitoso";
     }
