@@ -9,6 +9,6 @@ public interface PersonaRepository extends JpaRepository<Persona, Integer> {
 
     boolean existsByEmail(String email);
 
-    @org.springframework.data.jpa.repository.Query("SELECT p FROM EmpresaUsuario eu JOIN eu.usuario u JOIN u.persona p WHERE eu.empresa.idEmpresa = :idEmpresa")
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM PersonaEmpresa pe JOIN pe.persona p WHERE pe.empresa.idEmpresa = :idEmpresa AND pe.activo = true AND p.status = true")
     List<Persona> findByEmpresaId(@org.springframework.data.repository.query.Param("idEmpresa") Integer idEmpresa);
 }

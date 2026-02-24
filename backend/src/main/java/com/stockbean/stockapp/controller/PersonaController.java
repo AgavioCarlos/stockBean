@@ -44,19 +44,21 @@ public class PersonaController {
     }
 
     @PostMapping()
-    public Persona crear(@RequestBody Persona persona) {
-        return personaService.guardar(persona);
+    public Persona crear(@RequestBody Persona persona, @AuthenticationPrincipal UsuarioPrincipal principal) {
+        return personaService.guardar(persona, principal.getId());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Persona> actualizar(@PathVariable Integer id, @RequestBody Persona persona) {
-        Persona actualizada = personaService.actualizar(id, persona);
+    public ResponseEntity<Persona> actualizar(@PathVariable Integer id, @RequestBody Persona persona,
+            @AuthenticationPrincipal UsuarioPrincipal principal) {
+        Persona actualizada = personaService.actualizar(id, persona, principal.getId());
         return actualizada != null ? ResponseEntity.ok(actualizada) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
-        personaService.eliminar(id);
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id,
+            @AuthenticationPrincipal UsuarioPrincipal principal) {
+        personaService.eliminar(id, principal.getId());
         return ResponseEntity.noContent().build();
     }
 }

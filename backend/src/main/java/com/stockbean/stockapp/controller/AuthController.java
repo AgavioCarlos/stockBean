@@ -51,6 +51,9 @@ public class AuthController {
     @Autowired
     private EmpresaUsuarioService empresaUsuarioService;
 
+    @Autowired
+    private com.stockbean.stockapp.repository.SuscripcionRepository suscripcionRepository;
+
     @PostMapping("/registro")
     public ResponseEntity<Map<String, String>> registrar(@RequestBody RegistroRequest request) {
         registroService.registrar(request);
@@ -100,6 +103,24 @@ public class AuthController {
 
         // Consultar empresa
         System.out.println("Usuario: " + user.getId_usuario());
+
+        com.stockbean.stockapp.model.tablas.Suscripcion suscripcion = suscripcionRepository
+                .findTopByUsuarioOrderByFechaInicioDesc(user);
+        if (suscripcion != null) {
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            if (suscripcion.getFechaFin() != null && now.isAfter(suscripcion.getFechaFin())) {
+                Map<String, String> respuesta = new HashMap<>();
+                respuesta.put("mensaje", "Suscripción vencida");
+                return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(respuesta); // Usar un status de error
+                                                                                           // adecuado
+            }
+        } else {
+            // Cuando no hay suscripción
+            Map<String, String> respuesta = new HashMap<>();
+            respuesta.put("mensaje", "No tienes una suscripción activa");
+            return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(respuesta);
+        }
+
         List<EmpresaUsuarioDTO> empresaUsuario = empresaUsuarioService.validarEmpresaUsuario(user.getId_usuario());
 
         // Generar el token JWT con el id_rol y nombre_rol incluidos
