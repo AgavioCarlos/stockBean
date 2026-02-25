@@ -1,4 +1,4 @@
-import { apiFetch } from "./Api";
+import { apiFetch } from "../../services/Api";
 
 export async function consultarProductos(signal?: AbortSignal) {
   console.log("Token en localStorage:", localStorage.getItem("token"));

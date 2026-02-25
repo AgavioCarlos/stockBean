@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
-import Persona from './pages/Persona/Persona'
+import Persona from './features/persona/Persona'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login/Login';
@@ -11,7 +11,7 @@ import Categorias from './pages/Categorias';
 import Unidades from './pages/Unidades'
 import Roles from './pages/Roles';
 import Inicio from './pages/Inicio';
-import Productos from './pages/Productos'
+import Productos from './features/producto/Productos'
 import Marcas from './pages/Marcas'
 import Clientes from './pages/Clientes'
 import Proveedores from './pages/Proveedores'
@@ -21,12 +21,13 @@ import Configuracion from './pages/Configuracion';
 import Catalogos from './pages/Catalogos';
 import Administrador from './pages/Administrador';
 import Sucursales from './pages/Sucursales';
-import Usuarios from './pages/Usuarios';
+import Usuarios from './features/usuario/Usuarios';
 import UsuariosSucursales from './pages/UsuariosSucursales';
 import Inventario from './features/inventario/Inventario';
 import HistorialPrecios from './pages/HistorialPrecios';
 import Empresas from './pages/Empresas';
 import EmpresaUsuario from './pages/EmpresaUsuario';
+import ProductoEmpresa from './features/productoEmpresa/ProductoEmpresa';
 import TestData from './pages/TestData';
 import Unauthorized from './pages/Unauthorized'; // Página de acceso denegado
 
@@ -132,6 +133,10 @@ const router = createBrowserRouter([
   {
     path: "/empresa-usuarios",
     element: (<ProtectedRoute><EmpresaUsuario /></ProtectedRoute>)
+  },
+  {
+    path: "/producto-empresa",
+    element: (<ProtectedRoute><ProductoEmpresa /></ProtectedRoute>)
   },
   {
     path: "/test-data",
