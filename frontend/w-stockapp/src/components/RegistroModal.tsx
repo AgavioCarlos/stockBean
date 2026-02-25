@@ -111,7 +111,7 @@ const RegistroModal: FC<RegistroModalProps> = ({ isOpen, onClose, selectedPlan }
                     email: formData.email,
                     cuenta: formData.cuenta,
                     password: formData.password,
-                    id_rol: 2 // Por defecto rol de usuario administrador de sucursal/empresa
+                    id_plan: selectedPlan ? selectedPlan.id_plan : 1
                 })
             });
 

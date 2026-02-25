@@ -1,4 +1,4 @@
-import { Productos } from "./producto.interface";
+import { Productos } from "../features/producto/producto.interface";
 
 export interface HistorialPrecios {
     idHistorial?: number;
