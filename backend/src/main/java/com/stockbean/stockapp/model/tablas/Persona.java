@@ -29,5 +29,5 @@ public class Persona {
     private LocalDateTime fecha_alta;
     private LocalDateTime fecha_baja;
     private LocalDateTime fecha_ultima_modificacion;
-    
+
 }
