@@ -113,6 +113,10 @@ public class AuthController {
                 respuesta.put("mensaje", "Suscripción vencida");
                 return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(respuesta); // Usar un status de error
                                                                                            // adecuado
+            } else if (!Boolean.TRUE.equals(suscripcion.getStatus())) {
+                Map<String, String> respuesta = new HashMap<>();
+                respuesta.put("mensaje", "Suscripción inactiva");
+                return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(respuesta);
             }
         } else {
             // Cuando no hay suscripción

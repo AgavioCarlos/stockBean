@@ -10,10 +10,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
- 
 @Entity
 @Table(name = "cat_roles")
-@Data 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Rol {
@@ -21,9 +20,10 @@ public class Rol {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_rol;
     private String nombre;
-    private String descripcion; 
-    
-    private LocalDateTime fecha_alta; 
+    private String descripcion;
+
+    private LocalDateTime fecha_alta;
     private LocalDateTime fecha_baja;
     private LocalDateTime fecha_ultima_modificacion;
+    private Boolean activo;
 }
