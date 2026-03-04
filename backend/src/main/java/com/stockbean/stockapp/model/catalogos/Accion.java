@@ -1,4 +1,4 @@
-package com.stockbean.stockapp.model.tablas;
+package com.stockbean.stockapp.model.catalogos;
 
 import java.time.LocalDateTime;
 
@@ -13,32 +13,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "cat_acciones")
 @Data
-@Table(name = "tbl_proveedores")
 @NoArgsConstructor
 @AllArgsConstructor
+public class Accion {
 
-public class Proveedor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_proveedor")
-    private Integer idProveedor;
+    @Column(name = "id_accion")
+    private Integer idAccion;
 
+    @Column(name = "nombre", nullable = false, unique = true)
     private String nombre;
-    private String direccion;
-    private String email;
-    private Boolean status;
 
-    @Column(name = "id_empresa")
-    private Integer idEmpresa;
+    @Column(name = "descripcion")
+    private String descripcion;
 
-    @Column(name = "fecha_alta")
+    @Column(name = "fecha_alta", updatable = false)
     private LocalDateTime fechaAlta;
 
-    @Column(name = "fecha_baja")
-    private LocalDateTime fechaBaja;
-
-    @Column(name = "fecha_ultima_modificacion")
-    private LocalDateTime fechaUltimaModificacion;
-
-};
+    @Column(name = "status")
+    private Boolean status;
+}

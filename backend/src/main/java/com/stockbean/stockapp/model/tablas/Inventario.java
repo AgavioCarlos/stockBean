@@ -14,6 +14,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -45,6 +47,18 @@ public class Inventario {
     private LoteInventario loteInventario;
 
     private LocalDateTime fecha_caducidad;
+
+    @Transient
+    private BigDecimal precioNuevo;
+
+    @Transient
+    private BigDecimal precioAnterior;
+
+    @Transient
+    private Integer idTipoPrecio;
+
+    @Transient
+    private String motivo;
 
     @Column(name = "fecha_alta", updatable = false)
     private LocalDateTime fechaAlta;

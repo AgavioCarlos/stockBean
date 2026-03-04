@@ -1,6 +1,6 @@
 package com.stockbean.stockapp.model.admin;
 
-import java.security.Timestamp;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,11 +41,11 @@ public class Pantallas {
     private Boolean esMenu;
 
     @Column(name = "fecha_alta")
-    private Timestamp fechaAlta;
+    private LocalDateTime fechaAlta;
 
     @Column(name = "fecha_baja")
-    private Timestamp fechaBaja;
+    private LocalDateTime fechaBaja;
 
     private Boolean status;
-    
+
 }
