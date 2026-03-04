@@ -2,6 +2,7 @@ package com.stockbean.stockapp.model.tablas;
 
 import java.time.LocalDateTime;
 
+import com.stockbean.stockapp.model.admin.Empresa;
 import com.stockbean.stockapp.model.catalogos.Categoria;
 import com.stockbean.stockapp.model.catalogos.Marca;
 import com.stockbean.stockapp.model.catalogos.Unidad;
@@ -59,4 +60,8 @@ public class Producto {
 
     @Column(name = "fecha_ultima_modificacion")
     private LocalDateTime fechaUltimaModificacion;
+
+    @ManyToOne
+    @JoinColumn(name = "id_empresa", nullable = false)
+    private Empresa empresa;
 }
