@@ -45,6 +45,15 @@ public class Venta {
     @Column(name = "ticket_url")
     private String ticketUrl;
 
+    @Column(name = "id_turno")
+    private Integer idTurno;
+
+    @Column(name = "estado")
+    private String estado;
+
+    @Column(name = "descuento_total")
+    private Double descuentoTotal;
+
     @Column(name = "fecha_alta")
     private LocalDateTime fechaAlta;
 

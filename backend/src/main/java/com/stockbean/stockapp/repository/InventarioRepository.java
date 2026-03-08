@@ -16,6 +16,43 @@ public interface InventarioRepository extends JpaRepository<Inventario, Integer>
             "JOIN FETCH i.producto " +
             "JOIN FETCH i.sucursal " +
             "WHERE i.sucursal.id_sucursal = :idSucursal " +
-            "AND i.status = true")
+            "AND i.status = true " +
+            "AND i.producto.status = true")
     List<Inventario> findBySucursalIdAndStatusTrue(@Param("idSucursal") Integer idSucursal);
+
+    // POS: Buscar producto por código de barras en una sucursal
+    @Query("SELECT i FROM Inventario i " +
+            "JOIN FETCH i.producto p " +
+            "JOIN FETCH i.sucursal " +
+            "WHERE i.sucursal.id_sucursal = :idSucursal " +
+            "AND p.codigoBarras = :codigoBarras " +
+            "AND i.status = true " +
+            "AND p.status = true")
+    List<Inventario> findByCodigoBarrasAndSucursal(
+            @Param("codigoBarras") String codigoBarras,
+            @Param("idSucursal") Integer idSucursal);
+
+    // POS: Buscar productos por nombre (LIKE) en una sucursal
+    @Query("SELECT i FROM Inventario i " +
+            "JOIN FETCH i.producto p " +
+            "JOIN FETCH i.sucursal " +
+            "WHERE i.sucursal.id_sucursal = :idSucursal " +
+            "AND LOWER(p.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
+            "AND i.status = true " +
+            "AND p.status = true")
+    List<Inventario> findByNombreProductoAndSucursal(
+            @Param("nombre") String nombre,
+            @Param("idSucursal") Integer idSucursal);
+
+    // POS: Obtener inventario de un producto específico en una sucursal
+    @Query("SELECT i FROM Inventario i " +
+            "JOIN FETCH i.producto p " +
+            "JOIN FETCH i.sucursal " +
+            "WHERE i.sucursal.id_sucursal = :idSucursal " +
+            "AND p.id_producto = :idProducto " +
+            "AND i.status = true " +
+            "AND p.status = true")
+    List<Inventario> findByProductoAndSucursal(
+            @Param("idProducto") Integer idProducto,
+            @Param("idSucursal") Integer idSucursal);
 }

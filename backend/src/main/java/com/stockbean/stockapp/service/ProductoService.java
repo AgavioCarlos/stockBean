@@ -3,12 +3,21 @@ package com.stockbean.stockapp.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import com.stockbean.stockapp.repository.UnidadRepository;
+import com.stockbean.stockapp.repository.UsuarioRepository;
+import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
+import com.stockbean.stockapp.repository.EmpresaRepository;
+
+import lombok.NonNull;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.stockbean.stockapp.dto.ProductoRequest;
 import com.stockbean.stockapp.model.tablas.Producto;
+import com.stockbean.stockapp.model.tablas.ProductoEmpresa;
+import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.repository.CategoriaRepository;
 import com.stockbean.stockapp.repository.MarcaRepository;
+import com.stockbean.stockapp.repository.ProductoEmpresaRepository;
 import com.stockbean.stockapp.repository.ProductoRepository;
 
 @Service
@@ -26,39 +35,74 @@ public class ProductoService {
     @Autowired
     private MarcaRepository marcaRepository;
 
-    public List<Producto> listarTodos(){
-        return productoRepository.findAll();
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private ProductoEmpresaRepository productoEmpresaRepository;
+
+    @Autowired
+    private EmpresaRepository empresaRepository;
+
+    @Autowired
+    private EmpresaUsuarioRepository empresaUsuarioRepository;
+
+    public List<Producto> listar(@NonNull Integer id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (usuario.getId_rol() == 1) {
+            return productoRepository.findAll();
+        } else {
+            return productoRepository.findByUsuarioId(id);
+        }
     }
 
-    public Producto obtenerPorId(Integer id){
+    public Producto obtenerPorId(Integer id) {
         return productoRepository.findById(id).orElse(null);
     }
 
-    public Producto guardar(ProductoRequest dto){
+    public Producto guardar(ProductoRequest dto, Integer idUsuario) {
 
         Producto producto = new Producto();
         producto.setNombre(dto.getNombre());
         producto.setDescripcion(dto.getDescripcion());
-        producto.setCategoria(categoriaRepository.findById(dto.getIdCategoria())
-            .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
-        
-        producto.setUnidad(unidadRepository.findById(dto.getIdUnidad())
-            .orElseThrow(() -> new RuntimeException("Unidad no encontrada")));
-        
-        producto.setMarca(marcaRepository.findById(dto.getIdMarca())
-            .orElse(null));
+        if (dto.getIdCategoria() != null) {
+            producto.setCategoria(categoriaRepository.findById(dto.getIdCategoria())
+                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
+        }
+
+        if (dto.getIdUnidad() != null) {
+            producto.setUnidad(unidadRepository.findById(dto.getIdUnidad())
+                    .orElseThrow(() -> new RuntimeException("Unidad no encontrada")));
+        }
+
+        if (dto.getIdMarca() != null) {
+            producto.setMarca(marcaRepository.findById(dto.getIdMarca()).orElse(null));
+        }
+
+        if (dto.getIdEmpresa() != null) {
+            producto.setEmpresa(empresaRepository.findById(dto.getIdEmpresa())
+                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada")));
+        } else if (idUsuario != null) {
+            List<Integer> empIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);
+            if (empIds != null && !empIds.isEmpty()) {
+                producto.setEmpresa(empresaRepository.findById(empIds.get(0)).orElse(null));
+            }
+        }
 
         producto.setCodigoBarras(dto.getCodigoBarras());
         producto.setImagenUrl(dto.getImagenUrl());
-        producto.setStatus(dto.getStatus());
+        producto.setStatus(dto.getStatus() != null ? dto.getStatus() : true);
         producto.setFechaAlta(LocalDateTime.now());
         producto.setFechaUltimaModificacion(LocalDateTime.now());
         return productoRepository.save(producto);
     }
 
-    public Producto actualizar(Integer id, Producto productoActualizado){
+    public Producto actualizar(Integer id, Producto productoActualizado) {
         Producto producto = obtenerPorId(id);
-        if(producto == null) return null;
+        if (producto == null)
+            return null;
 
         producto.setNombre(productoActualizado.getNombre());
         producto.setDescripcion(productoActualizado.getDescripcion());
@@ -68,33 +112,42 @@ public class ProductoService {
         producto.setCodigoBarras(productoActualizado.getCodigoBarras());
         producto.setImagenUrl(productoActualizado.getImagenUrl());
         producto.setStatus(productoActualizado.getStatus());
+        if (productoActualizado.getEmpresa() != null) {
+            producto.setEmpresa(productoActualizado.getEmpresa());
+        }
         producto.setFechaUltimaModificacion(LocalDateTime.now());
 
         return productoRepository.save(producto);
     }
 
     // Nuevo método que acepta ProductoRequest (DTO) para actualizar
-    public Producto actualizar(Integer id, ProductoRequest dto){
+    public Producto actualizar(Integer id, ProductoRequest dto) {
         Producto producto = obtenerPorId(id);
-        if(producto == null) return null;
+        if (producto == null)
+            return null;
 
         producto.setNombre(dto.getNombre());
         producto.setDescripcion(dto.getDescripcion());
-        
-        if(dto.getIdCategoria() != null){
+
+        if (dto.getIdCategoria() != null) {
             producto.setCategoria(categoriaRepository.findById(dto.getIdCategoria())
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
+                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
         }
-        
-        if(dto.getIdUnidad() != null){
+
+        if (dto.getIdUnidad() != null) {
             producto.setUnidad(unidadRepository.findById(dto.getIdUnidad())
-                .orElseThrow(() -> new RuntimeException("Unidad no encontrada")));
+                    .orElseThrow(() -> new RuntimeException("Unidad no encontrada")));
         }
-        
-        if(dto.getIdMarca() != null){
+
+        if (dto.getIdMarca() != null) {
             producto.setMarca(marcaRepository.findById(dto.getIdMarca()).orElse(null));
         }
-        
+
+        if (dto.getIdEmpresa() != null) {
+            producto.setEmpresa(empresaRepository.findById(dto.getIdEmpresa())
+                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada")));
+        }
+
         producto.setCodigoBarras(dto.getCodigoBarras());
         producto.setImagenUrl(dto.getImagenUrl());
         producto.setStatus(dto.getStatus());
@@ -103,9 +156,9 @@ public class ProductoService {
         return productoRepository.save(producto);
     }
 
-    public void eliminar(Integer id){
+    public void eliminar(Integer id) {
         Producto producto = obtenerPorId(id);
-        if(producto != null){
+        if (producto != null) {
             producto.setStatus(false);
             producto.setFechaBaja(LocalDateTime.now());
             producto.setFechaUltimaModificacion(LocalDateTime.now());

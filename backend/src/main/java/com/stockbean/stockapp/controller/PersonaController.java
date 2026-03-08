@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import com.stockbean.stockapp.security.UsuarioPrincipal;
 import com.stockbean.stockapp.service.PersonaService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import lombok.NonNull;
-
 import java.util.List;
 import com.stockbean.stockapp.model.tablas.Persona;
 

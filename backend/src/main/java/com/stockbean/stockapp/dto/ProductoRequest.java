@@ -10,9 +10,9 @@ public class ProductoRequest {
     private String descripcion;
     private Integer idCategoria;
     private Integer idUnidad;
-    private Integer idMarca; 
+    private Integer idMarca;
     private String codigoBarras;
     private String imagenUrl;
     private Boolean status;
+    private Integer idEmpresa;
 }
-

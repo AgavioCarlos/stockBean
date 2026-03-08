@@ -8,8 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import com.stockbean.stockapp.model.tablas.Persona;
 import com.stockbean.stockapp.repository.PersonaRepository;
-
-import com.stockbean.stockapp.model.admin.EmpresaUsuario;
 import com.stockbean.stockapp.model.admin.PersonaEmpresa;
 import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;

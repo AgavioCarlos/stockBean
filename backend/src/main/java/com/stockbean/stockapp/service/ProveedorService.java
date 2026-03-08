@@ -9,7 +9,10 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.stockbean.stockapp.model.tablas.Proveedor;
+import com.stockbean.stockapp.model.tablas.Usuario;
+import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
 import com.stockbean.stockapp.repository.ProveedorRepository;
+import com.stockbean.stockapp.repository.UsuarioRepository;
 
 @Service
 public class ProveedorService {
@@ -17,25 +20,36 @@ public class ProveedorService {
     @Autowired
     private ProveedorRepository proveedorRepository;
 
-    public List<Proveedor> obtenerTodos() {
-        return proveedorRepository.findAll();
+    @Autowired
+    private EmpresaUsuarioRepository empresaUsuarioRepository;
+
+    public List<Proveedor> obtenerTodos(Integer idUsuario) {
+        List<Integer> companyIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);
+        Integer idEmpresa = companyIds.isEmpty() ? null : companyIds.get(0);
+        return proveedorRepository.findByIdEmpresaIsNullOrIdEmpresa(idEmpresa);
     }
 
     // public List<Proveedor> obtenerTodosActivos() {
-    //     return proveedorRepository.findByStatus(true);
+    // return proveedorRepository.findByStatus(true);
     // }
 
     public Optional<Proveedor> obtenerPorId(@NonNull Integer id) {
         return proveedorRepository.findById(id);
     }
 
-    public Proveedor guardar(Proveedor proveedor) {
+    public Proveedor guardar(Proveedor proveedor, Integer idUsuario) {
         if (proveedor.getFechaAlta() == null) {
             proveedor.setFechaAlta(LocalDateTime.now());
         }
         if (proveedor.getStatus() == null) {
             proveedor.setStatus(true);
         }
+
+        List<Integer> companyIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);
+        if (!companyIds.isEmpty() && proveedor.getIdEmpresa() == null) {
+            proveedor.setIdEmpresa(companyIds.get(0));
+        }
+
         return proveedorRepository.save(proveedor);
     }
 

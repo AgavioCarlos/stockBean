@@ -36,4 +36,15 @@ public class PantallaController {
         return ResponseEntity.ok(pantallas);
     }
 
+    /**
+     * GET /pantallas/todas
+     * Devuelve todas las pantallas activas (sin filtrar por rol).
+     * Para uso administrativo en la matriz de permisos.
+     */
+    @GetMapping("/todas")
+    public ResponseEntity<?> getTodasPantallas() {
+        List<com.stockbean.stockapp.model.admin.Pantallas> pantallas = pantallaService.findAllActivas();
+        return ResponseEntity.ok(pantallas);
+    }
+
 }

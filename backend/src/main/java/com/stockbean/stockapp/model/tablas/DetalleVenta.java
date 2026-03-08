@@ -45,6 +45,7 @@ public class DetalleVenta {
 
     private BigDecimal descuento;
 
+    @Column(name = "subtotal")
     private BigDecimal subTotal;
 
     @Column(name = "tipo_venta")

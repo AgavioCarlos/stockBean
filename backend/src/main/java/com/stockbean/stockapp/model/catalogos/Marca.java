@@ -13,7 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="cat_marcas")
+@Table(name = "cat_marcas")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,6 +26,9 @@ public class Marca {
     private Integer idMarca;
     private String nombre;
     private Boolean status;
+
+    @Column(name = "id_empresa")
+    private Integer idEmpresa;
 
     @Column(name = "fecha_alta")
     private LocalDateTime fechaAlta;

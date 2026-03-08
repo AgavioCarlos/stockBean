@@ -23,6 +23,9 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @PreAuthorize("hasAnyRole('SISTEM', 'ADMIN')")
     @GetMapping("/mis-usuarios")
     public ResponseEntity<List<Usuario>> listarUsuarios(@AuthenticationPrincipal UsuarioPrincipal principal) {
@@ -33,6 +36,32 @@ public class UsuarioController {
     @PostMapping("/crear")
     public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario,
             @AuthenticationPrincipal UsuarioPrincipal principal) {
+        // Codificar password antes de guardar
+        if (usuario.getPassword() != null && !usuario.getPassword().isEmpty()) {
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
         return ResponseEntity.ok(usuarioService.crearUsuario(usuario, principal.getId()));
+    }
+
+    @PreAuthorize("hasAnyRole('SISTEM', 'ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Integer id, @RequestBody Usuario usuario) {
+        Usuario existente = usuarioService.findById(id);
+        if (existente == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        existente.setPersona(usuario.getPersona());
+        existente.setCuenta(usuario.getCuenta());
+        existente.setRol(usuario.getRol());
+        existente.setStatus(usuario.getStatus());
+        existente.setFecha_ultima_modificacion(java.time.LocalDateTime.now());
+
+        // Solo actualizar password si viene uno nuevo
+        if (usuario.getPassword() != null && !usuario.getPassword().isEmpty()) {
+            existente.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
+
+        return ResponseEntity.ok(usuarioService.save(existente));
     }
 }

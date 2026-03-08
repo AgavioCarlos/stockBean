@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.stockbean.stockapp.security.UsuarioPrincipal;
 
 import com.stockbean.stockapp.model.tablas.Proveedor;
 import com.stockbean.stockapp.service.ProveedorService;
@@ -33,13 +35,13 @@ public class ProveedorController {
     // }
 
     @GetMapping()
-    public List<Proveedor> listarTodo() {
-        return proveedorService.obtenerTodos(); // Showing all including history
+    public List<Proveedor> listarTodo(@AuthenticationPrincipal UsuarioPrincipal principal) {
+        return proveedorService.obtenerTodos(principal.getId()); // Showing all including history
     }
 
     @PostMapping
-    public Proveedor crear(@RequestBody Proveedor proveedor) {
-        return proveedorService.guardar(proveedor);
+    public Proveedor crear(@RequestBody Proveedor proveedor, @AuthenticationPrincipal UsuarioPrincipal principal) {
+        return proveedorService.guardar(proveedor, principal.getId());
     }
 
     @PutMapping("/{id}")
