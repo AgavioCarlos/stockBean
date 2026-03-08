@@ -3,6 +3,7 @@ import { DataTable, Column } from '../../../components/DataTable';
 import { SharedButton } from '../../../components/SharedButton';
 import { IoMdAddCircle } from "react-icons/io";
 import type { IPersona } from '../persona.interface';
+import { WithPermission } from '../../../components/WithPermission';
 
 interface PersonaListProps {
     data: IPersona[];
@@ -33,14 +34,16 @@ export const PersonaList: React.FC<PersonaListProps> = ({
                 columns={columns}
                 onRowClick={onRowClick}
                 actionContent={
-                    <SharedButton
-                        onClick={onNew}
-                        variant="primary"
-                        size="icon"
-                        title="Nueva Persona"
-                        aria-label="Nueva Persona"
-                        icon={<IoMdAddCircle size={28} aria-hidden="true" />}
-                    />
+                    <WithPermission screen="personas" action="create">
+                        <SharedButton
+                            onClick={onNew}
+                            variant="primary"
+                            size="icon"
+                            title="Nueva Persona"
+                            aria-label="Nueva Persona"
+                            icon={<IoMdAddCircle size={28} aria-hidden="true" />}
+                        />
+                    </WithPermission>
                 }
             />
         </div>

@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Pantalla } from "../interfaces/Pantalla";
+import { Pantalla } from "../interfaces/pantalla.interface";
 import {
     getPantallasFromLocalStorage,
     getPantallasUsuario,

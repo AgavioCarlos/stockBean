@@ -20,7 +20,6 @@ const Tabs: React.FC<TabsProps> = ({
   onChange,
   extraContent,
 }) => {
-  const activeContent = tabs.find((tab) => tab.key === activeTab)?.content;
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, opacity: 0 });
 
@@ -92,13 +91,21 @@ const Tabs: React.FC<TabsProps> = ({
       </div>
 
       <div
-        role="tabpanel"
-        id={`panel-${activeTab}`}
-        aria-labelledby={`tab-${activeTab}`}
-        className="flex-1 overflow-hidden flex flex-col h-full bg-white outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 relative"
-        tabIndex={0}
+        className="flex-1 overflow-visible flex flex-col h-full bg-white relative"
       >
-        {activeContent}
+        {tabs.map((tab) => (
+          <div
+            key={tab.key}
+            role="tabpanel"
+            id={`panel-${tab.key}`}
+            aria-labelledby={`tab-${tab.key}`}
+            tabIndex={0}
+            className={`flex-1 flex flex-col h-full outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 ${activeTab === tab.key ? "block" : "hidden"
+              }`}
+          >
+            {tab.content}
+          </div>
+        ))}
       </div>
     </div>
   );

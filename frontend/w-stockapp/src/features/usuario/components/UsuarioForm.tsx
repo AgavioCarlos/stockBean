@@ -6,6 +6,8 @@ import { SharedInput } from '../../../components/SharedInput';
 import { SharedButton } from '../../../components/SharedButton';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { consultarRoles } from '../../../services/Roles';
+import { consultarPersonas } from '../../persona/PersonaService';
+import { UsuarioPermisos } from './UsuarioPermisos';
 
 interface UsuarioFormProps {
     values: any;
@@ -29,9 +31,11 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
     onToggleStatus
 }) => {
     const [roles, setRoles] = useState<any[]>([]);
+    const [personas, setPersonas] = useState<IPersona[]>([]);
 
     useEffect(() => {
         consultarRoles().then(setRoles).catch(console.error);
+        consultarPersonas().then(setPersonas).catch(console.error);
     }, []);
 
     const persona = values.persona || {} as IPersona;
@@ -167,11 +171,44 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                             {/* Información Personal */}
                             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-3xl"></div>
-                                <div className="flex items-center gap-3 mb-8">
-                                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                        <MdPersonOutline size={24} />
+                                <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                            <MdPersonOutline size={24} />
+                                        </div>
+                                        <h4 className="text-lg font-bold text-slate-800">Información Personal</h4>
                                     </div>
-                                    <h4 className="text-lg font-bold text-slate-800">Información Personal</h4>
+                                    {isEditing && (
+                                        <div className="flex-1 max-w-sm">
+                                            <select
+                                                name="persona_selector"
+                                                className="w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-700"
+                                                onChange={(e) => {
+                                                    const pid = e.target.value;
+                                                    const p = personas.find(x => String(x.id_persona) === pid);
+                                                    if (p) {
+                                                        handleChange({
+                                                            target: {
+                                                                name: 'persona',
+                                                                value: {
+                                                                    ...persona,
+                                                                    ...p
+                                                                }
+                                                            }
+                                                        });
+                                                    }
+                                                }}
+                                                defaultValue=""
+                                            >
+                                                <option value="">-- Cargar persona existente --</option>
+                                                {personas.map((p) => (
+                                                    <option key={p.id_persona} value={p.id_persona}>
+                                                        {p.nombre} {p.apellido_paterno} {p.apellido_materno}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                     <SharedInput
@@ -286,6 +323,11 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                             </div>
                         </div>
                     </div>
+
+                    {/* Módulo de Permisos CRUD - Visible cuando hay un usuario seleccionado */}
+                    {selection?.id_usuario && (
+                        <UsuarioPermisos idUsuario={selection.id_usuario} />
+                    )}
 
                     {/* Mensaje de Asistencia (Solo visible si esEditing) */}
                     <div className="text-center pb-12 pt-4">

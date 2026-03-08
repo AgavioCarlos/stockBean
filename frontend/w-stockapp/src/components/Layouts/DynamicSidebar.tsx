@@ -9,7 +9,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { NavLink } from "react-router-dom";
 import { FiX, FiChevronRight, FiChevronLeft, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import Logo from "../../assets/icon.png";
-import { Pantalla } from "../../interfaces/Pantalla";
+import { Pantalla } from "../../interfaces/pantalla.interface";
 import { getPantallasFromLocalStorage } from "../../services/Pantallas";
 import { getIcon } from "../../utils/iconMapper";
 import { useResponsive } from "../../hooks/useResponsive";

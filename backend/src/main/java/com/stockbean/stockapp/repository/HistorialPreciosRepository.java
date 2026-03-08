@@ -11,21 +11,27 @@ import com.stockbean.stockapp.model.tablas.HistorialPrecios;
 @Repository
 public interface HistorialPreciosRepository extends JpaRepository<HistorialPrecios, Integer> {
 
-    @Query("SELECT hp FROM HistorialPrecios hp " +
-            "WHERE hp.fechaCambio IN (SELECT MAX(sub.fechaCambio)" +
-            "FROM HistorialPrecios sub GROUP BY sub.producto)")
-    List<HistorialPrecios> findCurrentPrices();
+        @Query("SELECT hp FROM HistorialPrecios hp " +
+                        "WHERE hp.fechaCambio IN (SELECT MAX(sub.fechaCambio)" +
+                        "FROM HistorialPrecios sub GROUP BY sub.producto)")
+        List<HistorialPrecios> findCurrentPrices();
 
-    @Query("SELECT hp FROM HistorialPrecios hp WHERE hp.producto = :id")
-    List<HistorialPrecios> findHistorialPreciosById(@Param("id") Integer id);
+        @Query("SELECT hp FROM HistorialPrecios hp " +
+                        "WHERE hp.sucursal.id_sucursal = :idSucursal AND hp.fechaCambio = (" +
+                        "   SELECT MAX(sub.fechaCambio) FROM HistorialPrecios sub " +
+                        "   WHERE sub.producto = hp.producto AND sub.sucursal.id_sucursal = :idSucursal)")
+        List<HistorialPrecios> findCurrentPricesByBranch(@Param("idSucursal") Integer idSucursal);
 
-    //Los 10 productos actuales más caros 
-    @Query("SELECT hp FROM HistorialPrecios hp WHERE hp.fechaCambio IN (SELECT MAX(sub.fechaCambio)" +
-            "FROM HistorialPrecios sub GROUP BY sub.producto) ORDER BY hp.precioNuevo DESC")
-    List<HistorialPrecios> findTop10MostExpensiveProducts();
+        @Query("SELECT hp FROM HistorialPrecios hp WHERE hp.producto = :id")
+        List<HistorialPrecios> findHistorialPreciosById(@Param("id") Integer id);
 
-    //Los 10 productos actuales más baratos 
-    @Query("SELECT hp FROM HistorialPrecios hp WHERE hp.fechaCambio IN (SELECT MAX(sub.fechaCambio)" +
-            "FROM HistorialPrecios sub GROUP BY sub.producto) ORDER BY hp.precioNuevo ASC")
-    List<HistorialPrecios> findTop10CheapestProducts();
+        // Los 10 productos actuales más caros
+        @Query("SELECT hp FROM HistorialPrecios hp WHERE hp.fechaCambio IN (SELECT MAX(sub.fechaCambio)" +
+                        "FROM HistorialPrecios sub GROUP BY sub.producto) ORDER BY hp.precioNuevo DESC")
+        List<HistorialPrecios> findTop10MostExpensiveProducts();
+
+        // Los 10 productos actuales más baratos
+        @Query("SELECT hp FROM HistorialPrecios hp WHERE hp.fechaCambio IN (SELECT MAX(sub.fechaCambio)" +
+                        "FROM HistorialPrecios sub GROUP BY sub.producto) ORDER BY hp.precioNuevo ASC")
+        List<HistorialPrecios> findTop10CheapestProducts();
 }

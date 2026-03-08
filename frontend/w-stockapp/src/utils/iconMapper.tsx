@@ -20,6 +20,7 @@ import { BsMenuButton } from "react-icons/bs";
 import { MdOutlinePointOfSale } from "react-icons/md";
 import { RiAdminLine } from "react-icons/ri";
 import { IoIosSettings } from "react-icons/io";
+import { TbReportAnalytics } from "react-icons/tb";
 
 /**
  * Mapa de nombres de íconos a componentes de React Icons
@@ -56,6 +57,9 @@ export const iconMap: { [key: string]: React.ComponentType } = {
     // Proveedores y logística
     FiTruck,
     FiMapPin,
+
+    // Reportes
+    TbReportAnalytics,
 };
 
 /**

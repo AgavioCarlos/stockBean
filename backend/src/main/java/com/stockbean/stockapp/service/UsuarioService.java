@@ -33,6 +33,10 @@ public class UsuarioService {
         return usuarioRepository.findByCuenta(cuenta).orElse(null);
     }
 
+    public Usuario save(Usuario usuario) {
+        return usuarioRepository.save(usuario);
+    }
+
     public List<Usuario> listarUsuariosPorSolicitante(Integer idUsuarioSolicitante) {
         Usuario solicitante = findById(idUsuarioSolicitante);
 

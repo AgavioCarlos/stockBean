@@ -20,13 +20,14 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     const isPositive = typeof status === 'boolean' ? status : (status ? !String(status).toLowerCase().includes('bajo') : false);
     const text = typeof status === 'boolean' ? (status ? trueText : falseText) : String(status || '');
 
-    const baseStyles = "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all duration-300";
+    const baseStyles = "px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest border transition-all duration-300 backdrop-blur-sm select-none inline-flex items-center gap-1.5 shadow-sm";
     const colors = isPositive
-        ? "bg-green-100 text-green-700 border-green-200 shadow-sm shadow-green-100/50"
-        : "bg-red-100 text-red-700 border-red-200 shadow-sm shadow-red-100/50";
+        ? "bg-emerald-50/80 text-emerald-700 border-emerald-200 shadow-emerald-100/50"
+        : "bg-rose-50/80 text-rose-700 border-rose-200 shadow-rose-100/50";
 
     return (
         <span className={`${baseStyles} ${colors} ${className}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${isPositive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]'}`}></span>
             {text}
         </span>
     );

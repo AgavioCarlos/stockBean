@@ -51,7 +51,8 @@ public class SecurityConfig {
                         // ⬇️ PERMITIR preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Públicos
-                        .requestMatchers("/auth/login", "/auth/registro", "/planes", "/historial-precios/**")
+                        .requestMatchers("/auth/login", "/auth/registro", "/planes", "/historial-precios/**",
+                                "/usuarios-acciones/**", "/acciones", "/pantallas/todas")
                         .permitAll()
                         // Permitir GET públicos para endpoints de LOVs (roles, etc.) sin abrir otros
                         // métodos
@@ -78,7 +79,8 @@ public class SecurityConfig {
         // IMPORTANTE: si usas Authorization o cookies, NO uses "*"
         cfg.setAllowedOrigins(
                 List.of("http://10.225.16.51:5173", "http://10.225.16.248:5173", "http://localhost:5173",
-                        "https://stockapp.agaviocarlos.com", "https://stockapp.agaviocarlos.com:5173"));
+                        "https://stockapp.agaviocarlos.com", "https://stockapp.agaviocarlos.com:5173",
+                        "https://stock.agaviocarlos.com"));
         // Si necesitas patrones usa:
         // cfg.setAllowedOriginPatterns(List.of("http://localhost:*"));
 

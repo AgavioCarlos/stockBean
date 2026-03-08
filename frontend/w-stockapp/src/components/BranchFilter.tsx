@@ -17,6 +17,7 @@ interface BranchFilterProps {
     placeholderEmpresa?: string;
     placeholderSucursal?: string;
     className?: string;
+    disabled?: boolean;
 }
 
 /**
@@ -31,7 +32,8 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
     labelSucursal = "Sucursal",
     placeholderEmpresa = "Seleccionar empresa…",
     placeholderSucursal = "Seleccionar sucursal…",
-    className = ""
+    className = "",
+    disabled = false
 }) => {
     const { user, isSistem, isAdmin, isGerente, isCajero } = useAuth();
 
@@ -143,6 +145,7 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
                         value={idEmpresa}
                         onChange={handleEmpresaChangeInternal}
                         loading={loading}
+                        disabled={disabled}
                     />
                 </div>
             )}
@@ -156,7 +159,7 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
                         options={sucursalesOptions}
                         value={idSucursal}
                         onChange={handleSucursalChangeInternal}
-                        disabled={isCajero && sucursalesList.length === 1}
+                        disabled={disabled || (isCajero && sucursalesList.length === 1)}
                         loading={loading}
                     />
                 </div>

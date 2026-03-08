@@ -41,6 +41,10 @@ export const useAlerts = () => {
         });
     }, [showModal]);
 
+    const info = useCallback((title: string = 'Información', text: string) => {
+        addToast(title, 'info', text);
+    }, [addToast]);
+
     const toast = useCallback((title: string, type: AlertType = 'success') => {
         addToast(title, type);
     }, [addToast]);
@@ -51,6 +55,7 @@ export const useAlerts = () => {
         error,
         warning,
         confirm,
+        info,
         toast
     };
 };

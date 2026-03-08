@@ -2,7 +2,6 @@ import React from 'react';
 import { IoIosSave } from "react-icons/io";
 import { BranchFilter } from '../../../components/BranchFilter';
 import { IInventario } from '../inventario.interface';
-
 import { SearchableSelect } from '../../../components/SearchableSelect';
 
 interface InventarioFormProps {
@@ -14,6 +13,7 @@ interface InventarioFormProps {
     onNew: () => void;
     selection: IInventario | null;
     productosList: any[];
+    tipoPreciosList: any[];
     loadingLovs?: boolean;
     idSucursal: number | "";
     onBranchChange: (id: number | "") => void;
@@ -28,11 +28,11 @@ export const InventarioForm: React.FC<InventarioFormProps> = ({
     onNew,
     selection,
     productosList,
+    tipoPreciosList,
     loadingLovs,
     idSucursal,
     onBranchChange
 }) => {
-    // Transform products into searchable options
     const productOptions = React.useMemo(() =>
         productosList.map(p => ({
             value: p.id_producto,
@@ -40,10 +40,16 @@ export const InventarioForm: React.FC<InventarioFormProps> = ({
             description: p.codigoBarras ? `Cód: ${p.codigoBarras}` : undefined
         })), [productosList]);
 
+    const tipoPrecioOptions = React.useMemo(() =>
+        tipoPreciosList.map(tp => ({
+            value: tp.idTipoPrecio,
+            label: tp.nombre,
+            description: tp.descripcion
+        })), [tipoPreciosList]);
+
     return (
         <div className="w-full h-full flex flex-col">
             <form onSubmit={onSave} className="w-full h-full flex flex-col">
-                {/* Header */}
                 <div className="flex items-center justify-between gap-4 px-6 py-3 border-b border-gray-100 shrink-0">
                     <div>
                         <h3 className="text-lg font-semibold text-gray-800">
@@ -85,11 +91,11 @@ export const InventarioForm: React.FC<InventarioFormProps> = ({
                 </div>
 
                 {/* Main Content Form */}
-                <div className="flex-1 p-6 overflow-hidden">
+                <div className="flex-1 p-6 overflow-visible">
                     <div className="flex gap-8 h-full">
                         <div className="w-full max-w-2xl flex flex-col gap-5">
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="z-20">
+                                <div className="z-30">
                                     <SearchableSelect
                                         id="idProducto"
                                         label="Producto"
@@ -97,15 +103,16 @@ export const InventarioForm: React.FC<InventarioFormProps> = ({
                                         options={productOptions}
                                         value={values.idProducto}
                                         onChange={(val) => handleChange({ target: { name: 'idProducto', value: val } } as any)}
-                                        disabled={!isEditing || loadingLovs}
+                                        disabled={!isEditing || loadingLovs || !!selection}
                                         loading={loadingLovs}
                                     />
                                 </div>
-                                <div className="z-10">
+                                <div className="z-20">
                                     <BranchFilter
                                         onBranchChange={onBranchChange}
                                         value={idSucursal}
                                         className="w-full"
+                                        disabled={!!selection}
                                     />
                                 </div>
                             </div>
@@ -137,6 +144,53 @@ export const InventarioForm: React.FC<InventarioFormProps> = ({
                                         autoComplete="off"
                                         className={`w-full border rounded-lg px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm ${!isEditing ? 'bg-gray-100 text-gray-600 border-gray-200' : 'border-gray-300'}`}
                                         placeholder="0"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label htmlFor="precioNuevo" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Precio Asignado</label>
+                                    <input
+                                        id="precioNuevo"
+                                        type="number"
+                                        step="0.01"
+                                        name="precioNuevo"
+                                        value={values.precioNuevo || ''}
+                                        onChange={handleChange}
+                                        disabled={!isEditing}
+                                        autoComplete="off"
+                                        className={`w-full border rounded-lg px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm ${!isEditing ? 'bg-gray-100 text-gray-600 border-gray-200' : 'border-gray-300'}`}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div className="col-span-2 z-10">
+                                    <SearchableSelect
+                                        id="idTipoPrecio"
+                                        label="Tipo de Precio"
+                                        placeholder="Seleccionar tipo de precio..."
+                                        options={tipoPrecioOptions}
+                                        value={values.idTipoPrecio}
+                                        onChange={(val) => handleChange({ target: { name: 'idTipoPrecio', value: val } } as any)}
+                                        disabled={!isEditing || loadingLovs}
+                                        loading={loadingLovs}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label htmlFor="motivo" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Motivo / Notas</label>
+                                    <input
+                                        id="motivo"
+                                        type="text"
+                                        name="motivo"
+                                        value={values.motivo || ''}
+                                        onChange={handleChange}
+                                        disabled={!isEditing}
+                                        autoComplete="off"
+                                        className={`w-full border rounded-lg px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm ${!isEditing ? 'bg-gray-100 text-gray-600 border-gray-200' : 'border-gray-300'}`}
+                                        placeholder="Ej: Asignación inicial"
                                     />
                                 </div>
                             </div>

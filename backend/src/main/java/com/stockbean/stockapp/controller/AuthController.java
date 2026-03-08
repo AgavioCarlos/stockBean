@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.stockbean.stockapp.dto.EmpresaUsuarioDTO;
 import com.stockbean.stockapp.dto.LoginRequest;
 import com.stockbean.stockapp.dto.RegistroRequest;
@@ -25,6 +24,10 @@ import com.stockbean.stockapp.security.JwtUtil;
 import com.stockbean.stockapp.service.EmpresaUsuarioService;
 import com.stockbean.stockapp.service.RegistroService;
 import com.stockbean.stockapp.service.UsuarioService;
+import com.stockbean.stockapp.repository.UsuarioAccionRepository;
+import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
+import com.stockbean.stockapp.model.admin.UsuarioAccion;
+import java.util.ArrayList;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -53,6 +56,12 @@ public class AuthController {
 
     @Autowired
     private com.stockbean.stockapp.repository.SuscripcionRepository suscripcionRepository;
+
+    @Autowired
+    private UsuarioAccionRepository usuarioAccionRepository;
+
+    @Autowired
+    private EmpresaUsuarioRepository empresaUsuarioRepository;
 
     @PostMapping("/registro")
     public ResponseEntity<Map<String, String>> registrar(@RequestBody RegistroRequest request) {
@@ -118,7 +127,7 @@ public class AuthController {
                 respuesta.put("mensaje", "Suscripción inactiva");
                 return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(respuesta);
             }
-        } else {
+        } else if (user.getId_rol() != 1) {
             // Cuando no hay suscripción
             Map<String, String> respuesta = new HashMap<>();
             respuesta.put("mensaje", "No tienes una suscripción activa");
@@ -130,11 +139,33 @@ public class AuthController {
         // Generar el token JWT con el id_rol y nombre_rol incluidos
         final String jwt = jwtUtil.generateToken(userDetails, user.getId_rol(), user.getNombre_rol());
 
+        // ============================================
+        // Lógica de Permisos CRUD (Multi-tenant)
+        // ============================================
+        List<Integer> idsEmpresas = empresaUsuarioRepository.findIdEmpresaByUsuarioId(user.getId_usuario());
+        Map<Integer, Map<String, List<String>>> permisosCrud = new HashMap<>();
+
+        for (Integer idEmpresa : idsEmpresas) {
+            List<UsuarioAccion> acciones = usuarioAccionRepository
+                    .buscarPermisosActivosPorUsuarioYEmpresa(user.getId_usuario(), idEmpresa);
+            Map<String, List<String>> permisosPorPantalla = new HashMap<>();
+
+            for (UsuarioAccion ua : acciones) {
+                String keyPantalla = ua.getPantalla().getNombre().toLowerCase();
+                String accionNombre = ua.getAccion().getNombre().toLowerCase();
+
+                permisosPorPantalla.putIfAbsent(keyPantalla, new ArrayList<>());
+                permisosPorPantalla.get(keyPantalla).add(accionNombre);
+            }
+            permisosCrud.put(idEmpresa, permisosPorPantalla);
+        }
+
         Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("success", true);
         respuesta.put("mensaje", "Autenticación exitosa");
         respuesta.put("token", jwt);
         respuesta.put("empresa", empresaUsuario);
+        respuesta.put("permisos_crud", permisosCrud); // Mapeo inyectado
 
         // Datos del Usuario
         respuesta.put("id_usuario", user.getId_usuario());

@@ -18,8 +18,9 @@ import { InventarioForm } from "./components/InventarioForm";
 
 export default function Inventario() {
     const [inventarioList, setInventarioList] = useState<IInventario[]>([]);
-    const { data: lovs, loading: loadingLovs } = useLOVs(["productos"]);
+    const { data: lovs, loading: loadingLovs } = useLOVs(["productos", "tipo_precios"]);
     const productosList = lovs.productos || [];
+    const tipoPreciosList = lovs.tipo_precios || [];
     const [inventarioSeleccionado, setInventarioSeleccionado] = useState<IInventario | null>(null);
     const [activeTab, setActiveTab] = useState("lista");
     const [isEditing, setIsEditing] = useState(false);
@@ -30,12 +31,39 @@ export default function Inventario() {
     const { values, handleChange, setValues, resetForm } = useForm({
         idProducto: "" as number | "",
         stockActual: "" as number | "",
-        stockMinimo: "" as number | ""
+        stockMinimo: "" as number | "",
+        precioNuevo: "" as number | "",
+        idTipoPrecio: "" as number | "",
+        motivo: "" as string
     });
 
-    const { success, error: showError, warning, confirm } = useAlerts();
+    const { success, error: showError, warning, confirm, info } = useAlerts();
 
+    const handleRowClick = useCallback((item: IInventario) => {
+        setInventarioSeleccionado(item);
+        setValues({
+            idProducto: item.producto?.id_producto || "",
+            stockActual: item.stock_actual,
+            stockMinimo: item.stock_minimo,
+            precioNuevo: item.precioNuevo || "",
+            idTipoPrecio: item.idTipoPrecio || "",
+            motivo: item.motivo || ""
+        });
 
+        if (item.sucursal) {
+            const itemColBranchId = item.sucursal.id_sucursal || item.sucursal.idSucursal;
+            if (itemColBranchId) setIdSucursalSeleccionada(itemColBranchId);
+        }
+        setIsEditing(false);
+        setActiveTab("detalle");
+    }, [setValues]);
+
+    const nuevoDesdeDetalle = useCallback(() => {
+        setInventarioSeleccionado(null);
+        resetForm();
+        setIsEditing(true);
+        setActiveTab("detalle");
+    }, [resetForm]);
 
     const refrescarInventario = useCallback(async () => {
         if (idSucursalSeleccionada && user) {
@@ -49,44 +77,6 @@ export default function Inventario() {
         }
     }, [idSucursalSeleccionada, user]);
 
-    // Handle branch selection and inventory loading
-    useEffect(() => {
-        if (idSucursalSeleccionada && user) {
-            setLoadingInventario(true);
-            console.log("🔄 Branch selected, fetching inventory list…");
-            consultarInventario(Number(idSucursalSeleccionada))
-                .then(setInventarioList)
-                .catch(err => {
-                    console.error(err);
-                    showError("Error", "Error al cargar inventario");
-                })
-                .finally(() => setLoadingInventario(false));
-        } else {
-            setInventarioList([]);
-        }
-    }, [idSucursalSeleccionada, user, showError]);
-
-    // Effect to toggle edit mode based on selection
-    useEffect(() => {
-        setIsEditing(!inventarioSeleccionado);
-    }, [inventarioSeleccionado]);
-
-    const handleRowClick = useCallback((item: IInventario) => {
-        setInventarioSeleccionado(item);
-        setValues({
-            idProducto: item.producto?.id_producto || "",
-            stockActual: item.stock_actual,
-            stockMinimo: item.stock_minimo
-        });
-
-        if (item.sucursal) {
-            const itemColBranchId = item.sucursal.id_sucursal || item.sucursal.idSucursal;
-            if (itemColBranchId) setIdSucursalSeleccionada(itemColBranchId);
-        }
-        setIsEditing(false);
-        setActiveTab("detalle");
-    }, [setValues]);
-
     const manejarEnvio = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -95,11 +85,22 @@ export default function Inventario() {
             return;
         }
 
-        const { idProducto, stockActual, stockMinimo } = values;
+        const { idProducto, stockActual, stockMinimo, precioNuevo, motivo } = values;
 
         if (idProducto === "" || stockActual === "" || stockMinimo === "") {
-            warning("Atención", "Todos los campos son obligatorios");
+            warning("Atención", "Todos los campos básicos son obligatorios");
             return;
+        }
+
+        // Final check for duplicates when creating a new record
+        if (!inventarioSeleccionado) {
+            const alreadyExists = inventarioList.some(
+                item => Number(item.producto?.id_producto) === Number(idProducto)
+            );
+            if (alreadyExists) {
+                warning("Atención", "Este producto ya está registrado en el inventario de esta sucursal. Por favor, edite el registro existente.");
+                return;
+            }
         }
 
         const payload: Partial<IInventario> = {
@@ -107,7 +108,10 @@ export default function Inventario() {
             sucursal: { id_sucursal: Number(idSucursalSeleccionada) },
             stock_actual: Number(stockActual),
             stock_minimo: Number(stockMinimo),
-            status: true
+            status: true,
+            precioNuevo: precioNuevo !== "" ? Number(precioNuevo) : undefined,
+            idTipoPrecio: values.idTipoPrecio ? Number(values.idTipoPrecio) : undefined,
+            motivo: motivo !== "" ? motivo : undefined
         };
 
         try {
@@ -124,14 +128,7 @@ export default function Inventario() {
             console.error("Error al guardar:", err);
             showError("Error", "Ocurrió un error al guardar");
         }
-    }, [idSucursalSeleccionada, values, user, inventarioSeleccionado, refrescarInventario, warning, success, showError]);
-
-    const nuevoDesdeDetalle = useCallback(() => {
-        setInventarioSeleccionado(null);
-        resetForm();
-        setIsEditing(true);
-        setActiveTab("detalle");
-    }, [resetForm]);
+    }, [idSucursalSeleccionada, values, user, inventarioSeleccionado, inventarioList, refrescarInventario, warning, success, info, showError]);
 
     const handleDelete = useCallback(async (id: number) => {
         if (!user) return;
@@ -148,6 +145,40 @@ export default function Inventario() {
             showError("Error", "No se pudo eliminar el registro");
         }
     }, [user, refrescarInventario, inventarioSeleccionado, nuevoDesdeDetalle, success, showError]);
+
+    // Side effects
+    useEffect(() => {
+        if (idSucursalSeleccionada && user) {
+            setLoadingInventario(true);
+            console.log("🔄 Branch selected, fetching inventory list…");
+            consultarInventario(Number(idSucursalSeleccionada))
+                .then(setInventarioList)
+                .catch(err => {
+                    console.error(err);
+                    showError("Error", "Error al cargar inventario");
+                })
+                .finally(() => setLoadingInventario(false));
+        } else {
+            setInventarioList([]);
+        }
+    }, [idSucursalSeleccionada, user, showError]);
+
+    useEffect(() => {
+        setIsEditing(!inventarioSeleccionado);
+    }, [inventarioSeleccionado]);
+
+    useEffect(() => {
+        if (!inventarioSeleccionado && values.idProducto && inventarioList.length > 0) {
+            const existing = inventarioList.find(
+                item => Number(item.producto?.id_producto) === Number(values.idProducto)
+            );
+
+            if (existing) {
+                handleRowClick(existing);
+                info("Producto Detectado", "Este producto ya cuenta con un registro en el inventario. Cargando datos para actualizar.");
+            }
+        }
+    }, [values.idProducto, inventarioSeleccionado, inventarioList, handleRowClick, info]);
 
     const columnas = useMemo<Column<IInventario>[]>(() => [
         {
@@ -231,12 +262,12 @@ export default function Inventario() {
             icon: <MdDescription />,
             content: (
                 <InventarioForm values={values} handleChange={handleChange} isEditing={isEditing} setIsEditing={setIsEditing} onSave={manejarEnvio} onNew={nuevoDesdeDetalle}
-                    selection={inventarioSeleccionado} productosList={productosList} loadingLovs={loadingLovs} idSucursal={idSucursalSeleccionada} onBranchChange={setIdSucursalSeleccionada}
+                    selection={inventarioSeleccionado} productosList={productosList} tipoPreciosList={tipoPreciosList} loadingLovs={loadingLovs} idSucursal={idSucursalSeleccionada} onBranchChange={setIdSucursalSeleccionada}
                 />
             )
         }
     ], [
-        inventarioList, columnas, handleRowClick, nuevoDesdeDetalle, idSucursalSeleccionada, values, handleChange, isEditing, manejarEnvio, inventarioSeleccionado, productosList, loadingLovs, loadingInventario
+        inventarioList, columnas, handleRowClick, nuevoDesdeDetalle, idSucursalSeleccionada, values, handleChange, isEditing, manejarEnvio, inventarioSeleccionado, productosList, tipoPreciosList, loadingLovs, loadingInventario
     ]);
 
     return (
@@ -251,7 +282,7 @@ export default function Inventario() {
                     />
                 </div>
 
-                <div className="flex-1 overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 relative">
+                <div className="flex-1 overflow-visible bg-white rounded-xl shadow-sm border border-gray-200 relative">
                     <Tabs
                         tabs={items}
                         activeTab={activeTab}

@@ -3,6 +3,8 @@ package com.stockbean.stockapp.controller;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.stockbean.stockapp.dto.ProductoRequest;
 import com.stockbean.stockapp.model.tablas.Producto;
+import com.stockbean.stockapp.security.UsuarioPrincipal;
 import com.stockbean.stockapp.service.ProductoService;
 
 @RestController
@@ -21,33 +24,35 @@ public class ProductoController {
     @Autowired
     private ProductoService productoService;
 
+    @PreAuthorize("hasAnyRole('SISTEM', 'ADMIN')")
     @GetMapping
-    public List<Producto> listar(){
-        return productoService.listarTodos();
+    public List<Producto> listar(@AuthenticationPrincipal UsuarioPrincipal principal) {
+        return productoService.listar(principal.getId());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Producto> obtener(@PathVariable Integer id){
+    public ResponseEntity<Producto> obtener(@PathVariable Integer id) {
         Producto producto = productoService.obtenerPorId(id);
         return producto != null ? ResponseEntity.ok(producto) : ResponseEntity.notFound().build();
     }
 
     @PostMapping()
-    public ResponseEntity<Producto> guardar(@RequestBody ProductoRequest dto){
-        Producto resultado = productoService.guardar(dto);
+    public ResponseEntity<Producto> guardar(@RequestBody ProductoRequest dto,
+            @AuthenticationPrincipal UsuarioPrincipal principal) {
+        Producto resultado = productoService.guardar(dto, principal.getId());
         return ResponseEntity.ok(resultado);
     }
-    
+
     @PutMapping("/{id}")
-    public ResponseEntity<Producto> actualizar(@PathVariable Integer id, @RequestBody ProductoRequest dto){
+    public ResponseEntity<Producto> actualizar(@PathVariable Integer id, @RequestBody ProductoRequest dto) {
         Producto producto = productoService.actualizar(id, dto);
         return producto != null ? ResponseEntity.ok(producto) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id){
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         productoService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
-    
+
 }

@@ -21,9 +21,9 @@ export interface Productos {
   id_producto: number;
   nombre: string;
   descripcion: string;
-  Categoria: Categoria[];
-  Unidad: Unidad[];
-  Marca: Marca[];
+  categoria?: Categoria;
+  unidad?: Unidad;
+  marca?: Marca;
   codigoBarras: string;
   imagenUrl: string;
   status: boolean;

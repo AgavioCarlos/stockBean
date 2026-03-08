@@ -2,16 +2,21 @@ package com.stockbean.stockapp.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.stockbean.stockapp.model.tablas.Inventario;
 import com.stockbean.stockapp.model.tablas.Sucursal;
 import com.stockbean.stockapp.model.tablas.Usuario;
+import com.stockbean.stockapp.model.tablas.HistorialPrecios;
 import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
+import com.stockbean.stockapp.repository.HistorialPreciosRepository;
 import com.stockbean.stockapp.repository.InventarioRepository;
 import com.stockbean.stockapp.repository.SucursalRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
 import com.stockbean.stockapp.repository.UsuarioSucursalRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.NonNull;
 
@@ -23,6 +28,9 @@ public class InventarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private HistorialPreciosRepository historialPreciosRepository;
 
     @Autowired
     private SucursalRepository sucursalRepository;
@@ -39,9 +47,27 @@ public class InventarioService {
 
         validarAccesoSucursal(usuario, idSucursal);
 
-        return inventarioRepository.findBySucursalIdAndStatusTrue(idSucursal);
+        List<Inventario> inventarios = inventarioRepository.findBySucursalIdAndStatusTrue(idSucursal);
+
+        List<HistorialPrecios> prices = historialPreciosRepository.findCurrentPricesByBranch(idSucursal);
+        Map<Integer, HistorialPrecios> priceMap = prices.stream()
+                .collect(Collectors.toMap(hp -> hp.getProducto().getId_producto(), hp -> hp,
+                        (existente, nuevo) -> nuevo));
+
+        inventarios.forEach(inv -> {
+            HistorialPrecios hp = priceMap.get(inv.getProducto().getId_producto());
+            if (hp != null) {
+                inv.setPrecioNuevo(hp.getPrecioNuevo());
+                inv.setPrecioAnterior(hp.getPrecioAnterior());
+                inv.setIdTipoPrecio(hp.getIdTipoPrecio());
+                inv.setMotivo(hp.getMotivo());
+            }
+        });
+
+        return inventarios;
     }
 
+    @Transactional
     public Inventario guardar(Inventario inventario, @NonNull Integer idUsuario) {
         if (inventario.getSucursal() == null || inventario.getSucursal().getId_sucursal() == null) {
             throw new RuntimeException("Sucursal es requerida para registrar inventario.");
@@ -59,9 +85,28 @@ public class InventarioService {
             inventario.setFechaAlta(LocalDateTime.now());
         inventario.setFechaUltimaModificacion(LocalDateTime.now());
 
-        return inventarioRepository.save(inventario);
+        Inventario savedInventario = inventarioRepository.save(inventario);
+
+        if (inventario.getPrecioNuevo() != null) {
+            HistorialPrecios historial = new HistorialPrecios();
+            historial.setProducto(savedInventario.getProducto());
+            historial.setSucursal(savedInventario.getSucursal());
+            // historial.setPrecioAnterior(inventario.getPrecioAnterior());
+            historial.setPrecioNuevo(inventario.getPrecioNuevo());
+            historial.setIdTipoPrecio(inventario.getIdTipoPrecio() != null ? inventario.getIdTipoPrecio() : 1);
+            historial.setMotivo(
+                    inventario.getMotivo() != null && !inventario.getMotivo().isEmpty() ? inventario.getMotivo()
+                            : "Asignación inicial en inventario");
+            historial.setUsuario(usuario);
+            historial.setFechaCambio(LocalDateTime.now());
+            historial.setFechaAlta(LocalDateTime.now());
+            historialPreciosRepository.save(historial);
+        }
+
+        return savedInventario;
     }
 
+    @Transactional
     public Inventario actualizar(Integer id, Inventario inventarioDetails, Integer idUsuario) {
         Inventario inventario = inventarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inventario no encontrado con ID: " + id));
@@ -84,7 +129,26 @@ public class InventarioService {
 
         inventario.setFechaUltimaModificacion(LocalDateTime.now());
 
-        return inventarioRepository.save(inventario);
+        Inventario updatedInventario = inventarioRepository.save(inventario);
+
+        if (inventarioDetails.getPrecioNuevo() != null) {
+            HistorialPrecios historial = new HistorialPrecios();
+            historial.setProducto(updatedInventario.getProducto());
+            historial.setSucursal(updatedInventario.getSucursal());
+            historial.setPrecioAnterior(inventarioDetails.getPrecioAnterior());
+            historial.setPrecioNuevo(inventarioDetails.getPrecioNuevo());
+            historial.setIdTipoPrecio(
+                    inventarioDetails.getIdTipoPrecio() != null ? inventarioDetails.getIdTipoPrecio() : 1);
+            historial.setMotivo(inventarioDetails.getMotivo() != null && !inventarioDetails.getMotivo().isEmpty()
+                    ? inventarioDetails.getMotivo()
+                    : "Actualización de precio");
+            historial.setUsuario(usuario);
+            historial.setFechaCambio(LocalDateTime.now());
+            historial.setFechaAlta(LocalDateTime.now());
+            historialPreciosRepository.save(historial);
+        }
+
+        return updatedInventario;
     }
 
     public void eliminar(Integer id, Integer idUsuario) {

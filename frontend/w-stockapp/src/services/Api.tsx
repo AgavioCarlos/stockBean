@@ -1,4 +1,3 @@
-console.log("🔥 USANDO Api.ts");
 // const BASE_URL = import.meta.env.VITE_URL || "http://10.225.16.248:8080"
 const BASE_URL = import.meta.env.VITE_API_URL || "";
 
