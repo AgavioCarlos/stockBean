@@ -82,12 +82,17 @@ export default function Usuarios() {
         }));
     };
 
-    const onSave = (e: React.FormEvent) => {
+    const onSave = async (e: React.FormEvent) => {
         handleSubmit(e, (vals, selected) => {
-            const payload: Partial<IUsuario> = {
-                persona: vals.persona,
+            // Si persona ya existe (tiene id_persona), enviar solo la referencia
+            const personaPayload = vals.persona?.id_persona
+                ? { id_persona: vals.persona.id_persona }
+                : vals.persona;
+
+            const payload: any = {
+                persona: personaPayload,
                 cuenta: vals.cuenta,
-                id_rol: Number(vals.id_rol),
+                rol: { id_rol: Number(vals.id_rol) },
                 status: selected ? selected.status : true
             };
             if (vals.password) {

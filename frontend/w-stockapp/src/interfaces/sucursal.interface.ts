@@ -7,4 +7,5 @@ export interface Sucursal {
     email: string;
     status: boolean;
     fechaAlta?: string;
+    fecha_alta?: string;
 }

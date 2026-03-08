@@ -37,37 +37,51 @@ export const SharedButton: React.FC<SharedButtonProps> = ({
         icon: 'h-11 w-11 !p-0 rounded-xl shrink-0 flex items-center justify-center'
     };
 
-    // Color/Visual variants
+    // Color/Visual variants with premium aesthetic
     const variantStyles = {
         primary: `
-            bg-slate-900 text-white shadow-sm border border-transparent
-            hover:bg-slate-800 hover:shadow-md
-            focus-visible:ring-slate-900
+            bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-900
+            text-white border-0
+            shadow-[0_4px_14px_0_rgb(15,23,42,0.39)] 
+            hover:shadow-[0_6px_20px_rgba(15,23,42,0.23)] hover:from-slate-800 hover:via-slate-700 hover:to-slate-800
+            hover:-translate-y-[1px]
+            focus-visible:ring-slate-900 focus-visible:ring-offset-2
+            relative overflow-hidden
+            before:absolute before:inset-0 before:bg-white/10 before:translate-y-[100%] hover:before:translate-y-0 before:transition-transform before:duration-300 before:pointer-events-none before:ease-out
         `,
         secondary: `
-            bg-white text-slate-700 border border-slate-200 shadow-sm
-            hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300
-            focus-visible:ring-slate-200
+            bg-white text-slate-700 border border-slate-200/80 
+            shadow-[0_1px_4px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)]
+            hover:bg-slate-50 hover:text-slate-900 shadow-sm
+            hover:-translate-y-[1px]
+            focus-visible:ring-slate-200 focus-visible:ring-offset-2
         `,
         success: `
-            bg-emerald-600 text-white shadow-sm border border-transparent
-            hover:bg-emerald-700 hover:shadow-md
-            focus-visible:ring-emerald-600
+            bg-gradient-to-tr from-emerald-600 to-emerald-500
+            text-white border-0
+            shadow-[0_4px_14px_0_rgb(5,150,105,0.39)] 
+            hover:shadow-[0_6px_20px_rgba(5,150,105,0.23)] hover:from-emerald-500 hover:to-emerald-400
+            hover:-translate-y-[1px]
+            focus-visible:ring-emerald-600 focus-visible:ring-offset-2
+            relative overflow-hidden
+            before:absolute before:inset-0 before:bg-white/10 before:translate-y-[100%] hover:before:translate-y-0 before:transition-transform before:duration-300 before:pointer-events-none before:ease-out
         `,
         danger: `
-            bg-red-50 text-red-600 border border-red-100
-            hover:bg-red-100 hover:border-red-200
-            focus-visible:ring-red-500
+            bg-rose-50/80 text-rose-600 border border-rose-200/50
+            hover:bg-rose-100/80 hover:border-rose-300/50 hover:text-rose-700
+            focus-visible:ring-rose-500 focus-visible:ring-offset-2
+            hover:-translate-y-[1px] transition-transform
         `,
         outline: `
-            bg-transparent border border-slate-200 text-slate-600
-            hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900
-            focus-visible:ring-slate-300
+            bg-transparent border-2 border-slate-200 text-slate-600
+            hover:border-slate-800 hover:bg-slate-50 hover:text-slate-900
+            focus-visible:ring-slate-300 focus-visible:ring-offset-2
+            hover:-translate-y-[1px] transition-all
         `,
         ghost: `
             bg-transparent text-slate-500 border border-transparent
             hover:bg-slate-100 hover:text-slate-900
-            focus-visible:ring-slate-200
+            focus-visible:ring-slate-200 focus-visible:ring-offset-2
         `
     };
 

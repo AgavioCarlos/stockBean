@@ -13,4 +13,8 @@ export interface IInventario {
     stock_actual: number;
     stock_minimo: number;
     status: boolean;
+    precioNuevo?: number;
+    precioAnterior?: number;
+    idTipoPrecio?: number;
+    motivo?: string;
 }

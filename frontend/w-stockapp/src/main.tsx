@@ -6,21 +6,21 @@ import Persona from './features/persona/Persona'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login/Login';
-import Perfil from './pages/Perfil';
+import Perfil from './features/perfil/Perfil';
 import Categorias from './pages/Categorias';
 import Unidades from './pages/Unidades'
 import Roles from './pages/Roles';
 import Inicio from './pages/Inicio';
 import Productos from './features/producto/Productos'
-import Marcas from './pages/Marcas'
+import Marcas from './features/marca/Marcas'
 import Clientes from './pages/Clientes'
-import Proveedores from './pages/Proveedores'
-import PuntoVenta from './pages/PuntoVenta'
+import Proveedores from './features/proveedores/Proveedores'
+import PuntoVenta from './features/punto_venta/PuntoVenta'
 import ProtectedRoute from "./components/ProtectedRoute";
 import Configuracion from './pages/Configuracion';
 import Catalogos from './pages/Catalogos';
 import Administrador from './pages/Administrador';
-import Sucursales from './pages/Sucursales';
+import Sucursales from './features/sucursal/Sucursales';
 import Usuarios from './features/usuario/Usuarios';
 import UsuariosSucursales from './pages/UsuariosSucursales';
 import Inventario from './features/inventario/Inventario';
@@ -30,6 +30,10 @@ import EmpresaUsuario from './pages/EmpresaUsuario';
 import ProductoEmpresa from './features/productoEmpresa/ProductoEmpresa';
 import TestData from './pages/TestData';
 import Unauthorized from './pages/Unauthorized'; // Página de acceso denegado
+import ReporteVentas from './features/reporte_ventas/ReporteVentas';
+import Suscripciones from './features/suscripciones/Suscripciones';
+import PermisoRol from './features/roles_permisos/PermisoRol';
+import PermisoPantalla from './features/roles_permisos/PermisoPantalla';
 
 const router = createBrowserRouter([
   {
@@ -141,6 +145,26 @@ const router = createBrowserRouter([
   {
     path: "/test-data",
     element: (<ProtectedRoute><TestData /></ProtectedRoute>)
+  },
+  {
+    path: "/reporte-ventas",
+    element: (<ProtectedRoute><ReporteVentas /></ProtectedRoute>)
+  },
+  {
+    path: "/suscripciones",
+    element: (<ProtectedRoute><Suscripciones /></ProtectedRoute>)
+  },
+  {
+    path: "/suscripciones",
+    element: (<ProtectedRoute><Suscripciones /></ProtectedRoute>)
+  },
+  {
+    path: "/admin-permisos/roles",
+    element: (<ProtectedRoute><PermisoRol /></ProtectedRoute>)
+  },
+  {
+    path: "/admin-permisos/pantallas",
+    element: (<ProtectedRoute><PermisoPantalla /></ProtectedRoute>)
   },
 ]);
 

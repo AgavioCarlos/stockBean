@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import MainLayout from "../components/Layouts/MainLayout";
+import MainLayout from "../../components/Layouts/MainLayout";
 import {
     FaUserCircle,
     FaIdCard,
@@ -9,14 +9,14 @@ import {
     FaCheckCircle,
     FaTimesCircle,
     FaEnvelope,
-    FaUserTag
+    FaUserTag,
+    FaChartBar
 } from "react-icons/fa";
-import { consultarPersona } from "../features/persona/PersonaService";
-import { consultarProductos } from "../features/producto/ProductosService";
-import Breadcrumb from "../components/Breadcrumb";
-import ProductosTable from "../features/producto/components/ProductosTable";
-import type { Productos } from "../features/producto/producto.interface";
-import EditProfileModal from "../components/EditProfileModal";
+import { consultarPersona } from "../persona/PersonaService";
+import Breadcrumb from "../../components/Breadcrumb";
+import EditProfileModal from "../../components/EditProfileModal";
+import { obtenerVentasPorDia } from "../reporte_ventas/ReporteVentasService";
+import type { IVentasPorDia } from "../reporte_ventas/reporte_ventas.interface";
 
 interface Persona {
     id_persona: number;
@@ -33,9 +33,9 @@ interface Persona {
 
 function Perfil() {
     const [persona, setPersona] = useState<Persona | null>(null);
-    const [productos, setProductos] = useState<Productos[]>([]);
+    const [ventasDia, setVentasDia] = useState<IVentasPorDia[]>([]);
     const [loadingPersona, setLoadingPersona] = useState(true);
-    const [loadingProductos, setLoadingProductos] = useState(true);
+    const [loadingVentas, setLoadingVentas] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const cargarDatos = async () => {
@@ -60,7 +60,10 @@ function Perfil() {
             } else {
                 // Fallback to API if no local data
                 const dataPersona = await consultarPersona();
-                setPersona(dataPersona);
+                setPersona({
+                    ...dataPersona,
+                    id_persona: dataPersona.id_persona ?? 0
+                });
                 setLoadingPersona(false);
             }
         } catch (error) {
@@ -69,13 +72,13 @@ function Perfil() {
         }
 
         try {
-            // Cargar Productos para "Reportes"
-            const dataProductos = await consultarProductos();
-            setProductos(dataProductos);
+            // Cargar estadística de ventas por día
+            const dataVentas = await obtenerVentasPorDia();
+            setVentasDia(dataVentas);
         } catch (error) {
-            console.error("Error al consultar productos:", error);
+            console.error("Error al consultar ventas por día:", error);
         } finally {
-            setLoadingProductos(false);
+            setLoadingVentas(false);
         }
     };
 
@@ -117,7 +120,7 @@ function Perfil() {
             <div className="pb-12 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <Breadcrumb
                     items={[
-                        { label: "Dashboard", onClick: () => { } },
+                        { label: "Dashboard", onClick: () => { window.history.back() } },
                         { label: persona ? `${persona.nombre} ${persona.apellido_paterno}` : "Perfil de Usuario" }
                     ]}
                     onBack={() => window.history.back()}
@@ -271,30 +274,58 @@ function Perfil() {
                         <div className="bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/40 border border-gray-100 overflow-hidden">
                             <div className="p-8 md:p-10 border-b border-gray-50 flex items-center justify-between">
                                 <div className="space-y-1">
-                                    <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Reportes de Inventario</h3>
-                                    <p className="text-sm text-gray-500">Últimos movimientos registrados en el sistema</p>
+                                    <h3 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
+                                        <FaChartBar className="text-blue-500" /> Rendimiento de Ventas por Día
+                                    </h3>
+                                    <p className="text-sm text-gray-500">Historial de volumen y producto más vendido</p>
                                 </div>
-                                <button className="px-6 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-600 hover:text-white transition-all transform hover:scale-105 active:scale-95 duration-300">
-                                    Ver Todos
-                                </button>
                             </div>
 
                             <div className="p-4 md:p-8">
-                                {loadingProductos ? (
+                                {loadingVentas ? (
                                     <div className="py-20 flex flex-col items-center justify-center text-gray-400 gap-4">
                                         <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
-                                        <p className="font-medium">Consultando datos…</p>
+                                        <p className="font-medium">Consultando historial de ventas…</p>
                                     </div>
                                 ) : (
-                                    <div className="overflow-hidden rounded-2xl border border-gray-100 shadow-sm">
-                                        <ProductosTable productos={productos.slice(0, 5)} />
+                                    <div className="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm">
+                                        <table className="w-full text-left text-sm text-gray-600">
+                                            <thead className="bg-gray-50/80 text-gray-800 font-bold border-b border-gray-100 uppercase tracking-wider text-[11px]">
+                                                <tr>
+                                                    <th className="px-6 py-4">Fecha</th>
+                                                    <th className="px-6 py-4">Producto Top</th>
+                                                    <th className="px-6 py-4 text-center">Unidades</th>
+                                                    <th className="px-6 py-4 text-right">Total Ventas</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100 bg-white">
+                                                {ventasDia.map((item, index) => (
+                                                    <tr key={index} className="hover:bg-blue-50/30 transition-colors group">
+                                                        <td className="px-6 py-4 font-bold text-gray-900 whitespace-nowrap">
+                                                            {new Date(item.fecha + "T00:00:00").toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                        </td>
+                                                        <td className="px-6 py-4 font-medium text-gray-700">
+                                                            <span className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-bold border border-purple-100 group-hover:bg-purple-100 transition-colors">
+                                                                {item.topProducto}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center font-bold font-variant-numeric: tabular-nums">
+                                                            {item.cantidad}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right font-black text-emerald-600 font-variant-numeric: tabular-nums">
+                                                            ${item.totalVentas.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 )}
                             </div>
 
-                            {!loadingProductos && productos.length === 0 && (
+                            {!loadingVentas && ventasDia.length === 0 && (
                                 <div className="pb-10 pt-4 text-center">
-                                    <p className="text-gray-400 text-sm">No hay reportes disponibles en este momento.</p>
+                                    <p className="text-gray-400 text-sm">No hay registros de ventas en los últimos 30 días.</p>
                                 </div>
                             )}
                         </div>
@@ -311,7 +342,6 @@ function Perfil() {
         </MainLayout>
     );
 }
-
 
 interface InfoFieldProps {
     label: string;

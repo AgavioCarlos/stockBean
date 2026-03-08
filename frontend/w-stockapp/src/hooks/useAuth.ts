@@ -13,7 +13,9 @@ export interface UserSession {
     apellido_paterno?: string;
     apellido_materno?: string;
     email?: string;
-    empresa?: string[];
+    empresa?: any[]; // Typically Array of objects
+    // Added for RBAC Micro-Permissions
+    permisos_crud?: Record<number, Record<string, string[]>>; // { idEmpresa: { "pantallaKey": ["create", "read"] } }
     [key: string]: any;
 }
 
@@ -22,24 +24,34 @@ export interface UserSession {
  * Centralizes access to localStorage and provides role-based helpers.
  */
 export const useAuth = () => {
-    const [user, setUser] = useState<UserSession | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    // Load user data on initialization
-    useEffect(() => {
+    const [user, setUser] = useState<UserSession | null>(() => {
         const uDataStr = localStorage.getItem("usuario") || localStorage.getItem("user_data");
         if (uDataStr) {
             try {
-                const u = JSON.parse(uDataStr);
-                setUser(u);
+                return JSON.parse(uDataStr);
             } catch (e) {
                 console.error("Error parsing user data from localStorage", e);
                 localStorage.removeItem("usuario");
                 localStorage.removeItem("user_data");
+                return null;
+            }
+        }
+        return null;
+    });
+    const [loading, setLoading] = useState(!user);
+
+    // Sync state if needed (though primary load is now sync)
+    useEffect(() => {
+        if (!user) {
+            const uDataStr = localStorage.getItem("usuario") || localStorage.getItem("user_data");
+            if (uDataStr) {
+                try {
+                    setUser(JSON.parse(uDataStr));
+                } catch (e) { }
             }
         }
         setLoading(false);
-    }, []);
+    }, [user]);
 
     const logout = useCallback(() => {
         localStorage.removeItem("token");
@@ -67,5 +79,57 @@ export const useAuth = () => {
         logout,
         ...roles,
         isAuthenticated: !!user?.token
+    };
+};
+
+/**
+ * Hook to retrieve specific UI interactions (CRUD) per screen based on RBAC.
+ * It reads the injected "permisos_crud" object map from the user's session.
+ * NOTE: JSON keys are always strings, so we must use String() for empresa ID lookups.
+ */
+export const usePermissions = (pantallaKey: string) => {
+    const { user, loading } = useAuth();
+
+    // Default permission object for when we are loading or unauthorized
+    const DENIED = {
+        canView: false,
+        canCreate: false,
+        canRead: false,
+        canUpdate: false,
+        canDelete: false,
+        canExport: false,
+        loading: loading
+    };
+
+    if (loading) return DENIED;
+
+    // SISTEM role (Global Admin) completely bypasses UI blocks
+    if (user?.id_rol === 1) return { ...DENIED, canView: true, canCreate: true, canRead: true, canUpdate: true, canDelete: true, canExport: true, loading: false };
+
+    const permisosCrud = user?.permisos_crud;
+    if (!permisosCrud) return DENIED;
+
+    // JSON keys are ALWAYS strings ("5" not 5), so use String for the lookup
+    const empresaKeys = Object.keys(permisosCrud);
+    const activeEmpresaKey = localStorage.getItem('id_empresa') || empresaKeys[0] || '';
+
+    // Access the permissions map for this empresa using the string key
+    const permisosPorPantalla = permisosCrud[activeEmpresaKey as any];
+
+    if (!permisosPorPantalla) return DENIED;
+
+    // Get the actions array for this specific screen
+    const accionesPermitidas = (permisosPorPantalla[pantallaKey] || []).map((p: string) => p.toLowerCase());
+
+    const canView = accionesPermitidas.includes('view');
+
+    return {
+        canView,
+        canCreate: canView && accionesPermitidas.includes('create'),
+        canRead: canView, // backward compat alias
+        canUpdate: accionesPermitidas.includes('update'),
+        canDelete: canView && accionesPermitidas.includes('delete'),
+        canExport: canView && accionesPermitidas.includes('export'),
+        loading: false
     };
 };

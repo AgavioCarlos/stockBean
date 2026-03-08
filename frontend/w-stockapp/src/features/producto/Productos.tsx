@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../../components/Layouts/MainLayout";
 import {
@@ -6,9 +6,7 @@ import {
   crearProducto,
   actualizarProducto,
 } from "./ProductosService";
-import { consultarCategorias } from "../../services/Categoria";
-import { consultarMarcas } from "../../services/Marcas";
-import { consultarUnidades } from "../../services/Unidad";
+
 import Swal from "sweetalert2";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { IoMdAddCircle, IoMdList } from "react-icons/io";
@@ -20,15 +18,13 @@ import { SharedButton } from "../../components/SharedButton";
 import { SharedInput } from "../../components/SharedInput";
 import { StatusBadge } from "../../components/StatusBadge";
 import { MdDelete, MdEdit, MdDescription } from "react-icons/md";
-import SearchInput from "../../components/SearchInput";
 import StatusFilter from "../../components/StatusFilter";
 import { PdfButton, ExcelButton } from "../../components/Buttons";
 import { IoIosSave } from "react-icons/io";
-
 import Breadcrumb from "../../components/Breadcrumb";
-
-import { Categoria } from "../../interfaces/categoria.interface";
 import { Marca } from "../../interfaces/marca.interface";
+import { useLOVs } from "../../hooks/useLOVs";
+import { SearchableSelect } from "../../components/SearchableSelect";
 
 function Productos() {
   const navigate = useNavigate();
@@ -43,15 +39,38 @@ function Productos() {
   const [imagenUrl, setImagenUrl] = useState("");
   const [status, setStatus] = useState(true);
   const [vista, setVista] = useState("lista");
+  const { data: lovs, loading: loadingLovs } = useLOVs(["categorias", "marcas", "unidades"]);
+  const categoriasList = useMemo(() => lovs.categorias || [], [lovs.categorias]);
+  const marcasList = useMemo(() => lovs.marcas || [], [lovs.marcas]);
+  const unidadesList = useMemo(() => lovs.unidades || [], [lovs.unidades]);
+
+  const categoriaOptions = useMemo(() =>
+    categoriasList.map((c: any) => ({
+      value: c.idCategoria ?? c.id,
+      label: c.nombre
+    })), [categoriasList]);
+
+  const marcaOptions = useMemo(() =>
+    marcasList.map((m: any) => ({
+      value: m.idMarca ?? m.id,
+      label: m.nombre
+    })), [marcasList]);
+
+  const unidadOptions = useMemo(() =>
+    unidadesList.map((u: any) => ({
+      value: u.idUnidad ?? u.id,
+      label: u.nombre
+    })), [unidadesList]);
+
   const [productoSeleccionado, setProductoSeleccionado] =
     useState<Productos | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   // ... (rest of state)
-  const [categoriasList, setCategoriasList] = useState<Categoria[]>([]);
-  const [marcasList, setMarcasList] = useState<Marca[]>([]);
-  const [unidadesList, setUnidadesList] = useState<any[]>([]);
+  // const [categoriasList, setCategoriasList] = useState<Categoria[]>([]);
+  // const [marcasList, setMarcasList] = useState<Marca[]>([]);
+  // const [unidadesList, setUnidadesList] = useState<any[]>([]);
 
   const [rowDataFiltrada, setRowDataFiltrada] = useState(productos);
   const [filtroEstado, setFiltroEstado] = useState(true);
@@ -64,27 +83,9 @@ function Productos() {
     setVista("detalle");
     setNombre(p.nombre ?? "");
     setDescripcion(p.descripcion ?? "");
-    setCategoria(
-      Array.isArray(p.Categoria) && p.Categoria.length > 0
-        ? p.Categoria[0].idCategoria
-        : typeof (p as any).categoria === "number"
-          ? (p as any).categoria
-          : 0
-    );
-    setUnidad(
-      Array.isArray(p.Unidad) && p.Unidad.length > 0
-        ? p.Unidad[0].idUnidad
-        : typeof (p as any).unidad === "number"
-          ? (p as any).unidad
-          : 0
-    );
-    setMarca(
-      Array.isArray(p.Marca) && p.Marca.length > 0
-        ? p.Marca[0].idMarca
-        : typeof (p as any).marca === "number"
-          ? (p as any).marca
-          : 0
-    );
+    setCategoria(p.categoria?.idCategoria || p.categoria || 0);
+    setUnidad(p.unidad?.idUnidad || p.unidad || 0);
+    setMarca(p.marca?.idMarca || p.marca || 0);
     setCodigoBarras(p.codigoBarras ?? "");
     setImagenUrl(p.imagenUrl ?? "");
     setStatus(typeof p.status === "boolean" ? p.status : true);
@@ -159,17 +160,9 @@ function Productos() {
   };
 
   useEffect(() => {
-    Promise.all([
-      consultarProductos(),
-      consultarCategorias(),
-      consultarMarcas(),
-      consultarUnidades(),
-    ])
-      .then(([productosData, categoriasData, marcasData, unidadesData]) => {
+    consultarProductos()
+      .then((productosData) => {
         setProductos(productosData);
-        if (Array.isArray(categoriasData)) setCategoriasList(categoriasData);
-        if (Array.isArray(marcasData)) setMarcasList(marcasData);
-        if (Array.isArray(unidadesData)) setUnidadesList(unidadesData);
         setLoading(false);
       })
       .catch((error) => {
@@ -221,24 +214,9 @@ function Productos() {
       const payload = {
         nombre: producto.nombre ?? "",
         descripcion: producto.descripcion ?? "",
-        idCategoria:
-          (Array.isArray((producto as any).Categoria) &&
-            (producto as any).Categoria[0]?.idCategoria) ??
-          (typeof (producto as any).categoria === "number"
-            ? (producto as any).categoria
-            : null),
-        idUnidad:
-          (Array.isArray((producto as any).Unidad) &&
-            (producto as any).Unidad[0]?.idUnidad) ??
-          (typeof (producto as any).unidad === "number"
-            ? (producto as any).unidad
-            : null),
-        idMarca:
-          (Array.isArray((producto as any).Marca) &&
-            (producto as any).Marca[0]?.idMarca) ??
-          (typeof (producto as any).marca === "number"
-            ? (producto as any).marca
-            : null),
+        idCategoria: producto.categoria?.idCategoria ?? (typeof producto.categoria === "number" ? producto.categoria : null),
+        idUnidad: producto.unidad?.idUnidad ?? (typeof producto.unidad === "number" ? producto.unidad : null),
+        idMarca: producto.marca?.idMarca ?? (typeof producto.marca === "number" ? producto.marca : null),
         imagenUrl: producto.imagenUrl ?? "",
         codigoBarras: producto.codigoBarras ?? "",
         status: newStatus,
@@ -282,56 +260,62 @@ function Productos() {
       label: "Descripción",
     },
     {
-      key: "Categoria",
+      key: "categoria",
       label: "Categoría",
       valueGetter: (item: any) => {
         if (!item) return "";
-        if (item.Categoria && item.Categoria.length > 0)
-          return item.Categoria[0].nombre;
-        const id =
-          typeof item.categoria === "number"
-            ? item.categoria
-            : item.idCategoria;
+        if (item.categoria?.nombre) return item.categoria.nombre;
+        const id = typeof item.categoria === "number" ? item.categoria : item.idCategoria;
         if (!id) return "";
-        const cat = categoriasList.find(
-          (c: any) => c.id_categoria === id || c.id === id
-        );
+        const cat = categoriasList.find((c: any) => c.idCategoria === id || c.id === id);
+        return cat ? cat.nombre : "";
+      },
+      render: (_, item: any) => {
+        if (!item) return "";
+        if (item.categoria?.nombre) return item.categoria.nombre;
+        const id = typeof item.categoria === "number" ? item.categoria : item.idCategoria;
+        if (!id) return "";
+        const cat = categoriasList.find((c: any) => c.idCategoria === id || c.id === id);
         return cat ? cat.nombre : "";
       },
     },
     {
-      key: "Marca",
+      key: "marca",
       label: "Marca",
       valueGetter: (item: any) => {
         if (!item) return "";
-        if (item.Marca && item.Marca.length > 0)
-          return item.Marca[0].nombre;
-        const id =
-          typeof item.marca === "number"
-            ? item.marca
-            : item.idMarca;
+        if (item.marca?.nombre) return item.marca.nombre;
+        const id = typeof item.marca === "number" ? item.marca : item.idMarca;
         if (!id) return "";
-        const marcaItem = marcasList.find(
-          (m: any) => m.id_marca === id || m.id === id
-        );
+        const marcaItem = marcasList.find((m: any) => m.idMarca === id || m.id === id);
+        return marcaItem ? marcaItem.nombre : "";
+      },
+      render: (_, item: any) => {
+        if (!item) return "";
+        if (item.marca?.nombre) return item.marca.nombre;
+        const id = typeof item.marca === "number" ? item.marca : item.idMarca;
+        if (!id) return "";
+        const marcaItem = marcasList.find((m: any) => m.idMarca === id || m.id === id);
         return marcaItem ? marcaItem.nombre : "";
       },
     },
     {
-      key: "Unidad",
+      key: "unidad",
       label: "Unidad",
       valueGetter: (item: any) => {
         if (!item) return "";
-        if (item.Unidad && item.Unidad.length > 0)
-          return item.Unidad[0].nombre;
-        const id =
-          typeof item.unidad === "number"
-            ? item.unidad
-            : item.idUnidad;
+        if (item.unidad?.nombre) return item.unidad.nombre;
+        const id = typeof item.unidad === "number" ? item.unidad : item.idUnidad;
         if (!id) return "";
-        const u = unidadesList.find(
-          (u: any) => u.id_unidad === id || u.id === id
-        );
+        const u = unidadesList.find((u: any) => u.idUnidad === id || u.id === id);
+        return u ? u.nombre : "";
+      },
+      render: (_, item: any) => {
+        if (!item) return "";
+        if (item.unidad?.nombre) return item.unidad.nombre;
+        const id = typeof item.unidad === "number" ? item.unidad : item.idUnidad;
+        if (!id) return "";
+        const u = unidadesList.find((u: any) => u.idUnidad === id || u.id === id);
         return u ? u.nombre : "";
       },
     },
@@ -473,7 +457,7 @@ function Productos() {
                       </div>
                     </div>
 
-                    <div className="flex-1 p-6 overflow-hidden">
+                    <div className="flex-1 p-6 pb-40 overflow-visible">
                       <div className="flex gap-8 h-full">
                         <div className="w-1/3 flex flex-col gap-4">
                           <div
@@ -561,56 +545,41 @@ function Productos() {
                           </div>
 
                           <div className="grid grid-cols-3 gap-4">
-                            <div className="group">
-                              <label className="text-[11px] font-black uppercase tracking-widest transition-colors duration-200 text-slate-600 group-focus-within:text-blue-600 mb-1 block">
-                                Categoría
-                              </label>
-                              <select
+                            <div className="z-[30]">
+                              <SearchableSelect
+                                label="Categoría"
+                                id="categoria"
+                                options={categoriaOptions}
                                 value={categoria ?? 0}
-                                onChange={(e) => setCategoria(Number(e.target.value))}
-                                className="w-full px-4 py-3 rounded-xl transition-all duration-300 font-medium text-slate-800 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 bg-white border-slate-200 shadow-sm hover:border-slate-300 text-sm"
-                              >
-                                <option value={0}>Seleccionar...</option>
-                                {categoriasList.map((c: any) => (
-                                  <option key={c.idCategoria ?? c.id} value={c.idCategoria ?? c.id}>
-                                    {c.nombre}
-                                  </option>
-                                ))}
-                              </select>
+                                onChange={(val) => setCategoria(Number(val))}
+                                disabled={loadingLovs}
+                                loading={loadingLovs}
+                                placeholder="Seleccionar categoría..."
+                              />
                             </div>
-                            <div className="group">
-                              <label className="text-[11px] font-black uppercase tracking-widest transition-colors duration-200 text-slate-600 group-focus-within:text-blue-600 mb-1 block">
-                                Marca
-                              </label>
-                              <select
+                            <div className="z-[20]">
+                              <SearchableSelect
+                                label="Marca"
+                                id="marca"
+                                options={marcaOptions}
                                 value={marca ?? 0}
-                                onChange={(e) => setMarca(Number(e.target.value))}
-                                className="w-full px-4 py-3 rounded-xl transition-all duration-300 font-medium text-slate-800 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 bg-white border-slate-200 shadow-sm hover:border-slate-300 text-sm"
-                              >
-                                <option value={0}>Seleccionar...</option>
-                                {marcasList.map((m: any) => (
-                                  <option key={m.idMarca ?? m.id} value={m.idMarca ?? m.id}>
-                                    {m.nombre}
-                                  </option>
-                                ))}
-                              </select>
+                                onChange={(val) => setMarca(Number(val))}
+                                disabled={loadingLovs}
+                                loading={loadingLovs}
+                                placeholder="Seleccionar marca..."
+                              />
                             </div>
-                            <div className="group">
-                              <label className="text-[11px] font-black uppercase tracking-widest transition-colors duration-200 text-slate-600 group-focus-within:text-blue-600 mb-1 block">
-                                Unidad
-                              </label>
-                              <select
+                            <div className="z-[10]">
+                              <SearchableSelect
+                                label="Unidad"
+                                id="unidad"
+                                options={unidadOptions}
                                 value={unidad ?? 0}
-                                onChange={(e) => setUnidad(Number(e.target.value))}
-                                className="w-full px-4 py-3 rounded-xl transition-all duration-300 font-medium text-slate-800 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 bg-white border-slate-200 shadow-sm hover:border-slate-300 text-sm"
-                              >
-                                <option value={0}>Seleccionar...</option>
-                                {unidadesList.map((u: any) => (
-                                  <option key={u.idUnidad ?? u.id} value={u.idUnidad ?? u.id}>
-                                    {u.nombre}
-                                  </option>
-                                ))}
-                              </select>
+                                onChange={(val) => setUnidad(Number(val))}
+                                disabled={loadingLovs}
+                                loading={loadingLovs}
+                                placeholder="Seleccionar unidad..."
+                              />
                             </div>
                           </div>
 

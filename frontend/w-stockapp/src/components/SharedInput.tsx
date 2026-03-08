@@ -5,6 +5,7 @@ interface SharedInputProps extends InputHTMLAttributes<HTMLInputElement> {
     description?: string;
     isEditing: boolean;
     error?: string;
+    icon?: React.ReactNode;
 }
 
 export const SharedInput: React.FC<SharedInputProps> = ({
@@ -12,6 +13,7 @@ export const SharedInput: React.FC<SharedInputProps> = ({
     description,
     isEditing,
     error,
+    icon,
     id,
     ...props
 }) => {
@@ -24,13 +26,21 @@ export const SharedInput: React.FC<SharedInputProps> = ({
                 {label}
             </label>
 
-            <div className="relative">
+            <div className="relative group/input">
+                {icon && (
+                    <div className={`
+                        absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200
+                        ${isEditing ? 'text-slate-400 group-focus-within/input:text-blue-500' : 'text-slate-300'}
+                    `}>
+                        {icon}
+                    </div>
+                )}
                 <input
                     id={id}
                     disabled={!isEditing}
                     {...props}
                     className={`
-                        w-full px-4 py-3 border-2 rounded-xl transition-all duration-300 font-medium text-slate-800
+                        w-full ${icon ? 'pl-11' : 'px-4'} py-3 border-2 rounded-xl transition-all duration-300 font-medium text-slate-800
                         focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500
                         ${!isEditing
                             ? 'bg-slate-50/80 border-slate-100 text-slate-500 cursor-not-allowed shadow-none'

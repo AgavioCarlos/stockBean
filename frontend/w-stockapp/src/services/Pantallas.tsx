@@ -1,4 +1,4 @@
-import { Pantalla } from "../interfaces/Pantalla";
+import { Pantalla } from "../interfaces/pantalla.interface";
 
 /**
  * Servicio para gestionar las pantallas/rutas del usuario autenticado

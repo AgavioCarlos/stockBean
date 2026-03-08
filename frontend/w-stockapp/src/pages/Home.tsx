@@ -1,12 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import MainLayout from "../components/Layouts/MainLayout";
 import Footer from "../components/Layouts/Footer";
 import ConfiguracionEmpresa from '../components/ConfiguracionEmpresa';
-import { FiTrendingUp, FiBox, FiUsers, FiDollarSign, FiArrowRight } from 'react-icons/fi';
+import { FiTrendingUp, FiBox, FiUsers, FiDollarSign, FiArrowRight, FiActivity } from 'react-icons/fi';
+import { obtenerReporteVentas, obtenerStatsDashboard } from '../features/reporte_ventas/ReporteVentasService';
+import type { IVentaReporte, IDashboardStats } from '../features/reporte_ventas/reporte_ventas.interface';
+import { consultarClientes } from '../services/Clientes';
 
 function Home() {
   const [showConfiguracionEmpresa, setShowConfiguracionEmpresa] = useState(false);
   const [userData, setUserData] = useState<any>(null);
+  const [reporteData, setReporteData] = useState<IVentaReporte[]>([]);
+  const [dashboardStats, setDashboardStats] = useState<IDashboardStats | null>(null);
+  const [totalClientes, setTotalClientes] = useState(0);
 
   useEffect(() => {
     // Verificar si el usuario necesita configurar empresa
@@ -20,13 +26,58 @@ function Home() {
     if (savedUser) {
       setUserData(JSON.parse(savedUser));
     }
+
+    // Cargar reporte de ventas para datos en tiempo real (Lista de últimas ventas)
+    obtenerReporteVentas()
+      .then(setReporteData)
+      .catch(err => console.error("Error al cargar ventas en Home:", err));
+
+    // Cargar estadísticas del Dashboard desde el Backend
+    obtenerStatsDashboard()
+      .then(setDashboardStats)
+      .catch(err => console.error("Error al cargar estadísticas en Home:", err));
+
+    // Cargar total de clientes
+    consultarClientes()
+      .then(res => {
+        if (Array.isArray(res)) setTotalClientes(res.length);
+      })
+      .catch(err => console.error("Error al cargar clientes en Home:", err));
   }, []);
 
   const stats = [
-    { label: 'Ventas Hoy', value: '$12,450', icon: <FiDollarSign />, color: 'bg-green-500', trend: '+12.5%' },
-    { label: 'Productos', value: '1,240', icon: <FiBox />, color: 'bg-indigo-500', trend: '+3.2%' },
-    { label: 'Clientes', value: '458', icon: <FiUsers />, color: 'bg-blue-500', trend: '+5.4%' },
-    { label: 'Rendimiento', value: '94.2%', icon: <FiTrendingUp />, color: 'bg-purple-500', trend: '+0.8%' },
+    {
+      label: 'Monto Ventas',
+      value: dashboardStats ? `$${dashboardStats.montoHoy.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '$0.00',
+      icon: <FiDollarSign />,
+      color: 'bg-emerald-500',
+      trend: dashboardStats?.trendMonto || '0%',
+      trendColor: dashboardStats?.montoColor || 'text-slate-400 bg-slate-50'
+    },
+    {
+      label: 'Total Ventas',
+      value: dashboardStats ? dashboardStats.conteoHoy.toString() : '0',
+      icon: <FiTrendingUp />,
+      color: 'bg-indigo-500',
+      trend: dashboardStats?.trendConteo || '0%',
+      trendColor: dashboardStats?.conteoColor || 'text-slate-400 bg-slate-50'
+    },
+    {
+      label: 'Productos Vendidos',
+      value: dashboardStats ? dashboardStats.unidadesHoy.toString() : '0',
+      icon: <FiBox />,
+      color: 'bg-blue-500',
+      trend: dashboardStats?.trendUnidades || '0%',
+      trendColor: dashboardStats?.unidadesColor || 'text-slate-400 bg-slate-50'
+    },
+    {
+      label: 'Promedio/Venta',
+      value: dashboardStats ? `$${dashboardStats.promedioHoy.toLocaleString('es-MX', { maximumFractionDigits: 0 })}` : '$0',
+      icon: <FiActivity />,
+      color: 'bg-purple-500',
+      trend: dashboardStats?.trendPromedio || '0%',
+      trendColor: dashboardStats?.promedioColor || 'text-slate-400 bg-slate-50'
+    },
   ];
 
   return (
@@ -49,7 +100,7 @@ function Home() {
                   ¡Bienvenido, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">{userData?.nombre || 'Usuario'}</span>!
                 </h1>
                 <p className="text-lg text-gray-400 font-medium mb-10 leading-relaxed">
-                  Tu ecosistema de gestión está listo. Hemos procesado <span className="text-white font-bold">24 nuevas alertas</span> de inventario para tu revisión hoy. Optimiza tus operaciones con inteligencia artificial.
+                  Tu ecosistema de gestión está listo. Hemos procesado <span className="text-white font-bold">{dashboardStats?.conteoHoy || 0} ventas</span> hoy por un total de <span className="text-white font-bold">${(dashboardStats?.montoHoy || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span> en transacciones. Optimiza tus operaciones con inteligencia artificial.
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <button className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold transition-all shadow-xl shadow-indigo-600/20 flex items-center gap-2 group active:scale-95">
@@ -67,10 +118,10 @@ function Home() {
               {stats.map((stat, idx) => (
                 <div key={idx} className="bg-white/60 backdrop-blur-xl p-8 rounded-[2rem] border border-white shadow-xl shadow-gray-100 group hover:-translate-y-1 transition-all duration-300">
                   <div className="flex justify-between items-start mb-6">
-                    <div className={`w-14 h-14 ${stat.color} rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg shadow-${stat.color.split('-')[1]}-200 group-hover:scale-110 transition-transform duration-500`}>
+                    <div className={`w-14 h-14 ${stat.color} rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform duration-500`}>
                       {stat.icon}
                     </div>
-                    <span className="text-green-500 text-xs font-black bg-green-50 rounded-full px-2 py-1">
+                    <span className={`text-xs font-black rounded-full px-2 py-1 ${stat.trendColor}`}>
                       {stat.trend}
                     </span>
                   </div>
@@ -82,12 +133,40 @@ function Home() {
 
             {/* Placeholder for more content */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-100 border border-gray-50 h-[400px] flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-inner">
-                    <FiTrendingUp className="text-3xl text-gray-300" />
-                  </div>
-                  <p className="text-gray-400 font-bold text-sm tracking-wide">Actividad Reciente y Gráficos aparecerán aquí</p>
+              <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-100 border border-gray-50 flex flex-col">
+                <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-xl font-black text-gray-900">Últimas Ventas</h3>
+                  <button className="text-indigo-600 font-bold text-sm hover:underline">Ver todas</button>
+                </div>
+                <div className="flex-1 space-y-4 overflow-auto max-h-[280px] scrollbar-hide">
+                  {reporteData.length > 0 ? (
+                    reporteData.slice(0, 5).map((venta) => (
+                      <div key={venta.idVenta} className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-transparent hover:border-indigo-100 hover:bg-white hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-sm shadow-sm">
+                            #{venta.idVenta}
+                          </div>
+                          <div>
+                            <p className="font-black text-gray-900 text-sm tracking-tight">{venta.sucursal}</p>
+                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-0.5">
+                              {new Date(venta.fechaVenta).toLocaleDateString("es-MX", { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-black text-gray-900 text-lg">${venta.totalVenta.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+                          <span className="text-[10px] bg-green-50 text-green-600 font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                            {venta.metodoPago || 'Efectivo'}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-300">
+                      <FiDollarSign className="text-5xl mb-4 opacity-20" />
+                      <p className="font-black text-sm uppercase tracking-widest">Sin actividad comercial hoy</p>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-100 border border-gray-50 h-[400px] flex items-center justify-center">

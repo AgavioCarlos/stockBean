@@ -94,12 +94,16 @@ export function useCRUD<T>({
                 if (selectedItem && id) {
                     await updateData(id, payload);
                     success("Éxito", "Registro actualizado correctamente");
+                    await refreshData();
+                    setActiveTab("lista");
                 } else {
-                    await createData(payload);
-                    success("Éxito", "Registro creado correctamente");
+                    const created = await createData(payload);
+                    success("Éxito", "Registro creado correctamente. Ahora puedes asignar permisos.");
+                    await refreshData();
+                    // Mantener en detalle con el nuevo registro seleccionado para asignar permisos
+                    setSelectedItem(created);
+                    setIsEditing(false);
                 }
-                await refreshData();
-                setActiveTab("lista");
             } catch (err) {
                 console.error("Error saving data:", err);
                 showError("Error", "Ocurrió un error al guardar");

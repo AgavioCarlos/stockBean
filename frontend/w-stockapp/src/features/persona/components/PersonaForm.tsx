@@ -5,6 +5,7 @@ import type { IPersona } from '../persona.interface';
 import { SharedInput } from '../../../components/SharedInput';
 import { SharedButton } from '../../../components/SharedButton';
 import { StatusBadge } from '../../../components/StatusBadge';
+import { WithPermission } from '../../../components/WithPermission';
 
 interface PersonaFormProps {
     values: any;
@@ -46,56 +47,64 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({
                     <div className="flex items-center gap-3">
                         {!isEditing && selection && (
                             <>
-                                <SharedButton
-                                    type="button"
-                                    variant={selection.status ? 'danger' : 'success'}
-                                    className={`shadow-sm transition-all ${selection.status ? 'hover:bg-red-50 hover:text-red-700 hover:border-red-200' : 'hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'}`}
-                                    onClick={() => onToggleStatus(selection)}
-                                    title={selection.status ? "Desactivar Persona" : "Reactivar Persona"}
-                                    aria-label={selection.status ? "Desactivar" : "Reactivar"}
-                                    icon={<MdPowerSettingsNew size={20} aria-hidden="true" />}
-                                >
-                                    {selection.status ? 'Desactivar' : 'Activar'}
-                                </SharedButton>
+                                <WithPermission screen="personas" action="delete">
+                                    <SharedButton
+                                        type="button"
+                                        variant={selection.status ? 'danger' : 'success'}
+                                        className={`shadow-sm transition-all ${selection.status ? 'hover:bg-red-50 hover:text-red-700 hover:border-red-200' : 'hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'}`}
+                                        onClick={() => onToggleStatus(selection)}
+                                        title={selection.status ? "Desactivar Persona" : "Reactivar Persona"}
+                                        aria-label={selection.status ? "Desactivar" : "Reactivar"}
+                                        icon={<MdPowerSettingsNew size={20} aria-hidden="true" />}
+                                    >
+                                        {selection.status ? 'Desactivar' : 'Activar'}
+                                    </SharedButton>
+                                </WithPermission>
 
-                                <SharedButton
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setIsEditing(true)}
-                                    title="Editar"
-                                    aria-label="Editar"
-                                    icon={<MdEdit size={20} aria-hidden="true" />}
-                                >
-                                    Editar
-                                </SharedButton>
+                                <WithPermission screen="personas" action="update">
+                                    <SharedButton
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setIsEditing(true)}
+                                        title="Editar"
+                                        aria-label="Editar"
+                                        icon={<MdEdit size={20} aria-hidden="true" />}
+                                    >
+                                        Editar
+                                    </SharedButton>
+                                </WithPermission>
                             </>
                         )}
 
                         {isEditing && (
-                            <SharedButton
-                                type="submit"
-                                variant="primary"
-                                className="shadow-md shadow-blue-500/20"
-                                title="Guardar Persona"
-                                aria-label="Guardar Persona"
-                                icon={<IoIosSave size={20} aria-hidden="true" />}
-                            >
-                                Guardar Cambios
-                            </SharedButton>
+                            <WithPermission screen="personas" action="update">
+                                <SharedButton
+                                    type="submit"
+                                    variant="primary"
+                                    className="shadow-md shadow-blue-500/20"
+                                    title="Guardar Persona"
+                                    aria-label="Guardar Persona"
+                                    icon={<IoIosSave size={20} aria-hidden="true" />}
+                                >
+                                    Guardar Cambios
+                                </SharedButton>
+                            </WithPermission>
                         )}
 
                         {!isEditing && (
-                            <SharedButton
-                                type="button"
-                                variant="primary"
-                                className="shadow-md shadow-blue-500/20"
-                                onClick={onNew}
-                                title="Nuevo"
-                                aria-label="Nuevo"
-                                icon={<MdAdd size={22} aria-hidden="true" />}
-                            >
-                                Nueva Persona
-                            </SharedButton>
+                            <WithPermission screen="personas" action="create">
+                                <SharedButton
+                                    type="button"
+                                    variant="primary"
+                                    className="shadow-md shadow-blue-500/20"
+                                    onClick={onNew}
+                                    title="Nuevo"
+                                    aria-label="Nuevo"
+                                    icon={<MdAdd size={22} aria-hidden="true" />}
+                                >
+                                    Nueva Persona
+                                </SharedButton>
+                            </WithPermission>
                         )}
                     </div>
                 </div>

@@ -24,8 +24,6 @@ export async function actualizarMarca(idMarca: number, payload: {
     });
 }
 
-export async function eliminarMarca(id: number) {
-    return apiFetch(`/marcas/${id}`, {
-        method: "DELETE",
-    });
+export async function eliminarMarca(id: number, currentItem: any, newStatus: boolean) {
+    return actualizarMarca(id, { ...currentItem, status: newStatus });
 }

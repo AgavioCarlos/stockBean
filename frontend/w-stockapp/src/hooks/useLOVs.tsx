@@ -8,6 +8,9 @@ const fetchers: FetcherMap = {
   unidades: Lovs.Unidades,
   productos: Lovs.Productos,
   sucursales: Lovs.Sucursales,
+  categorias: Lovs.Categorias,
+  marcas: Lovs.Marcas,
+  tipo_precios: Lovs.TipoPrecios,
 };
 
 export const useLOVs = (keys: string[] = []) => {

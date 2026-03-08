@@ -1,11 +1,15 @@
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { RiLogoutCircleLine } from "react-icons/ri";
 import { FaUserCircle } from "react-icons/fa";
 import { IoNotifications } from "react-icons/io5";
 import { HiMail } from "react-icons/hi";
-import { FiMenu } from "react-icons/fi";
+import { FiMenu, FiCheck, FiCheckCircle } from "react-icons/fi";
+import { HiOutlineExclamationTriangle, HiOutlineCube } from "react-icons/hi2";
 import { useAlerts } from "../../hooks/useAlerts";
 import { useResponsive } from "../../hooks/useResponsive";
+import { useAuth } from "../../hooks/useAuth";
+import { obtenerAlertas, contarAlertas, marcarAlertaLeida, marcarTodasLeidas, type IAlerta } from "../../services/AlertaService";
 
 interface HeaderProps {
     isSidebarOpen?: boolean;
@@ -21,6 +25,108 @@ function Header({
     const navigate = useNavigate();
     const { isMobile } = useResponsive();
     const { confirm } = useAlerts();
+    const { user } = useAuth();
+
+    // ─── Alertas ────────────────────────────────────────────
+    const [alertas, setAlertas] = useState<IAlerta[]>([]);
+    const [alertCount, setAlertCount] = useState(0);
+    const [showAlertPanel, setShowAlertPanel] = useState(false);
+    const [loadingAlertas, setLoadingAlertas] = useState(false);
+    const alertPanelRef = useRef<HTMLDivElement>(null);
+
+    // Cargar el conteo de alertas al montar y cada 30 segundos
+    const fetchAlertCount = useCallback(async () => {
+        if (!user) return;
+        try {
+            const count = await contarAlertas();
+            setAlertCount(count);
+        } catch (err) {
+            console.error("Error fetching alert count:", err);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchAlertCount();
+        const interval = setInterval(fetchAlertCount, 30000); // cada 30s
+        return () => clearInterval(interval);
+    }, [fetchAlertCount]);
+
+    // Cerrar panel al hacer clic afuera
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (alertPanelRef.current && !alertPanelRef.current.contains(e.target as Node)) {
+                setShowAlertPanel(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    // Abrir/cerrar panel de alertas
+    const toggleAlertPanel = async () => {
+        const nextState = !showAlertPanel;
+        setShowAlertPanel(nextState);
+
+        if (nextState && alertas.length === 0) {
+            setLoadingAlertas(true);
+            try {
+                const data = await obtenerAlertas();
+                setAlertas(data);
+            } catch (err) {
+                console.error("Error fetching alertas:", err);
+            } finally {
+                setLoadingAlertas(false);
+            }
+        }
+    };
+
+    // Marcar una alerta como leída
+    const handleDismissAlerta = async (idAlerta: number) => {
+        try {
+            await marcarAlertaLeida(idAlerta);
+            setAlertas(prev => prev.filter(a => a.idAlerta !== idAlerta));
+            setAlertCount(prev => Math.max(0, prev - 1));
+        } catch (err) {
+            console.error("Error marking alert as read:", err);
+        }
+    };
+
+    // Marcar todas como leídas
+    const handleDismissAll = async () => {
+        try {
+            await marcarTodasLeidas();
+            setAlertas([]);
+            setAlertCount(0);
+        } catch (err) {
+            console.error("Error marking all alerts as read:", err);
+        }
+    };
+
+    // Obtener estilo del ícono de alerta según tipo
+    const getAlertStyle = (tipoNombre: string) => {
+        const lower = tipoNombre?.toLowerCase() || "";
+        if (lower.includes("sin_existencia") || lower.includes("sin existencia")) {
+            return { bg: "bg-red-500/10", text: "text-red-400", border: "border-red-500/20" };
+        }
+        if (lower.includes("stock_bajo") || lower.includes("stock bajo")) {
+            return { bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/20" };
+        }
+        return { bg: "bg-indigo-500/10", text: "text-indigo-400", border: "border-indigo-500/20" };
+    };
+
+    // Tiempo relativo
+    const tiempoRelativo = (fechaStr: string) => {
+        const fecha = new Date(fechaStr);
+        const ahora = new Date();
+        const diffMs = ahora.getTime() - fecha.getTime();
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return "Justo ahora";
+        if (diffMin < 60) return `Hace ${diffMin} min`;
+        const diffHrs = Math.floor(diffMin / 60);
+        if (diffHrs < 24) return `Hace ${diffHrs}h`;
+        const diffDays = Math.floor(diffHrs / 24);
+        return `Hace ${diffDays}d`;
+    };
 
     const handleProfile = () => {
         navigate("/perfil");
@@ -42,6 +148,15 @@ function Header({
     };
 
     const marginLeft = !isMobile && isSidebarOpen ? (sidebarCollapsed ? 80 : 288) : 0;
+
+    // User display name
+    const displayName = user?.nombre
+        ? `${user.nombre} ${user.apellido_paterno || ""}`.trim()
+        : user?.cuenta || "Usuario";
+    const roleName = user?.id_rol === 1 ? "SISTEM" :
+        user?.id_rol === 2 ? "ADMIN" :
+            user?.id_rol === 3 ? "GERENTE" :
+                user?.id_rol === 4 ? "CAJERO" : "Usuario";
 
     return (
         <header
@@ -72,7 +187,7 @@ function Header({
 
             {/* Right Section: Actions */}
             <div className="flex items-center gap-4">
-                {/* Search - Placeholder for premium feel */}
+                {/* Search */}
                 <div className="hidden md:flex items-center bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus-within:border-indigo-500/50 transition-all">
                     <input
                         type="text"
@@ -83,14 +198,107 @@ function Header({
                 </div>
 
                 <div className="flex items-center gap-2 mr-2">
-                    {/* Notifications */}
-                    <button
-                        className="relative w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 hover:border-indigo-500/50 hover:bg-white/10 transition-all group"
-                        title="Notificaciones"
-                    >
-                        <IoNotifications className="text-lg text-gray-400 group-hover:text-indigo-400 transition-colors" />
-                        <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-indigo-500 rounded-full border-2 border-gray-900"></span>
-                    </button>
+                    {/* Notifications Bell — con alertas reales */}
+                    <div ref={alertPanelRef} className="relative">
+                        <button
+                            onClick={toggleAlertPanel}
+                            className={`relative w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border transition-all group ${showAlertPanel
+                                ? "border-indigo-500/50 bg-white/10"
+                                : "border-white/5 hover:border-indigo-500/50 hover:bg-white/10"
+                                }`}
+                            title="Alertas de inventario"
+                        >
+                            <IoNotifications className={`text-lg transition-colors ${showAlertPanel ? "text-indigo-400" : "text-gray-400 group-hover:text-indigo-400"
+                                }`} />
+                            {alertCount > 0 && (
+                                <span className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red-500 rounded-full border-2 border-gray-900 flex items-center justify-center text-[10px] font-bold text-white px-1">
+                                    {alertCount > 99 ? "99+" : alertCount}
+                                </span>
+                            )}
+                        </button>
+
+                        {/* Alert Dropdown Panel */}
+                        {showAlertPanel && (
+                            <div className="absolute right-0 top-full mt-2 w-96 bg-gray-900/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50">
+                                {/* Panel header */}
+                                <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+                                    <div>
+                                        <h3 className="font-bold text-white text-sm">Alertas de Inventario</h3>
+                                        <span className="text-xs text-gray-500">{alertCount} {alertCount === 1 ? "alerta activa" : "alertas activas"}</span>
+                                    </div>
+                                    {alertas.length > 0 && (
+                                        <button
+                                            onClick={handleDismissAll}
+                                            className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 transition-colors"
+                                        >
+                                            <FiCheckCircle size={12} />
+                                            Leer todas
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Alert list */}
+                                <div className="max-h-80 overflow-y-auto">
+                                    {loadingAlertas && (
+                                        <div className="flex items-center justify-center py-8">
+                                            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                                        </div>
+                                    )}
+
+                                    {!loadingAlertas && alertas.length === 0 && (
+                                        <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                                            <FiCheckCircle size={28} className="mb-2 opacity-40" />
+                                            <span className="text-sm font-medium">Sin alertas pendientes</span>
+                                            <span className="text-xs text-gray-600 mt-1">Todo el inventario está en orden</span>
+                                        </div>
+                                    )}
+
+                                    {!loadingAlertas && alertas.map((alerta) => {
+                                        const style = getAlertStyle(alerta.tipoAlerta?.nombre || "");
+                                        return (
+                                            <div
+                                                key={alerta.idAlerta}
+                                                className="px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors group"
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    {/* Icon */}
+                                                    <div className={`w-9 h-9 rounded-xl ${style.bg} border ${style.border} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                                                        <HiOutlineExclamationTriangle className={style.text} size={16} />
+                                                    </div>
+
+                                                    {/* Content */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm text-gray-200 leading-snug">{alerta.mensaje}</p>
+                                                        <div className="flex items-center gap-2 mt-1.5">
+                                                            <span className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">
+                                                                {alerta.sucursal?.nombre || "Sucursal"}
+                                                            </span>
+                                                            <span className="text-gray-700">•</span>
+                                                            <span className="text-[10px] text-gray-600">
+                                                                {tiempoRelativo(alerta.fecha)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Dismiss */}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDismissAlerta(alerta.idAlerta);
+                                                        }}
+                                                        className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all flex-shrink-0"
+                                                        title="Marcar como leída"
+                                                    >
+                                                        <FiCheck size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Messages */}
                     <button
@@ -98,7 +306,6 @@ function Header({
                         title="Mensajes"
                     >
                         <HiMail className="text-lg text-gray-400 group-hover:text-indigo-400 transition-colors" />
-                        <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-gray-900"></span>
                     </button>
                 </div>
 
@@ -117,8 +324,8 @@ function Header({
                         <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-gray-900 rounded-full"></div>
                     </div>
                     <div className="hidden lg:flex flex-col items-start leading-tight">
-                        <span className="text-sm font-bold text-gray-100 group-hover:text-indigo-400 transition-colors">Admin User</span>
-                        <span className="text-[9px] text-gray-500 uppercase font-black tracking-widest">Administrator</span>
+                        <span className="text-sm font-bold text-gray-100 group-hover:text-indigo-400 transition-colors">{displayName}</span>
+                        <span className="text-[9px] text-gray-500 uppercase font-black tracking-widest">{roleName}</span>
                     </div>
                 </button>
 

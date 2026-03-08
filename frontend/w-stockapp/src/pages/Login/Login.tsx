@@ -10,7 +10,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { success, error: showError, showAlert } = useAlerts();
+  const { error: showError } = useAlerts();
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentMessage, setPaymentMessage] = useState("");
@@ -33,12 +33,6 @@ function Login() {
         } catch (pantallasError) {
           console.error("⚠️ Error al cargar pantallas:", pantallasError);
         }
-
-        await showAlert(
-          "¡Bienvenido de nuevo!",
-          `Hola, ${data.nombre || 'Usuario'}. Accediendo al sistema…`,
-          'success'
-        );
 
         if (data.empresa && data.empresa.length > 0) {
           localStorage.removeItem("requiresEmpresaConfig");

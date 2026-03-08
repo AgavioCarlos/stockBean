@@ -35,7 +35,7 @@ export const consultarSucursalesPorEmpresa = async (idEmpresa: number): Promise<
     }
 };
 
-export const crearSucursal = async (sucursal: Omit<Sucursal, "idSucursal">): Promise<Sucursal> => {
+export const crearSucursal = async (sucursal: Partial<Sucursal>): Promise<Sucursal> => {
     try {
         const data = await apiFetch<Sucursal>(API_URL, {
             method: "POST",
@@ -63,13 +63,6 @@ export const actualizarSucursal = async (id: number, sucursal: Partial<Sucursal>
     }
 };
 
-export const eliminarSucursal = async (id: number): Promise<void> => {
-    try {
-        await apiFetch(`${API_URL}/${id}`, {
-            method: "DELETE",
-        });
-    } catch (error) {
-        console.error("Error al eliminar sucursal", error);
-        throw error;
-    }
+export const eliminarSucursal = async (id: number, currentItem: any, newStatus: boolean): Promise<Sucursal> => {
+    return actualizarSucursal(id, { ...currentItem, status: newStatus });
 };

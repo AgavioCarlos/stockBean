@@ -16,22 +16,25 @@ export const consultarProveedores = async (signal?: AbortSignal): Promise<Provee
     return response || [];
 };
 
-export const crearProveedor = async (proveedor: Partial<Proveedor>): Promise<Proveedor | null> => {
-    return apiFetch<Proveedor>("/proveedores", {
+export const crearProveedor = async (proveedor: Partial<Proveedor>): Promise<Proveedor> => {
+    const response = await apiFetch<Proveedor>("/proveedores", {
         method: "POST",
         body: JSON.stringify(proveedor),
     });
+    return response as Proveedor;
 };
 
-export const actualizarProveedor = async (id: number, proveedor: Partial<Proveedor>): Promise<Proveedor | null> => {
-    return apiFetch<Proveedor>(`/proveedores/${id}`, {
+export const actualizarProveedor = async (id: number, proveedor: Partial<Proveedor>): Promise<Proveedor> => {
+    const response = await apiFetch<Proveedor>(`/proveedores/${id}`, {
         method: "PUT",
         body: JSON.stringify(proveedor),
     });
+    return response as Proveedor;
 };
 
-export const eliminarProveedor = async (id: number): Promise<void> => {
-    await apiFetch(`/proveedores/${id}`, {
+export const eliminarProveedor = async (id: number, _currentItem?: any, _newStatus?: boolean): Promise<Proveedor> => {
+    const response = await apiFetch<Proveedor>(`/proveedores/${id}`, {
         method: "DELETE",
     });
+    return response as Proveedor;
 };
