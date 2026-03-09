@@ -1,7 +1,6 @@
 package com.stockbean.stockapp.controller;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.stockbean.stockapp.model.catalogos.Plan;
 import com.stockbean.stockapp.service.PlanService;
-
+import org.springframework.lang.NonNull;
 
 @RestController
 @RequestMapping("/planes")
@@ -29,7 +28,7 @@ public class PlanController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Plan> obtener(@PathVariable Integer id) {
+    public ResponseEntity<Plan> obtener(@PathVariable @NonNull Integer id) {
         Plan plan = planService.obtenerPorId(id);
         return plan != null ? ResponseEntity.ok(plan) : ResponseEntity.notFound().build();
     }
@@ -41,13 +40,13 @@ public class PlanController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Plan> actualizar(@PathVariable Integer id, @RequestBody Plan plan){
+    public ResponseEntity<Plan> actualizar(@PathVariable @NonNull Integer id, @RequestBody Plan plan){
         Plan actualizado = planService.actualizar(id, plan);
         return actualizado != null ? ResponseEntity.ok(actualizado) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id){
+    public ResponseEntity<Void> eliminar(@PathVariable @NonNull Integer id){
         planService.eliminar(id);
         return ResponseEntity.noContent().build();
     }

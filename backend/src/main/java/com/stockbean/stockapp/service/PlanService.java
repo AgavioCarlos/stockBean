@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.stockbean.stockapp.model.catalogos.Plan;
 import com.stockbean.stockapp.repository.PlanRepository;
-
+import org.springframework.lang.NonNull;
 @Service
 public class PlanService {
 
@@ -20,7 +20,7 @@ public class PlanService {
         return planRepository.findAll();
     }
 
-    public Plan obtenerPorId(Integer id){
+    public Plan obtenerPorId(@NonNull Integer id){
         return planRepository.findById(id).orElse(null);
     }
 
@@ -32,7 +32,7 @@ public class PlanService {
         return planRepository.save(plan);
     }
 
-    public Plan actualizar(Integer id, Plan planActualizado){
+    public Plan actualizar(@NonNull Integer id, Plan planActualizado){
         Plan plan = obtenerPorId(id);
         if(plan == null) return null;
         plan.setNombre(planActualizado.getNombre());
@@ -45,7 +45,7 @@ public class PlanService {
         return planRepository.save(plan);
     }
 
-    public void eliminar(Integer id){
+    public void eliminar(@NonNull Integer id){
         Plan plan = obtenerPorId(id);
         if(plan != null){
             plan.setStatus(false);

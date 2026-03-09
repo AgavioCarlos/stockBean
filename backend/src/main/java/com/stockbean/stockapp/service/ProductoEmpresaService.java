@@ -2,12 +2,10 @@ package com.stockbean.stockapp.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.stockbean.stockapp.model.tablas.ProductoEmpresa;
 import com.stockbean.stockapp.model.tablas.Producto;
 import com.stockbean.stockapp.model.admin.Empresa;
@@ -30,7 +28,7 @@ public class ProductoEmpresaService {
         return productoEmpresaRepository.findByEmpresaIdEmpresa(idsEmpresa.get(0));
     }
 
-    public ProductoEmpresa obtenerPorId(Integer id) {
+    public ProductoEmpresa obtenerPorId(@NonNull Integer id) {
         return productoEmpresaRepository.findById(id).orElse(null);
     }
 
@@ -65,7 +63,7 @@ public class ProductoEmpresaService {
     }
 
     @Transactional
-    public ProductoEmpresa actualizar(Integer id, ProductoEmpresa actualizado, @NonNull Integer idUsuario) {
+    public ProductoEmpresa actualizar(@NonNull Integer id, ProductoEmpresa actualizado, @NonNull Integer idUsuario) {
         ProductoEmpresa existente = obtenerPorId(id);
         if (existente == null)
             return null;
@@ -94,7 +92,7 @@ public class ProductoEmpresaService {
     }
 
     @Transactional
-    public void eliminar(Integer id, @NonNull Integer idUsuario) {
+    public void eliminar(@NonNull Integer id, @NonNull Integer idUsuario) {
         ProductoEmpresa existente = obtenerPorId(id);
         if (existente != null) {
             List<Integer> idsEmpresa = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);

@@ -2,23 +2,22 @@ package com.stockbean.stockapp.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+
 import com.stockbean.stockapp.repository.UnidadRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
 import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
 import com.stockbean.stockapp.repository.EmpresaRepository;
-
 import lombok.NonNull;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.stockbean.stockapp.dto.ProductoRequest;
 import com.stockbean.stockapp.model.tablas.Producto;
-import com.stockbean.stockapp.model.tablas.ProductoEmpresa;
 import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.repository.CategoriaRepository;
 import com.stockbean.stockapp.repository.MarcaRepository;
-import com.stockbean.stockapp.repository.ProductoEmpresaRepository;
 import com.stockbean.stockapp.repository.ProductoRepository;
+
 
 @Service
 public class ProductoService {
@@ -39,9 +38,6 @@ public class ProductoService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private ProductoEmpresaRepository productoEmpresaRepository;
-
-    @Autowired
     private EmpresaRepository empresaRepository;
 
     @Autowired
@@ -58,36 +54,36 @@ public class ProductoService {
         }
     }
 
-    public Producto obtenerPorId(Integer id) {
+    public Producto obtenerPorId(@NonNull Integer id) {
         return productoRepository.findById(id).orElse(null);
     }
 
-    public Producto guardar(ProductoRequest dto, Integer idUsuario) {
+    public Producto guardar(ProductoRequest dto, @NonNull Integer idUsuario) {
 
         Producto producto = new Producto();
         producto.setNombre(dto.getNombre());
         producto.setDescripcion(dto.getDescripcion());
         if (dto.getIdCategoria() != null) {
-            producto.setCategoria(categoriaRepository.findById(dto.getIdCategoria())
+            producto.setCategoria(categoriaRepository.findById(Objects.requireNonNull(dto.getIdCategoria()))
                     .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
         }
 
         if (dto.getIdUnidad() != null) {
-            producto.setUnidad(unidadRepository.findById(dto.getIdUnidad())
+            producto.setUnidad(unidadRepository.findById(Objects.requireNonNull(dto.getIdUnidad()))
                     .orElseThrow(() -> new RuntimeException("Unidad no encontrada")));
         }
 
         if (dto.getIdMarca() != null) {
-            producto.setMarca(marcaRepository.findById(dto.getIdMarca()).orElse(null));
+            producto.setMarca(marcaRepository.findById(Objects.requireNonNull(dto.getIdMarca())).orElse(null));
         }
 
         if (dto.getIdEmpresa() != null) {
-            producto.setEmpresa(empresaRepository.findById(dto.getIdEmpresa())
+            producto.setEmpresa(empresaRepository.findById(Objects.requireNonNull(dto.getIdEmpresa()))
                     .orElseThrow(() -> new RuntimeException("Empresa no encontrada")));
         } else if (idUsuario != null) {
             List<Integer> empIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);
             if (empIds != null && !empIds.isEmpty()) {
-                producto.setEmpresa(empresaRepository.findById(empIds.get(0)).orElse(null));
+                producto.setEmpresa(empresaRepository.findById(Objects.requireNonNull(empIds.get(0))).orElse(null));
             }
         }
 
@@ -130,21 +126,21 @@ public class ProductoService {
         producto.setDescripcion(dto.getDescripcion());
 
         if (dto.getIdCategoria() != null) {
-            producto.setCategoria(categoriaRepository.findById(dto.getIdCategoria())
+            producto.setCategoria(categoriaRepository.findById(Objects.requireNonNull(dto.getIdCategoria()))
                     .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
         }
 
         if (dto.getIdUnidad() != null) {
-            producto.setUnidad(unidadRepository.findById(dto.getIdUnidad())
+            producto.setUnidad(unidadRepository.findById(Objects.requireNonNull(dto.getIdUnidad()))
                     .orElseThrow(() -> new RuntimeException("Unidad no encontrada")));
         }
 
         if (dto.getIdMarca() != null) {
-            producto.setMarca(marcaRepository.findById(dto.getIdMarca()).orElse(null));
+            producto.setMarca(marcaRepository.findById(Objects.requireNonNull(dto.getIdMarca())).orElse(null));
         }
 
         if (dto.getIdEmpresa() != null) {
-            producto.setEmpresa(empresaRepository.findById(dto.getIdEmpresa())
+            producto.setEmpresa(empresaRepository.findById(Objects.requireNonNull(dto.getIdEmpresa()))
                     .orElseThrow(() -> new RuntimeException("Empresa no encontrada")));
         }
 

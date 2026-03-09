@@ -4,14 +4,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import com.stockbean.stockapp.security.UsuarioPrincipal;
 import com.stockbean.stockapp.dto.SuscripcionAdminDTO;
 import com.stockbean.stockapp.model.tablas.Suscripcion;
 import com.stockbean.stockapp.service.SuscripcionService;
+import lombok.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
@@ -30,7 +28,7 @@ public class SuscripcionController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> cambiarStatus(@PathVariable Integer id, @RequestBody Map<String, Boolean> payload) {
+    public ResponseEntity<?> cambiarStatus(@PathVariable @NonNull Integer id, @RequestBody Map<String, Boolean> payload) {
         Boolean status = payload.get("status");
         Suscripcion s = suscripcionService.cambiarStatus(id, status);
         if (s != null) {
@@ -40,7 +38,7 @@ public class SuscripcionController {
     }
 
     @PutMapping("/{id}/extend")
-    public ResponseEntity<?> extenderFecha(@PathVariable Integer id, @RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> extenderFecha(@PathVariable @NonNull Integer id, @RequestBody Map<String, String> payload) {
         try {
             LocalDateTime nuevaFecha = LocalDateTime.parse(payload.get("fechaFin"));
             Suscripcion s = suscripcionService.extenderFecha(id, nuevaFecha);

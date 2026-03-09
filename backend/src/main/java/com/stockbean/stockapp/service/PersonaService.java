@@ -56,7 +56,7 @@ public class PersonaService {
         return personaRepository.findByEmpresaId(idEmpresa);
     }
 
-    public Persona obtenerPorId(Integer id) {
+    public Persona obtenerPorId(@NonNull Integer id) {
         return personaRepository.findById(id).orElse(null);
     }
 
@@ -91,7 +91,7 @@ public class PersonaService {
     }
 
     @Transactional
-    public Persona actualizar(Integer id, Persona personaActualizada, @NonNull Integer idUsuario) {
+    public Persona actualizar(@NonNull Integer id, Persona personaActualizada, @NonNull Integer idUsuario) {
         Persona persona = obtenerPorId(id);
         if (persona == null)
             return null;
@@ -109,7 +109,7 @@ public class PersonaService {
     }
 
     @Transactional
-    public void eliminar(Integer id, @NonNull Integer idUsuario) {
+    public void eliminar(@NonNull Integer id, @NonNull Integer idUsuario) {
         Persona persona = obtenerPorId(id);
         if (persona != null) {
             Usuario solicitante = usuarioRepository.findById(idUsuario)
@@ -141,7 +141,7 @@ public class PersonaService {
         }
     }
 
-    private void validarAccesoPersona(Persona persona, Integer idUsuario) {
+    private void validarAccesoPersona(Persona persona, @NonNull Integer idUsuario) {
         Usuario solicitante = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario solicitante no encontrado"));
 

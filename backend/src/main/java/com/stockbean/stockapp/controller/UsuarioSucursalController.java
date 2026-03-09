@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.stockbean.stockapp.model.tablas.UsuarioSucursal;
 import com.stockbean.stockapp.service.UsuarioSucursalService;
+import lombok.NonNull;
 
 @RestController
 @RequestMapping("/usuario-sucursales")
@@ -35,13 +35,13 @@ public class UsuarioSucursalController {
     }
 
     @PutMapping
-    public ResponseEntity<UsuarioSucursal> actualizarUsuarioSucursal(@RequestBody UsuarioSucursal usuarioSucursal) {
+    public ResponseEntity<UsuarioSucursal> actualizarUsuarioSucursal(@RequestBody @NonNull UsuarioSucursal usuarioSucursal) {
         UsuarioSucursal actualizado = usuarioSucursalService.actualizar(usuarioSucursal);
         return ResponseEntity.ok(actualizado);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarUsuarioSucursal(@PathVariable Integer id) {
+    public ResponseEntity<Void> eliminarUsuarioSucursal(@PathVariable @NonNull Integer id) {
         usuarioSucursalService.eliminar(id);
         return ResponseEntity.noContent().build();
     }

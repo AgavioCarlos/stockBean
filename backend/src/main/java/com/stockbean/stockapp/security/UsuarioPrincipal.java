@@ -4,7 +4,7 @@ import com.stockbean.stockapp.model.tablas.Usuario;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
+import lombok.NonNull;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -13,7 +13,7 @@ public class UsuarioPrincipal implements UserDetails {
     private final Usuario usuario;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UsuarioPrincipal(Usuario usuario) {
+    public UsuarioPrincipal(@NonNull Usuario usuario) {
         this.usuario = usuario;
         String roleName = "ROLE_" + usuario.getRol().getNombre().toUpperCase();
         this.authorities = Collections.singletonList(new SimpleGrantedAuthority(roleName));

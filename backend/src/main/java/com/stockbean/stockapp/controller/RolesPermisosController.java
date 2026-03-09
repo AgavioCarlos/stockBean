@@ -2,7 +2,7 @@ package com.stockbean.stockapp.controller;
 
 import java.util.List;
 import java.util.Map;
-
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.stockbean.stockapp.dto.JerarquiaPermisosDTO;
 import com.stockbean.stockapp.dto.PantallaAsignacionDTO;
 import com.stockbean.stockapp.dto.RolAsignacionDTO;
@@ -36,7 +35,7 @@ public class RolesPermisosController {
     }
 
     @PutMapping("/{idRol}")
-    public ResponseEntity<Void> actualizarPermisos(@PathVariable Integer idRol,
+    public ResponseEntity<Void> actualizarPermisos(@PathVariable @NonNull Integer idRol,
             @RequestBody Map<String, List<Integer>> payload) {
         List<Integer> idPermisos = payload.get("idPermisos");
         rolesPermisosService.actualizarPermisos(idRol, idPermisos);
@@ -59,7 +58,7 @@ public class RolesPermisosController {
     }
 
     @PutMapping("/permisos/{idPermiso}/pantallas")
-    public ResponseEntity<Void> actualizarPantallasPorPermiso(@PathVariable Integer idPermiso,
+    public ResponseEntity<Void> actualizarPantallasPorPermiso(@PathVariable @NonNull Integer idPermiso,
             @RequestBody Map<String, List<Integer>> payload) {
         List<Integer> idPantallas = payload.get("idPantallas");
         rolesPermisosService.actualizarPantallasPorPermiso(idPermiso, idPantallas);
@@ -72,7 +71,7 @@ public class RolesPermisosController {
     }
 
     @PutMapping("/permisos/{idPermiso}/roles")
-    public ResponseEntity<Void> actualizarRolesPorPermiso(@PathVariable Integer idPermiso,
+    public ResponseEntity<Void> actualizarRolesPorPermiso(@PathVariable @NonNull Integer idPermiso,
             @RequestBody Map<String, List<Integer>> payload) {
         List<Integer> idRoles = payload.get("idRoles");
         rolesPermisosService.actualizarRolesPorPermiso(idPermiso, idRoles);

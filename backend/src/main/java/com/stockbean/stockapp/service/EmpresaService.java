@@ -9,9 +9,6 @@ import com.stockbean.stockapp.model.admin.Empresa;
 import com.stockbean.stockapp.repository.EmpresaRepository;
 import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
-
-import jakarta.annotation.Nonnull;
-
 import com.stockbean.stockapp.model.admin.EmpresaUsuario;
 import com.stockbean.stockapp.model.tablas.Usuario;
 import org.springframework.lang.NonNull;
@@ -65,7 +62,7 @@ public class EmpresaService {
     }
 
     @Transactional
-    public Empresa configurarEmpresa(Empresa empresa, @Nonnull Integer idUsuario) {
+    public Empresa configurarEmpresa(Empresa empresa, @NonNull Integer idUsuario) {
         empresa.setFechaCreacion(LocalDateTime.now());
         empresa.setActivo(true);
         Empresa empresaGuardada = empresaRepository.save(empresa);

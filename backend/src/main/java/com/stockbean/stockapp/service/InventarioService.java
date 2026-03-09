@@ -107,7 +107,7 @@ public class InventarioService {
     }
 
     @Transactional
-    public Inventario actualizar(Integer id, Inventario inventarioDetails, Integer idUsuario) {
+    public Inventario actualizar(@NonNull Integer id, Inventario inventarioDetails, @NonNull Integer idUsuario) {
         Inventario inventario = inventarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inventario no encontrado con ID: " + id));
 
@@ -151,7 +151,7 @@ public class InventarioService {
         return updatedInventario;
     }
 
-    public void eliminar(Integer id, Integer idUsuario) {
+    public void eliminar(@NonNull Integer id, @NonNull Integer idUsuario) {
         Inventario inventario = inventarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inventario no encontrado con ID: " + id));
 
@@ -169,7 +169,7 @@ public class InventarioService {
         return inventarioRepository.findAll();
     }
 
-    private void validarAccesoSucursal(Usuario usuario, Integer idSucursal) {
+    private void validarAccesoSucursal(Usuario usuario, @NonNull Integer idSucursal) {
         String rol = usuario.getNombre_rol();
 
         if (rol == null) {
