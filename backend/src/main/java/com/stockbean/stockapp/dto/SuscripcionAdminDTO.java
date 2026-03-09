@@ -11,9 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SuscripcionAdminDTO {
     private Integer idSuscripcion;
+    private Integer idUsuario;
+    private String nombreCompleto;
+    private String email;
     private Integer idEmpresa;
-    private String razonSocial;
-    private String nombreComercial;
+    private String nombreEmpresa;
     private String planNombre;
     private LocalDateTime fechaInicio;
     private LocalDateTime fechaFin;

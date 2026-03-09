@@ -3,16 +3,12 @@ package com.stockbean.stockapp.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-
 import com.stockbean.stockapp.model.tablas.Proveedor;
-import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
 import com.stockbean.stockapp.repository.ProveedorRepository;
-import com.stockbean.stockapp.repository.UsuarioRepository;
 
 @Service
 public class ProveedorService {

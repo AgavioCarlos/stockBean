@@ -1,6 +1,8 @@
 package com.stockbean.stockapp.controller;
 
 import java.util.List;
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +85,7 @@ public class EmpresaController {
     @PostMapping("/configurar")
     public ResponseEntity<Empresa> configurarEmpresa(@RequestBody Empresa empresa,
             @AuthenticationPrincipal UsuarioPrincipal principal) {
-        Empresa resultado = empresaService.configurarEmpresa(empresa, principal.getId());
+        Empresa resultado = empresaService.configurarEmpresa(empresa, Objects.requireNonNull(principal.getId()));
         return ResponseEntity.ok(resultado);
     }
 

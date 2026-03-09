@@ -5,18 +5,13 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.stockbean.stockapp.dto.DashboardStatsDTO;
 import com.stockbean.stockapp.dto.VentaReporteDTO;
 import com.stockbean.stockapp.dto.VentasPorDiaDTO;
@@ -30,6 +25,7 @@ import com.stockbean.stockapp.repository.SucursalRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
 import com.stockbean.stockapp.repository.UsuarioSucursalRepository;
 import com.stockbean.stockapp.repository.VentaRepository;
+import java.util.Objects;
 
 import lombok.NonNull;
 
@@ -258,7 +254,7 @@ public class ReporteVentasService {
             // Nombre del cajero
             if (v.getIdUsuario() != null) {
                 Usuario usr = userCache.computeIfAbsent(v.getIdUsuario(),
-                        id -> usuarioRepository.findById(id).orElse(null));
+                        id -> usuarioRepository.findById(Objects.requireNonNull(id)).orElse(null));
                 if (usr != null && usr.getPersona() != null) {
                     String nombre = usr.getPersona().getNombre();
                     String apPat = usr.getPersona().getApellido_paterno();
@@ -304,7 +300,7 @@ public class ReporteVentasService {
                 .collect(Collectors.toList());
 
         // Obtener la entidad de las ventas origen
-        List<Venta> findAllPermitidas = ventaRepository.findAllById(allowedVentaIds);
+        List<Venta> findAllPermitidas = ventaRepository.findAllById(Objects.requireNonNull(allowedVentaIds));
 
         // Limitamos a los últimos 30 días para no sobrecargar el endpoint
         LocalDate thirtyDaysAgo = LocalDate.now().minusDays(30);

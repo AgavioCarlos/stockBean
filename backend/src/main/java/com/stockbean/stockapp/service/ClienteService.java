@@ -10,6 +10,7 @@ import lombok.NonNull;
 import com.stockbean.stockapp.dto.ClienteRequest;
 import com.stockbean.stockapp.model.tablas.Cliente;
 import com.stockbean.stockapp.model.tablas.Persona;
+import java.util.Objects;
 
 @Service
 public class ClienteService {
@@ -28,7 +29,7 @@ public class ClienteService {
 
     public Cliente guardar (@NonNull ClienteRequest dto){
         Cliente cliente = new Cliente();
-        Persona persona = personaRepository.findById(dto.getIdPersona())
+        Persona persona = personaRepository.findById(Objects.requireNonNull(dto.getIdPersona(), "ID es nulo"))
             .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
         cliente.setPersona(persona);
         cliente.setStatus(true);
@@ -41,7 +42,7 @@ public class ClienteService {
     public Cliente actualizar (@NonNull Integer id, ClienteRequest dtoActualizado){
         Cliente cliente = obtenerPorId(id); // Esto ya lanza una excepción si no lo encuentra.
 
-        Persona persona = personaRepository.findById(dtoActualizado.getIdPersona())
+        Persona persona = personaRepository.findById(Objects.requireNonNull(dtoActualizado.getIdPersona(), "ID es nulo"))
             .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
         cliente.setPersona(persona);
         cliente.setTipoCliente(dtoActualizado.getTipoCliente());

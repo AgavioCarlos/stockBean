@@ -5,11 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.stockbean.stockapp.dto.JerarquiaPermisosDTO;
 import com.stockbean.stockapp.dto.PermisoDetalleDTO;
 import com.stockbean.stockapp.model.admin.Pantallas;
@@ -68,7 +67,7 @@ public class RolesPermisosService {
     }
 
     @Transactional
-    public void actualizarPantallasPorPermiso(Integer idPermiso, List<Integer> idPantallas) {
+    public void actualizarPantallasPorPermiso(@NonNull Integer idPermiso, List<Integer> idPantallas) {
         Permiso permiso = permisoRepository.findById(idPermiso)
                 .orElseThrow(() -> new RuntimeException("Permiso no encontrado"));
 
@@ -105,7 +104,7 @@ public class RolesPermisosService {
     }
 
     @Transactional
-    public void actualizarRolesPorPermiso(Integer idPermiso, List<Integer> idRoles) {
+    public void actualizarRolesPorPermiso(@NonNull Integer idPermiso, List<Integer> idRoles) {
         Permiso permiso = permisoRepository.findById(idPermiso)
                 .orElseThrow(() -> new RuntimeException("Permiso no encontrado"));
 
@@ -166,7 +165,7 @@ public class RolesPermisosService {
     }
 
     @Transactional
-    public void actualizarPermisos(Integer idRol, List<Integer> idPermisos) {
+    public void actualizarPermisos(@NonNull Integer idRol, List<Integer> idPermisos) {
         Rol rol = rolRepository.findById(idRol).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
         rolPermisosRepository.deleteAllByRolId(idRol);

@@ -1,10 +1,6 @@
 package com.stockbean.stockapp.service;
 
-import java.util.Collections;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,9 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.stockbean.stockapp.dto.LoginRequest;
 import com.stockbean.stockapp.dto.LoginResponse;
-import com.stockbean.stockapp.model.catalogos.Rol;
 import com.stockbean.stockapp.model.tablas.Usuario;
-import com.stockbean.stockapp.repository.RolRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
 import com.stockbean.stockapp.security.UsuarioPrincipal;
 
@@ -23,10 +17,6 @@ public class LoginService implements UserDetailsService { // <-- Implements User
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
-    // Inyectamos el repositorio de roles para poder buscar el rol del usuario.
-    @Autowired
-    private RolRepository rolRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -44,11 +34,6 @@ public class LoginService implements UserDetailsService { // <-- Implements User
         return new UsuarioPrincipal(usuario);
     }
 
-    /**
-     * This method is part of your original custom login logic.
-     * It is NOT used by the current Spring Security setup but is kept here.
-     * The active /login endpoint uses the loadUserByUsername method above.
-     */
     public LoginResponse login(LoginRequest request) {
         if (request.getCuenta() == null || request.getCuenta().isEmpty()) {
             return new LoginResponse("Cuenta vacía");

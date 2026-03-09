@@ -6,11 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.stockbean.stockapp.dto.DetalleVentaItem;
 import com.stockbean.stockapp.dto.ProductoBusquedaDTO;
 import com.stockbean.stockapp.dto.VentaRequest;
@@ -34,7 +32,7 @@ import com.stockbean.stockapp.repository.UsuarioSucursalRepository;
 import com.stockbean.stockapp.repository.VentaRepository;
 import com.stockbean.stockapp.repository.TurnoCajaRepository;
 import com.stockbean.stockapp.model.tablas.TurnoCaja;
-
+import java.util.Objects;
 import lombok.NonNull;
 
 @Service
@@ -178,7 +176,7 @@ public class VentaService {
 
         validarAccesoSucursal(usuario, request.getIdSucursal());
 
-        MetodoPago metodoPago = metodoPagoRepository.findById(request.getIdMetodoPago())
+        MetodoPago metodoPago = metodoPagoRepository.findById(Objects.requireNonNull(request.getIdMetodoPago()))
                 .orElseThrow(() -> new RuntimeException(
                         "Método de pago no encontrado con ID: " + request.getIdMetodoPago()));
 
@@ -188,9 +186,8 @@ public class VentaService {
                     item.getIdProducto(), request.getIdSucursal());
 
             if (invList.isEmpty()) {
-                Producto prod = productoRepository.findById(item.getIdProducto())
-                        .orElseThrow(
-                                () -> new RuntimeException("Producto no encontrado con ID: " + item.getIdProducto()));
+                Producto prod = productoRepository.findById(Objects.requireNonNull(item.getIdProducto()))
+                        .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + item.getIdProducto()));
                 throw new RuntimeException(
                         "No existe inventario para el producto \"" + prod.getNombre() + "\" en esta sucursal.");
             }
@@ -237,7 +234,7 @@ public class VentaService {
         // - Genera alertas si stock <= stock_minimo
         // - Lanza excepción si stock insuficiente
         for (DetalleVentaItem item : request.getItems()) {
-            Producto producto = productoRepository.findById(item.getIdProducto())
+            Producto producto = productoRepository.findById(Objects.requireNonNull(item.getIdProducto()))
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + item.getIdProducto()));
 
             BigDecimal subtotal = item.getSubtotal();
@@ -295,7 +292,7 @@ public class VentaService {
     // VALIDACIÓN DE ACCESO A SUCURSAL (reutilizada de InventarioService)
     // ─────────────────────────────────────────────────────────────
 
-    private void validarAccesoSucursal(Usuario usuario, Integer idSucursal) {
+    private void validarAccesoSucursal(Usuario usuario, @NonNull Integer idSucursal) {
         String rol = usuario.getNombre_rol();
 
         if (rol == null) {

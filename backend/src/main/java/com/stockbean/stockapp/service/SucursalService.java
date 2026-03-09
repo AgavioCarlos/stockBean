@@ -87,11 +87,11 @@ public class SucursalService {
         return nuevaSucursal;
     }
 
-    public Sucursal obtenerPorId(Integer id) {
+    public Sucursal obtenerPorId(@NonNull Integer id) {
         return sucursalRepository.findById(id).orElse(null);
     }
 
-    public Sucursal actualizar(Integer id, Sucursal sucursalDetails) {
+    public Sucursal actualizar(@NonNull Integer id, Sucursal sucursalDetails) {
         return sucursalRepository.findById(id).map(sucursal -> {
             sucursal.setNombre(sucursalDetails.getNombre());
             sucursal.setDireccion(sucursalDetails.getDireccion());
@@ -102,7 +102,7 @@ public class SucursalService {
         }).orElse(null);
     }
 
-    public void eliminar(Integer id) {
+    public void eliminar(@NonNull Integer id) {
         sucursalRepository.findById(id).ifPresent(sucursal -> {
             sucursal.setStatus(false); // Baja lógica
             sucursal.setFecha_baja(LocalDateTime.now());

@@ -7,8 +7,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.stockbean.stockapp.dto.RegistroRequest;
+import com.stockbean.stockapp.model.catalogos.MetodoPago;
+import com.stockbean.stockapp.model.catalogos.Plan;
 import com.stockbean.stockapp.model.catalogos.Rol;
 import com.stockbean.stockapp.model.tablas.Persona;
+import com.stockbean.stockapp.model.tablas.Suscripcion;
 import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.repository.PersonaRepository;
 import com.stockbean.stockapp.repository.RolRepository;
@@ -65,19 +68,19 @@ public class RegistroService {
         // Crear la suscripción
         if (request.getId_plan() != null) {
             try {
-                com.stockbean.stockapp.model.tablas.Suscripcion suscripcion = new com.stockbean.stockapp.model.tablas.Suscripcion();
+                Suscripcion suscripcion = new Suscripcion();
                 suscripcion.setUsuario(usuario);
 
-                com.stockbean.stockapp.model.catalogos.Plan plan = new com.stockbean.stockapp.model.catalogos.Plan();
+                Plan plan = new Plan();
                 plan.setId_plan(request.getId_plan());
                 suscripcion.setPlan(plan);
 
                 LocalDateTime fechaInicio = LocalDateTime.now();
                 suscripcion.setFechaInicio(fechaInicio);
                 suscripcion.setFechaFin(fechaInicio.plusMonths(1));
-                suscripcion.setStatus(false);
+                suscripcion.setStatus(true);
 
-                com.stockbean.stockapp.model.catalogos.MetodoPago metodoPago = new com.stockbean.stockapp.model.catalogos.MetodoPago();
+                MetodoPago metodoPago = new MetodoPago();
                 metodoPago.setIdMetodoPago(1);
                 suscripcion.setMetodoPago(metodoPago);
 
@@ -93,7 +96,6 @@ public class RegistroService {
             } catch (Exception e) {
                 System.err.println("❌ Error al guardar la suscripción: " + e.getMessage());
                 e.printStackTrace();
-                // Opcional: throw new RuntimeException para forzar el rollback y ver el error
                 throw new RuntimeException("Error al crear la suscripción, verifica que el plan " + request.getId_plan()
                         + " y el metodo de pago 1 existan.");
             }

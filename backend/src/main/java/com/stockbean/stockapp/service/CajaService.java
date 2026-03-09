@@ -3,12 +3,10 @@ package com.stockbean.stockapp.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.math.BigDecimal;
-
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.stockbean.stockapp.dto.AperturaCajaRequest;
 import com.stockbean.stockapp.dto.CierreCajaRequest;
 import com.stockbean.stockapp.dto.MovimientoCajaRequest;
@@ -18,6 +16,7 @@ import com.stockbean.stockapp.model.tablas.TurnoCaja;
 import com.stockbean.stockapp.repository.CajaRepository;
 import com.stockbean.stockapp.repository.MovimientoCajaRepository;
 import com.stockbean.stockapp.repository.TurnoCajaRepository;
+import java.util.Objects;
 
 @Service
 public class CajaService {
@@ -53,7 +52,7 @@ public class CajaService {
             throw new RuntimeException("El usuario ya tiene un turno de caja abierto.");
         }
 
-        Caja caja = cajaRepository.findById(request.getIdCaja())
+        Caja caja = cajaRepository.findById(Objects.requireNonNull(request.getIdCaja(), "ID es nulo"))
                 .orElseThrow(() -> new RuntimeException("Caja no encontrada"));
 
         TurnoCaja turno = new TurnoCaja();
@@ -68,7 +67,7 @@ public class CajaService {
 
     @Transactional
     public TurnoCaja cerrarCaja(CierreCajaRequest request, Integer idUsuario) {
-        TurnoCaja turno = turnoCajaRepository.findById(request.getIdTurno())
+        TurnoCaja turno = turnoCajaRepository.findById(Objects.requireNonNull(request.getIdTurno(), "ID es nulo"))
                 .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
 
         if (!turno.getIdUsuario().equals(idUsuario)) {
@@ -85,12 +84,12 @@ public class CajaService {
         entityManager.clear();
 
         // Retornar el turno actualizado directo desde la BD
-        return turnoCajaRepository.findById(request.getIdTurno()).orElse(null);
+        return turnoCajaRepository.findById(Objects.requireNonNull(request.getIdTurno(), "ID es nulo")).orElse(null);
     }
 
     @Transactional
     public MovimientoCaja registrarMovimiento(MovimientoCajaRequest request, Integer idUsuario) {
-        TurnoCaja turno = turnoCajaRepository.findById(request.getIdTurno())
+        TurnoCaja turno = turnoCajaRepository.findById(Objects.requireNonNull(request.getIdTurno(), "ID es nulo"))
                 .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
 
         if (!turno.getIdUsuario().equals(idUsuario)) {

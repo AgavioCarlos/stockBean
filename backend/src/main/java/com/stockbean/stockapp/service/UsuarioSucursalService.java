@@ -3,10 +3,9 @@ package com.stockbean.stockapp.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-
 import com.stockbean.stockapp.model.tablas.UsuarioSucursal;
 import com.stockbean.stockapp.repository.UsuarioSucursalRepository;
 
@@ -20,7 +19,7 @@ public class UsuarioSucursalService {
         return usuarioSucursalRepository.findByStatusTrue();
     }
 
-    public UsuarioSucursal obtenerPorId(Integer id) {
+    public UsuarioSucursal obtenerPorId(@NonNull Integer id) {
         return usuarioSucursalRepository.findById(id).orElse(null);
     }
 
@@ -41,11 +40,11 @@ public class UsuarioSucursalService {
         return usuarioSucursalRepository.save(usuarioSucursal);
     }
 
-    public UsuarioSucursal actualizar(UsuarioSucursal usuarioSucursal) {
+    public UsuarioSucursal actualizar(@NonNull UsuarioSucursal usuarioSucursal) {
         return usuarioSucursalRepository.save(usuarioSucursal);
     }
 
-    public void eliminar(Integer id) {
+    public void eliminar(@NonNull Integer id) {
         Optional<UsuarioSucursal> optional = usuarioSucursalRepository.findById(id);
         if (optional.isPresent()) {
             UsuarioSucursal usuarioSucursal = optional.get();

@@ -1,8 +1,6 @@
 package com.stockbean.stockapp.model.tablas;
 
 import java.time.LocalDateTime;
-
-import com.stockbean.stockapp.model.tablas.Sucursal;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

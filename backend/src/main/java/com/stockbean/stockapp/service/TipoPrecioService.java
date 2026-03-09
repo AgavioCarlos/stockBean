@@ -1,10 +1,9 @@
 package com.stockbean.stockapp.service;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-
 import com.stockbean.stockapp.model.catalogos.TipoPrecio;
 import com.stockbean.stockapp.repository.TipoPrecioRepository;
 
@@ -17,7 +16,7 @@ public class TipoPrecioService {
         return tipoPrecioRepository.findAll();
     }
 
-    public TipoPrecio obtenerPorId(Integer id) {
+    public TipoPrecio obtenerPorId(@NonNull Integer id) {
         return tipoPrecioRepository.findById(id).orElse(null);
     }
 }

@@ -1,6 +1,7 @@
 package com.stockbean.stockapp.controller;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.stockbean.stockapp.security.UsuarioPrincipal;
 import com.stockbean.stockapp.model.catalogos.Marca;
 import com.stockbean.stockapp.service.MarcaService;
+import org.springframework.lang.NonNull;
 
 @RestController
 @RequestMapping("/marcas")
@@ -26,32 +28,32 @@ public class MarcaController {
 
     @GetMapping
     public List<Marca> listar(@AuthenticationPrincipal UsuarioPrincipal principal) {
-        return marcaService.listarTodas(principal.getId());
+        return marcaService.listarTodas(Objects.requireNonNull(principal.getId()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Marca> obtener(@PathVariable Integer id,
+    public ResponseEntity<Marca> obtener(@PathVariable @NonNull Integer id,
             @AuthenticationPrincipal UsuarioPrincipal principal) {
-        Marca marca = marcaService.obtenerPorId(id, principal.getId());
+        Marca marca = marcaService.obtenerPorId(id, Objects.requireNonNull(principal.getId()));
         return marca != null ? ResponseEntity.ok(marca) : ResponseEntity.notFound().build();
     }
 
     @PostMapping()
     public Marca crear(@RequestBody Marca marca, @AuthenticationPrincipal UsuarioPrincipal principal) {
-        return marcaService.guardar(marca, principal.getId());
+        return marcaService.guardar(marca, Objects.requireNonNull(principal.getId()));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Marca> actualizar(@PathVariable Integer id, @RequestBody Marca marca,
+    public ResponseEntity<Marca> actualizar(@PathVariable @NonNull Integer id, @RequestBody Marca marca,
             @AuthenticationPrincipal UsuarioPrincipal principal) {
-        Marca actualizado = marcaService.actualizar(id, marca, principal.getId());
+        Marca actualizado = marcaService.actualizar(id, marca, Objects.requireNonNull(principal.getId()));
         return actualizado != null ? ResponseEntity.ok(actualizado) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id,
+    public ResponseEntity<Void> eliminar(@PathVariable @NonNull Integer id,
             @AuthenticationPrincipal UsuarioPrincipal principal) {
-        marcaService.eliminar(id, principal.getId());
+        marcaService.eliminar(id, Objects.requireNonNull(principal.getId()));
         return ResponseEntity.noContent().build();
     }
 

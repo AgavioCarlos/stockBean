@@ -3,6 +3,7 @@ package com.stockbean.stockapp.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import com.stockbean.stockapp.model.catalogos.Marca;
 import com.stockbean.stockapp.repository.MarcaRepository;
@@ -25,7 +26,7 @@ public class MarcaService {
         return marcaRepository.findByIdEmpresa(idEmpresa);
     }
 
-    public Marca obtenerPorId(Integer id, Integer idUsuario) {
+    public Marca obtenerPorId(@NonNull Integer id, @NonNull Integer idUsuario) {
         List<Integer> companyIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);
         Integer idEmpresa = companyIds.isEmpty() ? null : companyIds.get(0);
 
@@ -36,7 +37,7 @@ public class MarcaService {
         return null;
     }
 
-    public Marca guardar(Marca marca, Integer idUsuario) {
+    public Marca guardar(Marca marca, @NonNull Integer idUsuario) {
         marca.setFechaAlta(LocalDateTime.now());
         marca.setFechaUltimaModificacion(LocalDateTime.now());
         marca.setStatus(true);
@@ -49,7 +50,7 @@ public class MarcaService {
         return marcaRepository.save(marca);
     }
 
-    public Marca actualizar(Integer id, Marca marcaActualizada, Integer idUsuario) {
+    public Marca actualizar(@NonNull Integer id, Marca marcaActualizada, @NonNull Integer idUsuario) {
         Marca marca = obtenerPorId(id, idUsuario);
         if (marca == null)
             return null;
@@ -60,7 +61,7 @@ public class MarcaService {
         return marcaRepository.save(marca);
     }
 
-    public void eliminar(Integer id, Integer idUsuario) {
+    public void eliminar(@NonNull Integer id, @NonNull Integer idUsuario) {
         Marca marca = obtenerPorId(id, idUsuario);
         if (marca != null) {
             marca.setStatus(false);
