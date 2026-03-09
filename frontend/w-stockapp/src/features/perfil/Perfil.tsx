@@ -12,7 +12,7 @@ import {
     FaUserTag,
     FaChartBar
 } from "react-icons/fa";
-import { consultarPersona } from "../persona/PersonaService";
+import { consultarPersona } from "../Persona/PersonaService";
 import Breadcrumb from "../../components/Breadcrumb";
 import EditProfileModal from "../../components/EditProfileModal";
 import { obtenerVentasPorDia } from "../reporte_ventas/ReporteVentasService";

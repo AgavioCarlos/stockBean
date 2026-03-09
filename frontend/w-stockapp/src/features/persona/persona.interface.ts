@@ -1,4 +1,4 @@
-export interface IPersona {
+export interface Persona {
     id_persona?: number;
     nombre: string;
     apellido_paterno: string;

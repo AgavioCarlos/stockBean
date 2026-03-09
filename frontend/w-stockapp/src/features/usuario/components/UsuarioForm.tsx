@@ -6,7 +6,7 @@ import { SharedInput } from '../../../components/SharedInput';
 import { SharedButton } from '../../../components/SharedButton';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { consultarRoles } from '../../../services/Roles';
-import { consultarPersonas } from '../../persona/PersonaService';
+import { consultarPersonas } from '../../Persona/PersonaService';
 import { UsuarioPermisos } from './UsuarioPermisos';
 
 interface UsuarioFormProps {

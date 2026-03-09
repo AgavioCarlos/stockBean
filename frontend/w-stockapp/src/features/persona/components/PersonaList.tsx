@@ -2,13 +2,13 @@ import React from 'react';
 import { DataTable, Column } from '../../../components/DataTable';
 import { SharedButton } from '../../../components/SharedButton';
 import { IoMdAddCircle } from "react-icons/io";
-import type { IPersona } from '../persona.interface';
+import type { Persona } from '../persona.interface';
 import { WithPermission } from '../../../components/WithPermission';
 
 interface PersonaListProps {
-    data: IPersona[];
-    columns: Column<IPersona>[];
-    onRowClick: (item: IPersona) => void;
+    data: Persona[];
+    columns: Column<Persona>[];
+    onRowClick: (item: Persona) => void;
     onNew: () => void;
     loading?: boolean;
 }

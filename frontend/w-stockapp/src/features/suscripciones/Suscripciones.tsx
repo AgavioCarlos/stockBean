@@ -46,13 +46,13 @@ export default function Suscripciones() {
 
     const columnas = useMemo<Column<SuscripcionAdmin>[]>(() => [
         {
-            key: "nombreComercial",
-            label: "Empresa",
+            key: "nombreCompleto",
+            label: "Usuario",
             sortable: true,
             render: (_: any, item: SuscripcionAdmin) => (
                 <div className="flex flex-col">
-                    <span className="font-semibold text-gray-800">{item.nombreComercial}</span>
-                    <span className="text-xs text-gray-400">{item.razonSocial}</span>
+                    <span className="font-semibold text-gray-800">{item.nombreCompleto}</span>
+                    <span className="text-xs text-gray-400">{item.email}</span>
                 </div>
             )
         },

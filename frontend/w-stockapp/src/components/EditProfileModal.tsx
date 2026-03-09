@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaUser, FaEnvelope, FaIdCard, FaCheckCircle, FaSave } from 'react-icons/fa';
 import Swal from 'sweetalert2';
-import { actualizarPersona } from '../features/persona/PersonaService';
+import { actualizarPersona } from '../features/Persona/PersonaService';
 
 interface EditProfileModalProps {
     isOpen: boolean;

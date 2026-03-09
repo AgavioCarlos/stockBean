@@ -1,8 +1,10 @@
 export interface SuscripcionAdmin {
     idSuscripcion: number;
-    idEmpresa: number;
-    razonSocial: string;
-    nombreComercial: string;
+    idUsuario: number;
+    nombreCompleto: string;
+    email: string;
+    idEmpresa?: number;
+    nombreEmpresa?: string;
     planNombre: string;
     fechaInicio: string;
     fechaFin: string;
