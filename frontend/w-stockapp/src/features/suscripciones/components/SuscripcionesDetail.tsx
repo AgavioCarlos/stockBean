@@ -15,12 +15,17 @@ export const SuscripcionesDetail: React.FC<SuscripcionesDetailProps> = ({ suscri
     const [nuevaFecha, setNuevaFecha] = useState("");
 
     useEffect(() => {
-        if (suscripcion?.idEmpresa) {
-            setLoading(true);
-            consultarSucursalesEmpresa(suscripcion.idEmpresa)
-                .then(data => setSucursales(data || []))
-                .catch(err => console.error(err))
-                .finally(() => setLoading(false));
+        if (suscripcion?.idUsuario) {
+            // Fetch company branches if they have an assigned company
+            if (suscripcion.idEmpresa) {
+                setLoading(true);
+                consultarSucursalesEmpresa(suscripcion.idEmpresa)
+                    .then(data => setSucursales(data || []))
+                    .catch(err => console.error(err))
+                    .finally(() => setLoading(false));
+            } else {
+                setSucursales([]); // Reset if they don't have a company
+            }
 
             // Set input to current date + 1 year roughly, or existing date
             if (suscripcion.fechaFin) {
@@ -34,7 +39,7 @@ export const SuscripcionesDetail: React.FC<SuscripcionesDetailProps> = ({ suscri
         return (
             <div className="flex flex-col items-center justify-center p-12 text-slate-400">
                 <MdAccountBalance size={48} className="mb-4 text-slate-300" />
-                <p>Selecciona una empresa para ver sus detalles</p>
+                <p>Selecciona una suscripción para ver sus detalles</p>
             </div>
         );
     }
@@ -67,8 +72,8 @@ export const SuscripcionesDetail: React.FC<SuscripcionesDetailProps> = ({ suscri
         <div className="p-6">
             <div className="mb-6 flex justify-between items-start">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">{suscripcion.nombreComercial}</h2>
-                    <p className="text-gray-500">{suscripcion.razonSocial}</p>
+                    <h2 className="text-2xl font-bold text-gray-800">{suscripcion.nombreCompleto}</h2>
+                    <p className="text-gray-500">{suscripcion.email}</p>
                 </div>
                 <StatusBadge
                     status={suscripcion.statusSuscripcion}
@@ -81,7 +86,7 @@ export const SuscripcionesDetail: React.FC<SuscripcionesDetailProps> = ({ suscri
                 <div>
                     <p className="text-sm text-gray-500 font-semibold mb-2">Información de Sistema</p>
                     <div className="space-y-2">
-                        <p className="flex justify-between"><span className="text-gray-400">ID Empresa:</span> <span className="font-medium text-gray-700">{suscripcion.idEmpresa}</span></p>
+                        <p className="flex justify-between"><span className="text-gray-400">ID Usuario:</span> <span className="font-medium text-gray-700">{suscripcion.idUsuario}</span></p>
                         <p className="flex justify-between"><span className="text-gray-400">Plan actual:</span> <span className="font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-sm">{suscripcion.planNombre}</span></p>
                     </div>
                 </div>
@@ -94,21 +99,43 @@ export const SuscripcionesDetail: React.FC<SuscripcionesDetailProps> = ({ suscri
                 </div>
             </div>
 
+
+
             <div className="mb-8">
                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <MdStorefront className="text-gray-400" /> Sucursales Activas ({sucursales.length})
+                    <MdStorefront className="text-gray-400" /> Empresa Asignada
                 </h3>
-                {loading ? (
-                    <p className="text-sm text-gray-400">Cargando sucursales...</p>
+
+                {!suscripcion.idEmpresa ? (
+                    <div className="p-6 border border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center text-center">
+                        <MdStorefront size={32} className="text-gray-300 mb-2" />
+                        <span className="font-semibold text-gray-600">Usuario Sin Asignar a Ninguna Empresa</span>
+                        <span className="text-xs text-gray-400 mt-1">Este usuario no pertecene actualmente a ninguna organización.</span>
+                    </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {sucursales.map(s => (
-                            <div key={s.id_sucursal} className="p-4 border border-gray-200 rounded-lg bg-gray-50 flex flex-col">
-                                <span className="font-semibold text-gray-700">{s.nombre}</span>
-                                <span className="text-xs text-gray-500 mt-1 truncate">{s.direccion}</span>
-                            </div>
-                        ))}
-                        {sucursales.length === 0 && <p className="text-sm text-gray-400 col-span-2">No hay sucursales registradas.</p>}
+                    <div className="space-y-4">
+                        <div className="p-4 border border-blue-100 rounded-lg bg-blue-50/50 flex flex-col">
+                            <span className="text-sm text-blue-500 font-semibold mb-1">Empresa</span>
+                            <span className="font-bold text-gray-800 text-lg">{suscripcion.nombreEmpresa}</span>
+                            <span className="text-xs text-gray-500">ID: {suscripcion.idEmpresa}</span>
+                        </div>
+
+                        <div>
+                            <p className="text-sm font-semibold text-gray-600 mb-3">Sucursales ({sucursales.length})</p>
+                            {loading ? (
+                                <p className="text-sm text-gray-400">Cargando sucursales...</p>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {sucursales.map(s => (
+                                        <div key={s.id_sucursal} className="p-4 border border-gray-200 rounded-lg bg-gray-50 flex flex-col">
+                                            <span className="font-semibold text-gray-700">{s.nombre}</span>
+                                            <span className="text-xs text-gray-500 mt-1 truncate">{s.direccion}</span>
+                                        </div>
+                                    ))}
+                                    {sucursales.length === 0 && <p className="text-sm text-gray-400 col-span-2">No hay sucursales registradas.</p>}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>

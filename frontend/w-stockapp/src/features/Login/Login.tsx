@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { login } from "../../services/Login";
+import { login } from "./LoginService";
 import { getPantallasUsuario, savePantallasToLocalStorage } from "../../services/Pantallas";
 import { useAlerts } from "../../hooks/useAlerts";
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';

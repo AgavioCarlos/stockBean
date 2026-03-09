@@ -2,17 +2,17 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
-import Persona from './features/persona/Persona'
+import Persona from './features/Persona/Persona'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
-import Login from './pages/Login/Login';
-import Perfil from './features/perfil/Perfil';
+import Login from './features/Login/Login';
+import Perfil from './features/Perfil/Perfil';
 import Categorias from './pages/Categorias';
 import Unidades from './pages/Unidades'
 import Roles from './pages/Roles';
 import Inicio from './pages/Inicio';
 import Productos from './features/producto/Productos'
-import Marcas from './features/marca/Marcas'
+import Marcas from './features/Marca/Marcas'
 import Clientes from './pages/Clientes'
 import Proveedores from './features/proveedores/Proveedores'
 import PuntoVenta from './features/punto_venta/PuntoVenta'
@@ -23,7 +23,7 @@ import Administrador from './pages/Administrador';
 import Sucursales from './features/sucursal/Sucursales';
 import Usuarios from './features/usuario/Usuarios';
 import UsuariosSucursales from './pages/UsuariosSucursales';
-import Inventario from './features/inventario/Inventario';
+import Inventario from './features/Inventario/Inventario';
 import HistorialPrecios from './pages/HistorialPrecios';
 import Empresas from './pages/Empresas';
 import EmpresaUsuario from './pages/EmpresaUsuario';
