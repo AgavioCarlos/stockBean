@@ -56,7 +56,7 @@ public class RegistroService {
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         usuario.setPersona(persona);
 
-        Rol rolAdmin = rolRepository.findById(3)
+        Rol rolAdmin = rolRepository.findById(2)
                 .orElseThrow(() -> new RuntimeException("Error: Rol 'Administrador' no encontrado."));
         usuario.setRol(rolAdmin);
 

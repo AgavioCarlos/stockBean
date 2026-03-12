@@ -57,4 +57,17 @@ public class AuthHelper {
         }
         return null;
     }
+
+    /**
+     * Obtiene el id_usuario del usuario autenticado desde el JWT
+     * 
+     * @return Integer con el id_usuario o null si no está disponible
+     */
+    public Integer getIdUsuarioFromToken() {
+        String token = getJwtFromRequest();
+        if (token != null) {
+            return jwtUtil.extractIdUsuario(token);
+        }
+        return null;
+    }
 }

@@ -48,4 +48,7 @@ public class Pantallas {
 
     private Boolean status;
 
+    @Column(name = "es_root")
+    private Boolean esRoot;
+
 }
