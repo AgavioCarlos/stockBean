@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { consultarCategorias } from "../../../services/Categoria";
-import { consultarUnidades } from "../../../services/Unidad";
+import { consultarUnidades } from "../../Unidades/UnidadService";
 import { consultarMarcas } from "../../../services/Marcas";
 import { Categoria, Unidad, Marca } from "../producto.interface";
 

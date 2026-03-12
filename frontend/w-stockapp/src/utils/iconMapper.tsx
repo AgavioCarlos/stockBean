@@ -21,12 +21,10 @@ import { MdOutlinePointOfSale } from "react-icons/md";
 import { RiAdminLine } from "react-icons/ri";
 import { IoIosSettings } from "react-icons/io";
 import { TbReportAnalytics } from "react-icons/tb";
+import { MdOutlinePayments } from "react-icons/md";
+import { FaUsers, FaUser } from "react-icons/fa";
+import { CgScreen } from "react-icons/cg";
 
-/**
- * Mapa de nombres de íconos a componentes de React Icons
- * Permite obtener dinámicamente el ícono correcto basado en el nombre string
- * que viene desde la base de datos
- */
 export const iconMap: { [key: string]: React.ComponentType } = {
     // Iconos generales
     FiHome,
@@ -44,6 +42,7 @@ export const iconMap: { [key: string]: React.ComponentType } = {
     // Usuarios y personas
     FiUsers,
     FiUser,
+    FaUser,
     FiShield,
     RiAdminLine,
 
@@ -60,13 +59,18 @@ export const iconMap: { [key: string]: React.ComponentType } = {
 
     // Reportes
     TbReportAnalytics,
+
+    // Pagos
+    MdOutlinePayments,
+
+    //Roles
+    FaUsers,
+
+    //Pantallas
+    CgScreen,
+
 };
 
-/**
- * Obtiene el componente de ícono basado en el nombre string
- * @param iconName Nombre del ícono (ej: "FiBox")
- * @returns Componente del ícono o un ícono por defecto
- */
 export const getIcon = (iconName: string): React.ComponentType => {
-    return iconMap[iconName] || FiLayers; // FiLayers como ícono por defecto
+    return iconMap[iconName] || FiLayers;
 };

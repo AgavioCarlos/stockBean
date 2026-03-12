@@ -1,4 +1,4 @@
-import { Productos as IProducto } from "../producto/producto.interface";
+import { Productos as IProducto } from "../Producto/producto.interface";
 
 export interface IProductoEmpresa {
     idProductoEmpresa?: number;

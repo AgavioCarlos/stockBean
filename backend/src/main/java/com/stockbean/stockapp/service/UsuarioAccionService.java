@@ -1,9 +1,7 @@
 package com.stockbean.stockapp.service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,41 +11,42 @@ import com.stockbean.stockapp.dto.GuardarAccionRequest;
 import com.stockbean.stockapp.dto.UsuarioAccionDTO;
 import com.stockbean.stockapp.model.admin.Empresa;
 import com.stockbean.stockapp.model.admin.Pantallas;
-import com.stockbean.stockapp.model.admin.UsuarioAccion;
-import com.stockbean.stockapp.model.catalogos.Accion;
+import com.stockbean.stockapp.model.admin.AdminUsuarioPantalla;
 import com.stockbean.stockapp.model.tablas.Usuario;
-import com.stockbean.stockapp.repository.AccionRepository;
-import com.stockbean.stockapp.repository.PantallaRepository;
-import com.stockbean.stockapp.repository.UsuarioAccionRepository;
+import com.stockbean.stockapp.repository.UsuarioPantallaRepository;
+import com.stockbean.stockapp.repository.UsuarioRepository;
 
 @Service
 public class UsuarioAccionService {
 
     @Autowired
-    private UsuarioAccionRepository usuarioAccionRepository;
+    private UsuarioPantallaRepository adminUsuarioPantallaRepository;
 
     @Autowired
-    private PantallaRepository pantallaRepository;
+    private PantallaService pantallaService;
 
     @Autowired
-    private AccionRepository accionRepository;
+    private UsuarioRepository usuarioRepository;
 
     /**
      * Obtiene la matriz de permisos de un usuario en una empresa.
-     * Devuelve TODAS las pantallas con TODAS las acciones, indicando cuáles están
-     * permitidas.
+     * Filtra las pantallas según el rol del usuario que administra (por esRoot).
      */
     public List<UsuarioAccionDTO> obtenerMatrizPermisos(Integer idUsuario, Integer idEmpresa) {
-        List<Pantallas> todasPantallas = pantallaRepository.findAll();
-        List<Accion> todasAcciones = accionRepository.findByStatusTrue();
-        List<UsuarioAccion> permisosActuales = usuarioAccionRepository
-                .buscarPermisosActivosPorUsuarioYEmpresa(idUsuario, idEmpresa);
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
+        if (usuario == null) return new ArrayList<>();
+
+        // Obtener pantallas filtradas por esRoot según el rol del usuario
+        List<Pantallas> pantallasDisponibles = pantallaService.findPantallasByRol(usuario.getId_rol());
+
+        List<AdminUsuarioPantalla> permisosActuales = adminUsuarioPantallaRepository
+                .findByUsuarioIdAndEmpresaId(idUsuario, idEmpresa);
 
         List<UsuarioAccionDTO> matriz = new ArrayList<>();
 
-        for (Pantallas pantalla : todasPantallas) {
+        for (Pantallas pantalla : pantallasDisponibles) {
             if (!Boolean.TRUE.equals(pantalla.getStatus()))
-                continue; // Omitir pantallas inactivas
+                continue;
 
             UsuarioAccionDTO fila = new UsuarioAccionDTO();
             fila.setIdPantalla(pantalla.getIdPantalla());
@@ -55,17 +54,18 @@ public class UsuarioAccionService {
             fila.setPantallaClave(pantalla.getClave());
 
             List<UsuarioAccionDTO.AccionItemDTO> accionesDTO = new ArrayList<>();
-            for (Accion accion : todasAcciones) {
-                boolean permitido = permisosActuales.stream().anyMatch(
-                        ua -> ua.getPantalla().getIdPantalla().equals(pantalla.getIdPantalla())
-                                && ua.getAccion().getIdAccion().equals(accion.getIdAccion())
-                                && Boolean.TRUE.equals(ua.getPermitido()));
 
-                accionesDTO.add(new UsuarioAccionDTO.AccionItemDTO(
-                        accion.getIdAccion(),
-                        accion.getNombre(),
-                        permitido));
-            }
+            AdminUsuarioPantalla pActual = permisosActuales.stream()
+                .filter(p -> p.getPantalla() != null && p.getPantalla().getIdPantalla().equals(pantalla.getIdPantalla()))
+                .findFirst().orElse(null);
+
+            // 4 acciones basadas en la estructura de admin_usuario_pantalla
+            // 1:view, 2:create, 3:update, 4:delete
+            accionesDTO.add(new UsuarioAccionDTO.AccionItemDTO(1, "view", pActual != null && Boolean.TRUE.equals(pActual.getVer())));
+            accionesDTO.add(new UsuarioAccionDTO.AccionItemDTO(2, "create", pActual != null && Boolean.TRUE.equals(pActual.getGuardar())));
+            accionesDTO.add(new UsuarioAccionDTO.AccionItemDTO(3, "update", pActual != null && Boolean.TRUE.equals(pActual.getActualizar())));
+            accionesDTO.add(new UsuarioAccionDTO.AccionItemDTO(4, "delete", pActual != null && Boolean.TRUE.equals(pActual.getEliminar())));
+
             fila.setAcciones(accionesDTO);
             matriz.add(fila);
         }
@@ -75,45 +75,48 @@ public class UsuarioAccionService {
 
     /**
      * Guarda/actualiza masivamente los permisos de un usuario en una empresa.
-     * Si el registro ya existe, lo actualiza. Si no, lo crea.
      */
     @Transactional
     public void guardarPermisos(Integer idUsuario, Integer idEmpresa, List<GuardarAccionRequest> permisos) {
+        List<AdminUsuarioPantalla> actuales = adminUsuarioPantallaRepository.findByUsuarioIdAndEmpresaId(idUsuario, idEmpresa);
+        
         for (GuardarAccionRequest req : permisos) {
-            Optional<UsuarioAccion> existente = usuarioAccionRepository.buscarPermisoExacto(
-                    idUsuario, idEmpresa, req.getIdPantalla(), req.getIdAccion());
+            AdminUsuarioPantalla existente = actuales.stream()
+                .filter(p -> p.getPantalla() != null && p.getPantalla().getIdPantalla().equals(req.getIdPantalla()))
+                .findFirst().orElse(null);
 
-            if (existente.isPresent()) {
-                UsuarioAccion ua = existente.get();
-                ua.setPermitido(req.getPermitido());
-                ua.setStatus(true);
-                usuarioAccionRepository.save(ua);
-            } else if (Boolean.TRUE.equals(req.getPermitido())) {
-                // Solo crear si se está habilitando el permiso
-                UsuarioAccion ua = new UsuarioAccion();
-
+            if (existente == null) {
+                existente = new AdminUsuarioPantalla();
                 Usuario usuario = new Usuario();
                 usuario.setId_usuario(idUsuario);
-                ua.setUsuario(usuario);
-
+                existente.setUsuario(usuario);
+                
                 Empresa empresa = new Empresa();
                 empresa.setIdEmpresa(idEmpresa);
-                ua.setEmpresa(empresa);
+                existente.setEmpresa(empresa);
 
                 Pantallas pantalla = new Pantallas();
                 pantalla.setIdPantalla(req.getIdPantalla());
-                ua.setPantalla(pantalla);
+                existente.setPantalla(pantalla);
 
-                Accion accion = new Accion();
-                accion.setIdAccion(req.getIdAccion());
-                ua.setAccion(accion);
-
-                ua.setPermitido(true);
-                ua.setStatus(true);
-                ua.setFechaAlta(LocalDateTime.now());
-
-                usuarioAccionRepository.save(ua);
+                existente.setVer(false);
+                existente.setGuardar(false);
+                existente.setActualizar(false);
+                existente.setEliminar(false);
+                
+                actuales.add(existente);
             }
+
+            // Aplicar cambios según la acción (1=ver, 2=crear, 3=actualizar, 4=eliminar)
+            boolean permitido = Boolean.TRUE.equals(req.getPermitido());
+            switch(req.getIdAccion()) {
+                case 1: existente.setVer(permitido); break;
+                case 2: existente.setGuardar(permitido); break;
+                case 3: existente.setActualizar(permitido); break;
+                case 4: existente.setEliminar(permitido); break;
+            }
+
+            adminUsuarioPantallaRepository.save(existente);
         }
     }
 }

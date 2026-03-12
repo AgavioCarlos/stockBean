@@ -5,8 +5,8 @@ import { StatusBadge } from '../../../components/StatusBadge';
 import { IoIosSave } from "react-icons/io";
 import { MdDelete } from "react-icons/md";
 import type { IProductoEmpresa } from '../productoEmpresa.interface';
-import { consultarProductos } from '../../producto/ProductosService';
-import type { Productos } from '../../producto/producto.interface';
+import { consultarProductos } from '../../Producto/ProductosService';
+import type { Productos } from '../../Producto/producto.interface';
 import { IoMdAddCircle } from "react-icons/io";
 
 interface ProductoEmpresaFormProps {

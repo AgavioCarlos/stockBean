@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { MdSecurity, MdSave, MdCheckBox, MdCheckBoxOutlineBlank, MdLock } from 'react-icons/md';
 import { SharedButton } from '../../../components/SharedButton';
 import { apiFetch } from '../../../services/Api';
-import { Pantalla } from '../../../interfaces/pantalla.interface';
-import { Accion } from '../../../interfaces/accion.interface';
 import Swal from 'sweetalert2';
 
 // ---- Tipos ----
@@ -41,6 +39,7 @@ interface FilaPermiso {
 
 interface UsuarioPermisosProps {
     idUsuario: number;
+    idRolUsuario?: number;
 }
 
 // ---- Estilos ----
@@ -61,7 +60,7 @@ const ACCION_LABELS: Record<string, string> = {
 };
 
 // Acciones que se bloquean cuando "view" está deshabilitado
-const ACCIONES_BLOQUEADAS_SIN_VER = ['create', 'update', 'delete', 'export'];
+const ACCIONES_BLOQUEADAS_SIN_VER = ['create', 'update', 'delete'];
 
 // Orden preferido de acciones (view siempre primero)
 const ACCION_ORDER: Record<string, number> = {
@@ -69,9 +68,20 @@ const ACCION_ORDER: Record<string, number> = {
     'create': 1,
     'update': 2,
     'delete': 3,
-    'export': 4,
-
 };
+
+// Acciones CRUD hardcodeadas (columnas de admin_usuario_pantalla)
+const ACCIONES_FIJAS: Accion[] = [
+    { idAccion: 1, nombre: 'view' },
+    { idAccion: 2, nombre: 'create' },
+    { idAccion: 3, nombre: 'update' },
+    { idAccion: 4, nombre: 'delete' },
+];
+
+interface Accion {
+    idAccion: number;
+    nombre: string;
+}
 
 // ---- Helpers ----
 function getIdEmpresaFromStorage(): number | null {
@@ -105,7 +115,7 @@ function getIdEmpresaFromStorage(): number | null {
 }
 
 // ---- Componente ----
-export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario }) => {
+export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario, idRolUsuario: _idRolUsuario }) => {
     const [matriz, setMatriz] = useState<FilaPermiso[]>([]);
     const [accionesHeader, setAccionesHeader] = useState<Accion[]>([]);
     const [loading, setLoading] = useState(false);
@@ -113,24 +123,20 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario }) =
     const [hasChanges, setHasChanges] = useState(false);
     const [idEmpresa] = useState<number | null>(getIdEmpresaFromStorage);
 
-    // Cargar pantallas, acciones y permisos existentes del usuario
+    // Cargar pantallas y permisos existentes del usuario
     const cargarDatos = useCallback(async () => {
         if (!idUsuario || !idEmpresa) return;
         setLoading(true);
         try {
-            // 1) Traer catálogos dinámicos
-            const [pantallasData, accionesData, permisosData] = await Promise.all([
-                apiFetch<Pantalla[]>('/pantallas/todas'),
-                apiFetch<Accion[]>('/acciones'),
+            // 1) Traer pantallas filtradas por esRoot y permisos del usuario
+            const [permisosData] = await Promise.all([
                 apiFetch<any[]>(`/usuarios-acciones/${idUsuario}?idEmpresa=${idEmpresa}`)
             ]);
 
-            const pantallas = pantallasData || [];
-            const acciones = accionesData || [];
             const permisosExistentes = permisosData || [];
 
-            // Ordenar acciones: "view" siempre primero
-            const accionesOrdenadas = [...acciones].sort((a, b) => {
+            // Usar acciones fijas CRUD
+            const accionesOrdenadas = [...ACCIONES_FIJAS].sort((a, b) => {
                 const orderA = ACCION_ORDER[a.nombre] ?? 99;
                 const orderB = ACCION_ORDER[b.nombre] ?? 99;
                 return orderA - orderB;
@@ -138,26 +144,16 @@ export const UsuarioPermisos: React.FC<UsuarioPermisosProps> = ({ idUsuario }) =
 
             setAccionesHeader(accionesOrdenadas);
 
-            // 2) Construir la matriz Pantallas × Acciones
-            const permisosMap = new Map<string, boolean>();
-
-            // Si el backend devuelve la matriz con estructura { idPantalla, pantallaNombre, acciones: [] }
-            if (permisosExistentes.length > 0 && permisosExistentes[0].acciones) {
-                for (const row of permisosExistentes) {
-                    for (const acc of row.acciones) {
-                        permisosMap.set(`${row.idPantalla}-${acc.idAccion}`, acc.permitido === true);
-                    }
-                }
-            }
-
-            const nuevaMatriz: FilaPermiso[] = pantallas.map(pantalla => ({
-                idPantalla: pantalla.idPantalla,
-                nombre: pantalla.nombre,
-                clave: pantalla.clave,
-                acciones: accionesOrdenadas.map(accion => ({
-                    idAccion: accion.idAccion,
-                    nombreAccion: accion.nombre,
-                    permitido: permisosMap.get(`${pantalla.idPantalla}-${accion.idAccion}`) || false
+            // 2) Construir la matriz desde la respuesta del backend
+            //    El backend ya devuelve las pantallas correctas filtradas por esRoot
+            const nuevaMatriz: FilaPermiso[] = permisosExistentes.map(row => ({
+                idPantalla: row.idPantalla,
+                nombre: row.pantallaNombre,
+                clave: row.pantallaClave || '',
+                acciones: (row.acciones || []).map((acc: any) => ({
+                    idAccion: acc.idAccion,
+                    nombreAccion: acc.nombre,
+                    permitido: acc.permitido === true
                 }))
             }));
 

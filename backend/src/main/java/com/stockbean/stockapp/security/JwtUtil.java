@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-
 import java.util.function.Function;
 
 @Component
@@ -31,6 +30,10 @@ public class JwtUtil {
 
     public Integer extractIdRol(String token) {
         return extractClaim(token, claims -> claims.get("id_rol", Integer.class));
+    }
+
+    public Integer extractIdUsuario(String token) {
+        return extractClaim(token, claims -> claims.get("id_usuario", Integer.class));
     }
 
     public String extractNombreRol(String token) {
@@ -66,8 +69,9 @@ public class JwtUtil {
         return createToken(claims, userDetails.getUsername());
     }
 
-    public String generateToken(UserDetails userDetails, Integer idRol, String nombreRol) {
+    public String generateToken(UserDetails userDetails, Integer idUsuario, Integer idRol, String nombreRol) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("id_usuario", idUsuario);
         claims.put("id_rol", idRol);
         claims.put("nombre_rol", nombreRol);
         return createToken(claims, userDetails.getUsername());
