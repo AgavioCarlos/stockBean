@@ -8,32 +8,32 @@ import Dashboard from './pages/Dashboard'
 import Login from './features/Login/Login';
 import Perfil from './features/Perfil/Perfil';
 import Categorias from './pages/Categorias';
-import Unidades from './pages/Unidades'
-import Roles from './pages/Roles';
+import Unidades from './features/Unidades/Unidades'
+import Permisos from './features/Permisos/Permisos';
 import Inicio from './pages/Inicio';
-import Productos from './features/producto/Productos'
+import Productos from './features/Producto/Productos'
 import Marcas from './features/Marca/Marcas'
 import Clientes from './pages/Clientes'
-import Proveedores from './features/proveedores/Proveedores'
-import PuntoVenta from './features/punto_venta/PuntoVenta'
+import Proveedores from './features/Proveedores/Proveedores'
+import PuntoVenta from './features/Punto_venta/PuntoVenta'
 import ProtectedRoute from "./components/ProtectedRoute";
 import Configuracion from './pages/Configuracion';
-import Catalogos from './pages/Catalogos';
+import Catalogos from './features/Catalogo/Catalogos';
 import Administrador from './pages/Administrador';
-import Sucursales from './features/sucursal/Sucursales';
-import Usuarios from './features/usuario/Usuarios';
+import Sucursales from './features/Sucursal/Sucursales';
+import Usuarios from './features/Usuario/Usuarios';
 import UsuariosSucursales from './pages/UsuariosSucursales';
 import Inventario from './features/Inventario/Inventario';
 import HistorialPrecios from './pages/HistorialPrecios';
 import Empresas from './pages/Empresas';
 import EmpresaUsuario from './pages/EmpresaUsuario';
-import ProductoEmpresa from './features/productoEmpresa/ProductoEmpresa';
+import ProductoEmpresa from './features/ProductoEmpresa/ProductoEmpresa';
 import TestData from './pages/TestData';
 import Unauthorized from './pages/Unauthorized'; // Página de acceso denegado
-import ReporteVentas from './features/reporte_ventas/ReporteVentas';
-import Suscripciones from './features/suscripciones/Suscripciones';
-import PermisoRol from './features/roles_permisos/PermisoRol';
-import PermisoPantalla from './features/roles_permisos/PermisoPantalla';
+import ReporteVentas from './features/Reporte_ventas/ReporteVentas';
+import Suscripciones from './features/Suscripcion/Suscripciones';
+// import Suscripciones from './features/Suscripcion/Suscripciones';
+
 
 const router = createBrowserRouter([
   {
@@ -87,8 +87,8 @@ const router = createBrowserRouter([
     element: (<ProtectedRoute><Unidades /></ProtectedRoute>)
   },
   {
-    path: "/roles",
-    element: (<ProtectedRoute><Roles /></ProtectedRoute>)
+    path: "/permisos",
+    element: (<ProtectedRoute><Permisos /></ProtectedRoute>)
   },
   {
     path: "/marcas",
@@ -158,14 +158,7 @@ const router = createBrowserRouter([
     path: "/suscripciones",
     element: (<ProtectedRoute><Suscripciones /></ProtectedRoute>)
   },
-  {
-    path: "/admin-permisos/roles",
-    element: (<ProtectedRoute><PermisoRol /></ProtectedRoute>)
-  },
-  {
-    path: "/admin-permisos/pantallas",
-    element: (<ProtectedRoute><PermisoPantalla /></ProtectedRoute>)
-  },
+
 ]);
 
 import { AlertProvider } from './context/AlertContext';

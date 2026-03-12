@@ -69,11 +69,11 @@ function Administrador() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
                     <AdminCard
-                        title="Roles"
-                        description="Gestión de roles y permisos del sistema."
+                        title="Permisos"
+                        description="Gestión de permisos del sistema por rol."
                         icon={<FaUserShield size={24} />}
                         color="bg-purple-500"
-                        path="/roles"
+                        path="/permisos"
                         stats="Configuración"
                     />
 

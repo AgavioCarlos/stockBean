@@ -85,6 +85,7 @@ export const useAuth = () => {
 /**
  * Hook to retrieve specific UI interactions (CRUD) per screen based on RBAC.
  * It reads the injected "permisos_crud" object map from the user's session.
+ * Permissions are now ALWAYS read from admin_usuario_pantalla for ALL roles.
  * NOTE: JSON keys are always strings, so we must use String() for empresa ID lookups.
  */
 export const usePermissions = (pantallaKey: string) => {
@@ -103,11 +104,15 @@ export const usePermissions = (pantallaKey: string) => {
 
     if (loading) return DENIED;
 
-    // SISTEM role (Global Admin) completely bypasses UI blocks
-    if (user?.id_rol === 1) return { ...DENIED, canView: true, canCreate: true, canRead: true, canUpdate: true, canDelete: true, canExport: true, loading: false };
-
     const permisosCrud = user?.permisos_crud;
-    if (!permisosCrud) return DENIED;
+
+    // Fallback: si Sistemas no tiene permisos_crud definidos, otorgar todo como seguridad
+    if (!permisosCrud || Object.keys(permisosCrud).length === 0) {
+        if (user?.id_rol === 1) {
+            return { ...DENIED, canView: true, canCreate: true, canRead: true, canUpdate: true, canDelete: true, canExport: true, loading: false };
+        }
+        return DENIED;
+    }
 
     // JSON keys are ALWAYS strings ("5" not 5), so use String for the lookup
     const empresaKeys = Object.keys(permisosCrud);
@@ -116,20 +121,26 @@ export const usePermissions = (pantallaKey: string) => {
     // Access the permissions map for this empresa using the string key
     const permisosPorPantalla = permisosCrud[activeEmpresaKey as any];
 
-    if (!permisosPorPantalla) return DENIED;
+    if (!permisosPorPantalla) {
+        // Fallback para Sistemas sin empresa
+        if (user?.id_rol === 1) {
+            return { ...DENIED, canView: true, canCreate: true, canRead: true, canUpdate: true, canDelete: true, canExport: true, loading: false };
+        }
+        return DENIED;
+    }
 
     // Get the actions array for this specific screen
     const accionesPermitidas = (permisosPorPantalla[pantallaKey] || []).map((p: string) => p.toLowerCase());
 
-    const canView = accionesPermitidas.includes('view');
+    const canView = accionesPermitidas.includes('ver');
 
     return {
         canView,
-        canCreate: canView && accionesPermitidas.includes('create'),
+        canCreate: canView && accionesPermitidas.includes('guardar'),
         canRead: canView, // backward compat alias
-        canUpdate: accionesPermitidas.includes('update'),
-        canDelete: canView && accionesPermitidas.includes('delete'),
-        canExport: canView && accionesPermitidas.includes('export'),
+        canUpdate: canView && accionesPermitidas.includes('actualizar'),
+        canDelete: canView && accionesPermitidas.includes('eliminar'),
+        canExport: canView,
         loading: false
     };
 };

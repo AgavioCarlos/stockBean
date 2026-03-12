@@ -1,19 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import MainLayout from '../components/Layouts/MainLayout';
-import Breadcrumb from '../components/Breadcrumb';
+import MainLayout from '../../components/Layouts/MainLayout';
+import Breadcrumb from '../../components/Breadcrumb';
 import { BiCategory } from "react-icons/bi";
-import { MdBrandingWatermark, MdStraighten, MdLocalShipping } from "react-icons/md"; // Unidades (Straighten), Proveedores (LocalShipping), Marcas (Branding)
-import { FaTags, FaBoxOpen } from "react-icons/fa";
-
-interface CatalogCardProps {
-    title: string;
-    description: string;
-    icon: React.ReactNode;
-    color: string;
-    path: string;
-    stats?: string;
-}
+import { MdBrandingWatermark, MdStraighten, MdLocalShipping } from "react-icons/md";
+import type { CatalogCardProps } from './catalogo.interface';
 
 const CatalogCard: React.FC<CatalogCardProps> = ({ title, description, icon, color, path, stats }) => {
     const navigate = useNavigate();

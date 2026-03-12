@@ -1,4 +1,4 @@
-import { apiFetch } from "./Api";
+import { apiFetch } from "../../services/Api";
 
 export async function consultarUnidades() {
     return apiFetch("/unidades");

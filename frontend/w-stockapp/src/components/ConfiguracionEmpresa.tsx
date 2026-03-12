@@ -40,12 +40,16 @@ function ConfiguracionEmpresa() {
 
         try {
             await configurarEmpresa(empresaData);
-            success('Configuración Exitosa', 'Tu empresa ha sido registrada correctamente.');
-            localStorage.removeItem('requiresEmpresaConfig');
+            success(
+                'Configuración Exitosa',
+                'Tu empresa ha sido registrada correctamente. Inicia sesión nuevamente.'
+            );
 
+            // Limpiar sesión para forzar re-login con los nuevos permisos
             setTimeout(() => {
-                window.location.reload();
-            }, 1200);
+                localStorage.clear();
+                navigate('/login');
+            }, 2000);
         } catch (err) {
             console.error(err);
             error('Error de Configuración', 'No pudimos guardar los datos en este momento.');
