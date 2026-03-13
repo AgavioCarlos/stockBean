@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.stockbean.stockapp.dto.UsuarioSucursalResponse;
 import com.stockbean.stockapp.model.tablas.UsuarioSucursal;
 import com.stockbean.stockapp.service.UsuarioSucursalService;
 import lombok.NonNull;
@@ -28,6 +30,11 @@ public class UsuarioSucursalController {
         return usuarioSucursalService.listarTodos();
     }
 
+    @GetMapping("/{idUsuario}")
+    public List<UsuarioSucursalResponse> obtenerPorIdUsuario(@PathVariable @NonNull Integer idUsuario) {
+        return usuarioSucursalService.obtenerPorIdUsuario(idUsuario);
+    }
+
     @PostMapping
     public ResponseEntity<UsuarioSucursal> asignarUsuarioSucursal(@RequestBody UsuarioSucursal usuarioSucursal) {
         UsuarioSucursal nuevo = usuarioSucursalService.guardar(usuarioSucursal);
@@ -35,7 +42,8 @@ public class UsuarioSucursalController {
     }
 
     @PutMapping
-    public ResponseEntity<UsuarioSucursal> actualizarUsuarioSucursal(@RequestBody @NonNull UsuarioSucursal usuarioSucursal) {
+    public ResponseEntity<UsuarioSucursal> actualizarUsuarioSucursal(
+            @RequestBody @NonNull UsuarioSucursal usuarioSucursal) {
         UsuarioSucursal actualizado = usuarioSucursalService.actualizar(usuarioSucursal);
         return ResponseEntity.ok(actualizado);
     }

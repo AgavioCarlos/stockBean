@@ -26,8 +26,8 @@ public class SucursalController {
     private SucursalService sucursalService;
 
     @GetMapping
-    public List<Sucursal> listar() {
-        return sucursalService.listarTodos();
+    public List<Sucursal> listar(@AuthenticationPrincipal UsuarioPrincipal principal) {
+        return sucursalService.listarSucursales(principal.getId());
     }
 
     @GetMapping("/user")

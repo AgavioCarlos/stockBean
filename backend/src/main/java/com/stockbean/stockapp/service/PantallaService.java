@@ -2,6 +2,8 @@ package com.stockbean.stockapp.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.stockbean.stockapp.dto.PantallaDTO;
@@ -12,6 +14,8 @@ import com.stockbean.stockapp.repository.PantallaRepository;
 
 @Service
 public class PantallaService {
+
+    private static final Logger log = LoggerFactory.getLogger(PantallaService.class);
 
     @Autowired
     private PantallaRepository pantallaRepository;
@@ -69,9 +73,15 @@ public class PantallaService {
      */
     public List<Pantallas> findPantallasByRol(Integer idRol) {
         if (idRol != null && idRol == 1) {
-            return pantallaRepository.findAllRoot();
+            List<Pantallas> result = pantallaRepository.findAllRoot();
+            log.info("[PantallaService] findPantallasByRol idRol={} -> ROOT query -> {} pantallas", idRol,
+                    result.size());
+            return result;
         }
-        return pantallaRepository.findAllNoRoot();
+        List<Pantallas> result = pantallaRepository.findAllNoRoot();
+        log.info("[PantallaService] findPantallasByRol idRol={} -> NO-ROOT query -> {} pantallas", idRol,
+                result.size());
+        return result;
     }
 
     /**
