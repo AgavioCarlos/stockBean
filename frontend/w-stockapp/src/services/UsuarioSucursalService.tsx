@@ -23,6 +23,15 @@ export interface UsuarioSucursal {
     status: boolean;
 }
 
+export interface UsuarioSucursalResponse {
+    idUsuarioSucursal: number;
+    idUsuario: number;
+    idSucursal: number;
+    nombre: string;
+    direccion: string;
+    status: boolean;
+}
+
 const ENDPOINT = "/usuario-sucursales";
 
 export const listarUsuarioSucursales = async (): Promise<UsuarioSucursal[]> => {
@@ -44,6 +53,10 @@ export const actualizarUsuarioSucursal = async (data: UsuarioSucursal): Promise<
         method: "PUT",
         body: JSON.stringify(data),
     }) as UsuarioSucursal;
+};
+
+export const obtenerPorIdUsuario = async (idUsuario: number): Promise<UsuarioSucursalResponse[]> => {
+    return await apiFetch<UsuarioSucursalResponse[]>(`${ENDPOINT}/${idUsuario}`) || [];
 };
 
 export const eliminarUsuarioSucursal = async (id: number): Promise<void> => {

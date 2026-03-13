@@ -6,8 +6,9 @@ import { SharedInput } from '../../../components/SharedInput';
 import { SharedButton } from '../../../components/SharedButton';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { consultarRoles } from '../../../services/Roles';
-import { consultarPersonas } from '../../Persona/PersonaService';
+import { consultarPersonas } from '../../persona/PersonaService';
 import { UsuarioPermisos } from './UsuarioPermisos';
+import { UsuarioSucursales } from './UsuarioSucursales';
 
 interface UsuarioFormProps {
     values: any;
@@ -323,6 +324,11 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                             </div>
                         </div>
                     </div>
+
+                    {/* Módulo de Sucursales - Visible cuando hay un usuario seleccionado */}
+                    {selection?.id_usuario && (
+                        <UsuarioSucursales idUsuario={selection.id_usuario} />
+                    )}
 
                     {/* Módulo de Permisos CRUD - Visible cuando hay un usuario seleccionado */}
                     {selection?.id_usuario && (
