@@ -13,6 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.stockbean.stockapp.dto.EmpresaUsuarioDTO;
 import com.stockbean.stockapp.dto.RegistroRequest;
@@ -30,6 +32,8 @@ import com.stockbean.stockapp.security.JwtUtil;
  */
 @Service
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -72,9 +76,17 @@ public class AuthService {
             this.body = body;
         }
 
-        public boolean isSuccess() { return success; }
-        public int getHttpStatus() { return httpStatus; }
-        public Map<String, Object> getBody() { return body; }
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public int getHttpStatus() {
+            return httpStatus;
+        }
+
+        public Map<String, Object> getBody() {
+            return body;
+        }
     }
 
     // ============================================
@@ -113,7 +125,8 @@ public class AuthService {
         // 4. Cargar UserDetails y generar JWT
         final UserDetails userDetails = userDetailsService.loadUserByUsername(cuenta);
         List<EmpresaUsuarioDTO> empresaUsuario = empresaUsuarioService.validarEmpresaUsuario(user.getId_usuario());
-        final String jwt = jwtUtil.generateToken(userDetails, user.getId_usuario(), user.getId_rol(), user.getNombre_rol());
+        final String jwt = jwtUtil.generateToken(userDetails, user.getId_usuario(), user.getId_rol(),
+                user.getNombre_rol());
 
         // 5. Construir permisos CRUD desde admin_usuario_pantalla
         Map<Integer, Map<String, List<String>>> permisosCrud = construirPermisosCrud(user);
@@ -155,7 +168,8 @@ public class AuthService {
 
             if (jwtUtil.validateToken(token, userDetails)) {
                 Usuario user = usuarioService.findByCuenta(username);
-                String newToken = jwtUtil.generateToken(userDetails, user.getId_usuario(), user.getId_rol(), user.getNombre_rol());
+                String newToken = jwtUtil.generateToken(userDetails, user.getId_usuario(), user.getId_rol(),
+                        user.getNombre_rol());
 
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
@@ -222,24 +236,35 @@ public class AuthService {
     }
 
     private Map<String, List<String>> obtenerPermisosDeUsuario(Integer idUsuario, Integer idEmpresa) {
+        log.info("AuthService - obtenerPermisosDeUsuario: idUsuario={}, idEmpresa={}", idUsuario, idEmpresa);
         List<AdminUsuarioPantalla> acciones = adminUsuarioPantallaRepository
                 .findByUsuarioIdAndEmpresaId(idUsuario, idEmpresa);
-        return mapearPermisos(acciones);
+        log.info("AuthService - Encontrados {} registros en admin_usuario_pantalla", acciones.size());
+        Map<String, List<String>> permisos = mapearPermisos(acciones);
+        log.info("AuthService - Permisos mapeados resultantes: {}", permisos);
+        return permisos;
     }
 
     private Map<String, List<String>> mapearPermisos(List<AdminUsuarioPantalla> acciones) {
         Map<String, List<String>> permisosPorPantalla = new HashMap<>();
 
         for (AdminUsuarioPantalla ua : acciones) {
-            if (ua.getPantalla() == null) continue;
+            if (ua.getPantalla() == null)
+                continue;
             String keyPantalla = ua.getPantalla().getNombre().toLowerCase();
 
             permisosPorPantalla.putIfAbsent(keyPantalla, new ArrayList<>());
 
-            if (Boolean.TRUE.equals(ua.getVer())) permisosPorPantalla.get(keyPantalla).add("ver");
-            if (Boolean.TRUE.equals(ua.getGuardar())) permisosPorPantalla.get(keyPantalla).add("guardar");
-            if (Boolean.TRUE.equals(ua.getActualizar())) permisosPorPantalla.get(keyPantalla).add("actualizar");
-            if (Boolean.TRUE.equals(ua.getEliminar())) permisosPorPantalla.get(keyPantalla).add("eliminar");
+            if (Boolean.TRUE.equals(ua.getVer()))
+                permisosPorPantalla.get(keyPantalla).add("ver");
+            if (Boolean.TRUE.equals(ua.getGuardar()))
+                permisosPorPantalla.get(keyPantalla).add("guardar");
+            if (Boolean.TRUE.equals(ua.getActualizar()))
+                permisosPorPantalla.get(keyPantalla).add("actualizar");
+            if (Boolean.TRUE.equals(ua.getEliminar()))
+                permisosPorPantalla.get(keyPantalla).add("eliminar");
+            log.info("AuthService - mapearPermisos: Pantalla '{}' -> {}", keyPantalla,
+                    permisosPorPantalla.get(keyPantalla));
         }
 
         return permisosPorPantalla;

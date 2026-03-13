@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+
+import com.stockbean.stockapp.dto.UsuarioSucursalResponse;
 import com.stockbean.stockapp.model.tablas.UsuarioSucursal;
 import com.stockbean.stockapp.repository.UsuarioSucursalRepository;
 
@@ -21,6 +23,10 @@ public class UsuarioSucursalService {
 
     public UsuarioSucursal obtenerPorId(@NonNull Integer id) {
         return usuarioSucursalRepository.findById(id).orElse(null);
+    }
+
+    public List<UsuarioSucursalResponse> obtenerPorIdUsuario(@NonNull Integer idUsuario) {
+        return usuarioSucursalRepository.findByUsuarioIdUsuario(idUsuario);
     }
 
     public UsuarioSucursal guardar(UsuarioSucursal usuarioSucursal) {
