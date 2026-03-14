@@ -66,9 +66,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             logger.debug("No se encontró Authorization header o no comienza con Bearer");
         }
 
-        // 2️⃣ Validar token solo si aún no hay autenticación
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
+                logger.debug("Intentando cargar UserDetails para: {}", username);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                 if (jwtUtil.validateToken(jwt, userDetails)) {
@@ -81,13 +81,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                             new WebAuthenticationDetailsSource().buildDetails(request));
 
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                    logger.debug("Autenticación establecida para usuario: {}", username);
+                    logger.info("✅ Autenticación exitosa en {} para: {}", 
+                        (request.getRequestURI().contains("/auth/") ? "auth" : "app"), username);
                 } else {
-                    logger.warn("Token no válido para el usuario: {}", username);
+                    logger.warn("❌ Token no válido (expirado o firma incorrecta) para: {}", username);
                 }
             } catch (Exception ex) {
-                logger.error("Error validando usuario desde token", ex);
-                // ❌ NO responder 401 aquí
+                logger.error("❌ Error validando usuario '{}' en la base de datos actual: {}", username, ex.getMessage());
+                // El contexto seguirá siendo null, lo que provocará el 401 en SecurityConfig
             }
         }
 

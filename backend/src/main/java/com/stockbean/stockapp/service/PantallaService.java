@@ -2,6 +2,7 @@ package com.stockbean.stockapp.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,5 +90,36 @@ public class PantallaService {
      */
     public List<Pantallas> findAllActivas() {
         return pantallaRepository.findAllActivas();
+    }
+
+    public Pantallas getPantalla(Integer id) {
+        return pantallaRepository.findById(id).orElse(null);
+    }
+    
+    public Pantallas save(Pantallas p) {
+        if (p.getIdPantalla() == null) {
+            p.setFechaAlta(LocalDateTime.now());
+            p.setStatus(true);
+        }
+        if (p.getOrden() == null) {
+            if (p.getIdPadre() != null) {
+                p.setOrden(pantallaRepository.findMaxOrdenByIdPadre(p.getIdPadre()) + 1);
+            } else {
+                p.setOrden(pantallaRepository.findMaxOrdenRoot() + 1);
+            }
+        }
+        return pantallaRepository.save(p);
+    }
+
+    public void delete(Integer id) {
+        pantallaRepository.findById(id).ifPresent(p -> {
+            p.setStatus(false);
+            p.setFechaBaja(LocalDateTime.now());
+            pantallaRepository.save(p);
+        });
+    }
+
+    public List<Pantallas> findPadres() {
+        return pantallaRepository.findPadres();
     }
 }

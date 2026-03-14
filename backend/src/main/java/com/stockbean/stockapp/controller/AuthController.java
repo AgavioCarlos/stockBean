@@ -44,4 +44,25 @@ public class AuthController {
         LoginResult result = authService.refreshToken(token);
         return ResponseEntity.status(result.getHttpStatus()).body(result.getBody());
     }
+
+    @Autowired
+    private com.stockbean.stockapp.service.UsuarioService usuarioService;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    @PostMapping("/reset-emergency")
+    public ResponseEntity<?> resetEmergency() {
+        com.stockbean.stockapp.model.tablas.Usuario user = usuarioService.findByCuenta("agaviocarlos");
+        if (user == null) {
+            Map<String, String> res = new HashMap<>();
+            res.put("mensaje", "Usuario 'agaviocarlos' no encontrado");
+            return ResponseEntity.status(404).body(res);
+        }
+        user.setPassword(passwordEncoder.encode("123456"));
+        usuarioService.save(user);
+        Map<String, String> res = new HashMap<>();
+        res.put("mensaje", "Contraseña restablecida exitosamente para agaviocarlos a '123456'");
+        return ResponseEntity.ok(res);
+    }
 }

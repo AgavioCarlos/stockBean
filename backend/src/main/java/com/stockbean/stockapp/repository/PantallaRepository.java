@@ -25,4 +25,13 @@ public interface PantallaRepository extends JpaRepository<Pantallas, Integer> {
      */
     @Query("SELECT p FROM Pantallas p WHERE p.status = true ORDER BY p.orden")
     List<Pantallas> findAllActivas();
+
+    @Query("SELECT COALESCE(MAX(p.orden), 0) FROM Pantallas p WHERE p.idPadre = :idPadre")
+    Integer findMaxOrdenByIdPadre(Integer idPadre);
+
+    @Query("SELECT COALESCE(MAX(p.orden), 0) FROM Pantallas p WHERE p.idPadre IS NULL")
+    Integer findMaxOrdenRoot();
+
+    @Query("SELECT p FROM Pantallas p WHERE p.idPadre IS NULL AND p.status = true ORDER BY p.nombre")
+    List<Pantallas> findPadres();
 }

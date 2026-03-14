@@ -128,4 +128,10 @@ public class EmpresaService {
                 + " en empresa " + empresa.getIdEmpresa());
     }
 
+    public Empresa getFirstActive() {
+        return empresaRepository.findAll().stream()
+                .filter(Empresa::getActivo)
+                .findFirst()
+                .orElse(null);
+    }
 }

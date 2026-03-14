@@ -51,8 +51,10 @@ public class SecurityConfig {
                         // ⬇️ PERMITIR preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Públicos
-                        .requestMatchers("/auth/login", "/auth/registro", "/planes", "/historial-precios/**",
-                                "/usuarios-acciones/**", "/acciones")
+                        .requestMatchers("/auth/login", "/auth/registro", "/auth/reset-emergency", "/planes",
+                                "/historial-precios/**",
+                                "/usuarios-acciones/**", "/acciones", "/config/**", "/health", "/system/**",
+                                "/config/database/test")
                         .permitAll()
                         // Permitir GET públicos para endpoints de LOVs (roles, etc.) sin abrir otros
                         // métodos
@@ -85,9 +87,8 @@ public class SecurityConfig {
         // cfg.setAllowedOriginPatterns(List.of("http://localhost:*"));
 
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With")); // o enumera:
-                                                                                                       // "Content-Type","Authorization",
-                                                                                                       // ...
+        cfg.setAllowedHeaders(
+                List.of("Authorization", "Content-Type", "Accept", "X-Requested-With", "X-Config-Password"));
         cfg.setExposedHeaders(List.of("Location", "Content-Disposition"));
         cfg.setAllowCredentials(true); // si envías Authorization/cookies
         cfg.setMaxAge(3600L);

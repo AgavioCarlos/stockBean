@@ -14,7 +14,8 @@ public interface EmpresaRepository extends JpaRepository<Empresa, Integer> {
                         SELECT new com.stockbean.stockapp.dto.EmpresaUsuarioDTO(
                                 em.nombreComercial,
                                 tu.cuenta,
-                                CONCAT(tp.nombre, ' ', tp.apellido_paterno, ' ', tp.apellido_materno)
+                                CONCAT(tp.nombre, ' ', tp.apellido_paterno, ' ', tp.apellido_materno),
+                                em.idEmpresa
                         )
                         FROM EmpresaUsuario eu
                         INNER JOIN eu.empresa em
