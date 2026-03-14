@@ -28,3 +28,7 @@ export async function Marcas(signal?: AbortSignal) {
 export async function TipoPrecios(signal?: AbortSignal) {
     return apiFetch("/tipos-precio", { signal });
 }
+
+export async function PantallasPadres(signal?: AbortSignal) {
+    return apiFetch("/pantallas/padres", { signal });
+}

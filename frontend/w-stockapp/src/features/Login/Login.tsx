@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { login } from "./LoginService";
 import { getPantallasUsuario, savePantallasToLocalStorage } from "../../services/Pantallas";
 import { useAlerts } from "../../hooks/useAlerts";
-import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaCog, FaServer, FaCheckCircle, FaDatabase } from 'react-icons/fa';
 import PaymentModal from "../../components/PaymentModal";
+import { DatabaseConfigModal } from "./components/DatabaseConfigModal";
+import { apiFetch } from "../../services/Api";
 
 function Login() {
+  const navigate = useNavigate();
   const [cuenta, setCuenta] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +18,49 @@ function Login() {
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentMessage, setPaymentMessage] = useState("");
+
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [isRestarting, setIsRestarting] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [systemInfo, setSystemInfo] = useState<any>(null);
+
+  // Initial load
+  useEffect(() => {
+    apiFetch<any>('/system/info')
+      .then(setSystemInfo)
+      .catch(err => console.error("Error al cargar info de sistema:", err));
+  }, []);
+
+  const waitForBackend = async () => {
+    setLoadingMessage("Conectando al servidor...");
+    const poll = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/health`);
+        if (res.ok) {
+          setLoadingMessage("Sistema listo");
+          setTimeout(() => window.location.reload(), 1000);
+          return;
+        }
+      } catch (e) {
+        // Keep polling
+      }
+      setTimeout(poll, 2000);
+    };
+    poll();
+  };
+
+  const handleConfigSaveSuccess = () => {
+    // Limpiar rastro de sesión previa para evitar conflictos con la nueva DB
+    localStorage.removeItem("token");
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("user_data");
+    localStorage.removeItem("pantallas");
+
+    setIsConfigModalOpen(false);
+    setIsRestarting(true);
+    setLoadingMessage("Reiniciando servicio...");
+    setTimeout(waitForBackend, 3000);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,120 +105,168 @@ function Login() {
       setIsSubmitting(false);
     }
   };
-
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6 relative overflow-hidden selection:bg-indigo-100">
-      {/* Background Decorations */}
-      <div className="absolute top-0 left-0 w-full h-full -z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-100/50 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-100/50 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+    <div className="min-h-screen bg-[#f1f5f9] flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      {/* Dynamic Background Elements */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-5%] left-[-5%] w-[45%] h-[45%] bg-indigo-200/30 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[-5%] right-[-5%] w-[45%] h-[45%] bg-blue-200/30 rounded-full blur-[100px] opacity-70"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
       </div>
 
-      <div className="w-full max-w-[440px] animate-in fade-in slide-in-from-bottom-4 duration-700">
-        {/* Logo & Branding */}
-        <div className="flex flex-col items-center mb-10 space-y-4">
-          <div className="w-16 h-16 bg-indigo-600 rounded-[1.5rem] flex items-center justify-center shadow-2xl shadow-indigo-200 transform transition-transform duration-500 hover:rotate-12">
-            <img src="/stock_icono.ico" alt="StockApp Icon" className="w-10 h-10 invert" />
+      {isRestarting && (
+        <div className="fixed inset-0 z-[100] bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
+          <div className="relative mb-6">
+            <div className="w-20 h-20 border-[3px] border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <FaDatabase className="text-indigo-600 animate-pulse" size={24} />
+            </div>
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-[3px] border-white shadow-sm animate-bounce"></div>
           </div>
+          <h2 className="text-2xl font-black text-slate-800 mb-2 tracking-tight uppercase italic underline decoration-indigo-500 underline-offset-8">
+            {loadingMessage}
+          </h2>
+          <p className="text-slate-500 font-bold max-w-sm text-sm">
+            Estamos reconfigurando el núcleo del sistema…
+          </p>
+        </div>
+      )}
+
+      {/* floating config button */}
+      <div className="fixed top-4 right-4 sm:top-8 sm:right-8 z-50">
+        <button
+          onClick={() => setIsConfigModalOpen(true)}
+          className="w-11 h-11 bg-white/40 backdrop-blur-xl text-slate-400 rounded-2xl shadow-sm border border-white/50 flex items-center justify-center hover:text-indigo-600 hover:bg-white hover:rotate-90 transition-all duration-500 group focus-visible:ring-4 focus-visible:ring-indigo-200 outline-none"
+          title="Configuración de Red"
+        >
+          <FaCog size={20} className="group-hover:drop-shadow-sm" />
+        </button>
+      </div>
+
+      <div className="w-full max-w-[410px] z-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        {/* Logo & Branding */}
+        <div className="flex flex-col items-center mb-6 space-y-4">
+          <div className="relative group">
+            <button 
+              onClick={() => navigate('/')}
+              className="w-20 h-20 bg-gradient-to-tr from-indigo-600 to-indigo-500 rounded-[2.2rem] flex items-center justify-center shadow-[0_20px_40px_-10px_rgba(79,70,229,0.4)] transform transition-all duration-700 group-hover:rotate-12 group-hover:scale-110 cursor-pointer outline-none focus-visible:ring-4 focus-visible:ring-indigo-200"
+              title="Ir al Inicio"
+            >
+              <img src="/stock_icono.ico" alt="StockApp Icon" className="w-12 h-12 invert animate-in zoom-in-50 duration-700" />
+            </button>
+          </div>
+
           <div className="text-center">
-            <h1 className="text-3xl font-black text-gray-900 tracking-tight">StockApp</h1>
-            <p className="text-gray-500 font-medium text-sm mt-1">Gestión Inteligente de Inventarios</p>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-1.5 flex items-center justify-center gap-1">
+              Baluarte
+            </h1>
+            {systemInfo && (
+              <div className="mt-1 transition-all duration-500 animate-in fade-in slide-in-from-top-2">
+                <div className="inline-flex items-center gap-3 bg-white/60 backdrop-blur-md px-4 py-1.5 rounded-2xl border border-white shadow-sm hover:shadow-md hover:bg-white transition-all cursor-default">
+                  <div className="relative flex items-center justify-center">
+                    <div className={`w-2 h-2 rounded-full ${systemInfo.mode === 'LOCAL' ? 'bg-emerald-500' : 'bg-indigo-600'}`}></div>
+                    {systemInfo.mode === 'LOCAL' && <div className="absolute inset-0 w-2 h-2 bg-emerald-400 rounded-full animate-ping opacity-75"></div>}
+                  </div>
+                  <div className="flex flex-col items-start leading-none gap-0.5">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">{systemInfo.mode} INSTANCE</span>
+                    <span className="text-xs font-black text-slate-700 tracking-tight">
+                      {systemInfo.company}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white/80 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-white/50 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+        <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.1)] border border-white p-8 sm:p-10 relative overflow-hidden transition-all duration-500">
+          {/* Accent Line */}
+          <div className="absolute top-0 left-0 w-full h-[6px] bg-gradient-to-r from-indigo-600 to-indigo-400"></div>
 
-          <div className="relative">
-            <h2 className="text-xl font-bold text-gray-800 mb-8 border-l-4 border-indigo-600 pl-4 uppercase tracking-wider text-xs">Acceso al Sistema</h2>
+          <div className="mb-7 relative">
+            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Acceso al Sistema</h2>
+            <div className="h-1 w-10 bg-indigo-600 rounded-full mt-2.5"></div>
+          </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Username Field */}
-              <div className="space-y-2 group">
-                <label htmlFor="cuenta" className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-indigo-600 transition-colors">
-                  Usuario / Cuenta
-                </label>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-4">
+              <div className="space-y-1.5 group">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 transition-colors group-focus-within:text-indigo-600" htmlFor="cuenta">Cuenta de Usuario</label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-600 transition-colors">
-                    <FaUser size={16} />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                    <FaUser size={14} />
                   </div>
                   <input
                     type="text"
                     id="cuenta"
                     name="username"
                     autoComplete="username"
-                    placeholder="Ingresa tu cuenta"
+                    placeholder="Usuario"
                     value={cuenta}
                     onChange={(e) => setCuenta(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50/50 border-2 border-gray-100/50 rounded-2xl focus:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 outline-none transition-all duration-300 font-medium text-gray-700"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 border-2 border-slate-100/50 rounded-2xl focus:bg-white focus:border-indigo-600 focus:ring-8 focus:ring-indigo-600/[0.03] outline-none transition-all duration-300 font-bold text-slate-700 placeholder:text-slate-300"
                     required
-                  />
+                    spellCheck={false}
+                  />  
                 </div>
               </div>
 
-              {/* Password Field */}
-              <div className="space-y-2 group">
-                <div className="flex justify-between items-end px-1">
-                  <label htmlFor="password" className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-focus-within:text-indigo-600 transition-colors">
-                    Contraseña
-                  </label>
-                  <button type="button" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-widest transition-colors">¿Olvidaste tu clave?</button>
-                </div>
+              <div className="space-y-1.5 group">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 transition-colors group-focus-within:text-indigo-600" htmlFor="password">Contraseña</label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-600 transition-colors">
-                    <FaLock size={16} />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                    <FaLock size={14} />
                   </div>
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
                     autoComplete="current-password"
-                    placeholder="••••••••"
+                    placeholder="Contraseña"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-12 py-4 bg-gray-50/50 border-2 border-gray-100/50 rounded-2xl focus:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 outline-none transition-all duration-300 font-medium text-gray-700"
+                    className="w-full pl-11 pr-12 py-3.5 bg-slate-50/50 border-2 border-slate-100/50 rounded-2xl focus:bg-white focus:border-indigo-600 focus:ring-8 focus:ring-indigo-600/[0.03] outline-none transition-all duration-300 font-bold text-slate-700 placeholder:text-slate-300"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600 transition-colors p-1"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-indigo-600 transition-colors focus:outline-none focus-visible:scale-110 active:scale-90"
+                    aria-label={showPassword ? "Ocultar Contraseña" : "Ver Contraseña"}
                   >
-                    {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                    {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
                   </button>
                 </div>
               </div>
+            </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`w-full py-4 px-6 rounded-2xl font-bold text-white transition-all duration-500 flex items-center justify-center gap-3 shadow-xl ${isSubmitting
-                  ? 'bg-gray-400 cursor-not-allowed shadow-none'
-                  : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-indigo-200 hover:-translate-y-1 active:scale-[0.98]'
-                  }`}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span className="animate-pulse">Autenticando…</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Ingresar Ahora</span>
-                    <FaArrowRight className="text-xs transition-transform group-hover:translate-x-1" />
-                  </>
-                )}
-              </button>
-            </form>
-
-          </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`w-full py-4 rounded-2xl font-black text-white shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] flex items-center justify-center gap-3 transition-all duration-500 overflow-hidden relative group/btn ${isSubmitting
+                  ? 'bg-indigo-300 cursor-not-allowed'
+                  : 'bg-indigo-600 hover:bg-slate-900 active:scale-[0.97]'
+                }`}
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-2.5">
+                  <div className="w-5 h-5 border-[3px] border-white/20 border-t-white rounded-full animate-spin"></div>
+                  <span className="tracking-tight uppercase text-sm">Autenticando…</span>
+                </div>
+              ) : (
+                <>
+                  <span className="tracking-tight uppercase text-sm">Entrar</span>
+                  <FaArrowRight className="text-xs group-hover/btn:translate-x-1.5 transition-transform" />
+                </>
+              )}
+            </button>
+          </form>
         </div>
 
-        {/* Trust Badge */}
-        <p className="text-center mt-8 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-          © 2024 StockApp Professional Edition
+        {/* Footer info */}
+        <p className="text-center mt-7 text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] opacity-50 select-none">
+          Baluarte ERP Professional Edition © 2024
         </p>
       </div>
 
@@ -179,6 +274,12 @@ function Login() {
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
         message={paymentMessage}
+      />
+
+      <DatabaseConfigModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+        onSaveSuccess={handleConfigSaveSuccess}
       />
     </div>
   );
