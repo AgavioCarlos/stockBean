@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { consultarEmpresas } from '../services/Empresas';
 import {
-    consultarSucursalesPorEmpresa,
-    consultarSucursalesPorSolicitante
+    consultarSucursalesPorEmpresa
 } from '../services/SucursalService';
+import { obtenerPorIdUsuario } from '../services/UsuarioSucursalService';
 import { Sucursal } from '../interfaces/sucursal.interface';
 import { SearchableSelect } from './SearchableSelect';
 
@@ -78,18 +78,25 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
                     const companies = await consultarEmpresas();
                     setEmpresasList(companies || []);
                 } else {
-                    const sucs = await consultarSucursalesPorSolicitante();
-                    setSucursalesList(sucs || []);
+                    // Call UsuarioSucursalController wrapper as requested
+                    const userSucs = await obtenerPorIdUsuario(user.id_usuario);
+                    const mappedSucs = userSucs.filter(s => s.status).map(us => ({
+                        id_sucursal: us.idSucursal,
+                        nombre: us.nombre,
+                        direccion: us.direccion
+                    })) as any;
+
+                    setSucursalesList(mappedSucs);
 
                     // Auto-select if only one branch or restricted role
-                    if (sucs && sucs.length === 1) {
-                        const sId = sucs[0].id_sucursal || (sucs[0] as any).idSucursal;
+                    if (mappedSucs && mappedSucs.length === 1) {
+                        const sId = mappedSucs[0].id_sucursal;
                         if (sId) {
                             setIdSucursal(sId);
                             onBranchChange(sId);
                         }
-                    } else if (isCajero && sucs.length > 0) {
-                        const sId = sucs[0].id_sucursal || (sucs[0] as any).idSucursal;
+                    } else if (isCajero && mappedSucs.length > 0) {
+                        const sId = mappedSucs[0].id_sucursal;
                         setIdSucursal(sId);
                         onBranchChange(sId);
                     }
@@ -116,7 +123,15 @@ export const BranchFilter: React.FC<BranchFilterProps> = ({
         if (numVal) {
             setLoading(true);
             try {
-                const sucs = await consultarSucursalesPorEmpresa(Number(numVal));
+                let sucs = await consultarSucursalesPorEmpresa(Number(numVal));
+                
+                // Si NO es SISTEM, validamos estrictamente que la sucursal exista en sus permisos
+                if (!isSistem && user) {
+                    const userSucs = await obtenerPorIdUsuario(user.id_usuario);
+                    const allowedIds = new Set(userSucs.filter(u => u.status).map(u => u.idSucursal));
+                    sucs = sucs.filter(s => allowedIds.has(s.id_sucursal || (s as any).idSucursal));
+                }
+                
                 setSucursalesList(sucs || []);
             } catch (error) {
                 console.error("[BranchFilter] Error loading branches for company:", error);

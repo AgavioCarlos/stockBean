@@ -33,6 +33,7 @@ import Unauthorized from './pages/Unauthorized'; // Página de acceso denegado
 import ReporteVentas from './features/Reporte_ventas/ReporteVentas';
 import Suscripciones from './features/Suscripcion/Suscripciones';
 // import Suscripciones from './features/Suscripcion/Suscripciones';
+import Pantallas from './features/Pantalla/Pantallas';
 
 
 const router = createBrowserRouter([
@@ -154,9 +155,13 @@ const router = createBrowserRouter([
     path: "/suscripciones",
     element: (<ProtectedRoute><Suscripciones /></ProtectedRoute>)
   },
+  // {
+  //   path: "/suscripciones",
+  //   element: (<ProtectedRoute><Suscripciones /></ProtectedRoute>)
+  // },
   {
-    path: "/suscripciones",
-    element: (<ProtectedRoute><Suscripciones /></ProtectedRoute>)
+    path: "/pantallas",
+    element: (<ProtectedRoute><Pantallas /></ProtectedRoute>)
   },
 
 ]);
