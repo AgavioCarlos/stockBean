@@ -42,18 +42,13 @@ public class SucursalService {
             return sucursalRepository.findAll();
         }
 
-        // Si no es ROOT, obtenemos su empresa y mostramos solo las sucursales de esa
-        // empresa
-        // (asumiendo que las sucursales están vinculadas a usuarios de esa empresa)
-        List<Integer> companyIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);
-
-        if (companyIds.isEmpty()) {
-            return List.of();
-        }
-
-        // Tomamos la primera empresa
-        Integer idEmpresa = companyIds.get(0);
-        return sucursalRepository.findByEmpresaId(idEmpresa);
+        // Si no es ROOT, obtener SÓLO las sucursales asignadas en UsuarioSucursal
+        return usuarioSucursalRepository.findByUsuarioIdUsuario(idUsuario)
+                .stream()
+                .filter(dto -> Boolean.TRUE.equals(dto.getStatus()))
+                .map(dto -> sucursalRepository.findById(dto.getIdSucursal()).orElse(null))
+                .filter(java.util.Objects::nonNull)
+                .toList();
     }
 
     @Autowired

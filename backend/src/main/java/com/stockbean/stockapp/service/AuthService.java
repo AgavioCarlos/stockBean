@@ -21,6 +21,7 @@ import com.stockbean.stockapp.dto.RegistroRequest;
 import com.stockbean.stockapp.model.admin.AdminUsuarioPantalla;
 import com.stockbean.stockapp.model.tablas.Suscripcion;
 import com.stockbean.stockapp.model.tablas.Usuario;
+import com.stockbean.stockapp.model.admin.Empresa;
 import com.stockbean.stockapp.repository.UsuarioPantallaRepository;
 import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
 import com.stockbean.stockapp.repository.SuscripcionRepository;
@@ -106,6 +107,11 @@ public class AuthService {
             return errorResult(401, "El usuario no existe");
         }
 
+        List<EmpresaUsuarioDTO> empresaUsuario = empresaUsuarioService.validarEmpresaUsuario(user.getId_usuario());
+        if (empresaUsuario == null) {
+            return errorResult(401, "El usuario no tiene una empresa asignada");
+        }
+
         // 2. Autenticar con Spring Security
         try {
             authenticationManager.authenticate(
@@ -117,14 +123,13 @@ public class AuthService {
         }
 
         // 3. Validar suscripción
-        LoginResult suscripcionCheck = validarSuscripcion(user);
+        LoginResult suscripcionCheck = validarSuscripcion(user, empresaUsuario);
         if (suscripcionCheck != null) {
             return suscripcionCheck;
         }
 
         // 4. Cargar UserDetails y generar JWT
         final UserDetails userDetails = userDetailsService.loadUserByUsername(cuenta);
-        List<EmpresaUsuarioDTO> empresaUsuario = empresaUsuarioService.validarEmpresaUsuario(user.getId_usuario());
         final String jwt = jwtUtil.generateToken(userDetails, user.getId_usuario(), user.getId_rol(),
                 user.getNombre_rol());
 
@@ -189,13 +194,13 @@ public class AuthService {
         }
     }
 
-    // ============================================
-    // Métodos privados
-    // ============================================
+    private LoginResult validarSuscripcion(Usuario user, List<EmpresaUsuarioDTO> empresaUsuario) {
+        if (empresaUsuario == null || empresaUsuario.isEmpty()) {
+            return errorResult(401, "El usuario no tiene una empresa asignada");
+        }
 
-    private LoginResult validarSuscripcion(Usuario user) {
         Suscripcion suscripcion = suscripcionRepository
-                .findTopByUsuarioOrderByFechaInicioDesc(user);
+                .findTopByEmpresa_IdEmpresaOrderByFechaInicioDesc(empresaUsuario.get(0).idEmpresa());
 
         if (suscripcion != null) {
             LocalDateTime now = LocalDateTime.now();

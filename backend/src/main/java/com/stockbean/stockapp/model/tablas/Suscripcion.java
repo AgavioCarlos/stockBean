@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
+import com.stockbean.stockapp.model.admin.Empresa;
 import com.stockbean.stockapp.model.catalogos.MetodoPago;
 import com.stockbean.stockapp.model.catalogos.Plan;
 import jakarta.persistence.Table;
@@ -30,6 +31,10 @@ public class Suscripcion {
     @ManyToOne
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
+
+    @ManyToOne
+    @JoinColumn(name = "id_empresa")
+    private Empresa empresa;
 
     @ManyToOne
     @JoinColumn(name = "id_plan")
