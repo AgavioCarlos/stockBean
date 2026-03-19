@@ -54,7 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login", "/auth/registro", "/auth/reset-emergency", "/planes",
                                 "/historial-precios/**",
                                 "/usuarios-acciones/**", "/acciones", "/config/**", "/health", "/system/**",
-                                "/config/database/test")
+                                "/config/database/test", "/ws-chat/**")
                         .permitAll()
                         // Permitir GET públicos para endpoints de LOVs (roles, etc.) sin abrir otros
                         // métodos
@@ -82,7 +82,8 @@ public class SecurityConfig {
         cfg.setAllowedOrigins(
                 List.of("http://10.225.16.51:5173", "http://10.225.16.248:5173", "http://localhost:5173",
                         "https://stockapp.agaviocarlos.com", "https://stockapp.agaviocarlos.com:5173",
-                        "https://stocker.agaviocarlos.com", "https://stocker.agaviocarlos.com:5173"));
+                        "https://stocker.agaviocarlos.com", "https://stocker.agaviocarlos.com:5173",
+                        "https://stock.agaviocarlos.com"));
         // Si necesitas patrones usa:
         // cfg.setAllowedOriginPatterns(List.of("http://localhost:*"));
 

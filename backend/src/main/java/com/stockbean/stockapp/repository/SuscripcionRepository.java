@@ -14,30 +14,36 @@ import java.util.List;
 
 @Repository
 public interface SuscripcionRepository extends JpaRepository<Suscripcion, Integer> {
-    Suscripcion findTopByUsuarioOrderByFechaInicioDesc(Usuario usuario);
+        Suscripcion findTopByUsuarioOrderByFechaInicioDesc(Usuario usuario);
 
-    Suscripcion findTopByEmpresa_IdEmpresaOrderByFechaInicioDesc(Integer idEmpresa);
+        Suscripcion findTopByEmpresa_IdEmpresaOrderByFechaInicioDesc(Integer idEmpresa);
 
-    @Query("SELECT new com.stockbean.stockapp.dto.SuscripcionAdminDTO(s.idSuscripcion, u.id_usuario, CONCAT(per.nombre, ' ', per.apellido_paterno), per.email, e.idEmpresa, e.nombreComercial, p.nombre, s.fechaInicio, s.fechaFin, s.status) "
-            +
-            "FROM Suscripcion s " +
-            "LEFT JOIN s.plan p " +
-            "LEFT JOIN s.usuario u " +
-            "LEFT JOIN u.persona per " +
-            "LEFT JOIN EmpresaUsuario eu ON eu.usuario = u AND eu.activo = true " +
-            "LEFT JOIN eu.empresa e " +
-            "ORDER BY s.fechaFin DESC")
-    List<SuscripcionAdminDTO> findAllAdminSuscripciones();
+        @Query("SELECT new com.stockbean.stockapp.dto.SuscripcionAdminDTO(s.idSuscripcion, u.id_usuario, CONCAT(per.nombre, ' ', per.apellido_paterno), per.email, e.idEmpresa, e.nombreComercial, p.nombre, s.fechaInicio, s.fechaFin, s.status) "
+                        +
+                        "FROM Suscripcion s " +
+                        "INNER JOIN s.plan p " +
+                        "INNER JOIN s.usuario u " +
+                        "INNER JOIN u.persona per " +
+                        "INNER JOIN EmpresaUsuario eu ON eu.usuario = u AND eu.activo = true " +
+                        "INNER JOIN eu.empresa e " +
+                        "WHERE u.rol.id_rol = 3 " + // 3 = ADMIN
+                        "ORDER BY s.fechaFin DESC")
+        List<SuscripcionAdminDTO> findAllAdminSuscripciones();
 
-    @Query("SELECT new com.stockbean.stockapp.dto.SuscripcionAdminDTO(s.idSuscripcion, u.id_usuario, CONCAT(per.nombre, ' ', per.apellido_paterno), per.email, e.idEmpresa, e.nombreComercial, p.nombre, s.fechaInicio, s.fechaFin, s.status) "
-            +
-            "FROM Suscripcion s " +
-            "LEFT JOIN s.plan p " +
-            "LEFT JOIN s.usuario u " +
-            "LEFT JOIN u.persona per " +
-            "LEFT JOIN EmpresaUsuario eu ON eu.usuario = u AND eu.activo = true " +
-            "LEFT JOIN eu.empresa e " +
-            "WHERE eu.empresa.idEmpresa = :idEmpresa " +
-            "ORDER BY s.fechaFin DESC")
-    List<SuscripcionAdminDTO> findByEmpresaId(@Param("idEmpresa") Integer idEmpresa);
+        @Query("SELECT new com.stockbean.stockapp.dto.SuscripcionAdminDTO(s.idSuscripcion, u.id_usuario, CONCAT(per.nombre, ' ', per.apellido_paterno), per.email, e.idEmpresa, e.nombreComercial, p.nombre, s.fechaInicio, s.fechaFin, s.status) "
+                        +
+                        "FROM Suscripcion s " +
+                        "LEFT JOIN s.plan p " +
+                        "LEFT JOIN s.usuario u " +
+                        "LEFT JOIN u.persona per " +
+                        "LEFT JOIN EmpresaUsuario eu ON eu.usuario = u AND eu.activo = true " +
+                        "LEFT JOIN eu.empresa e " +
+                        "WHERE eu.empresa.idEmpresa = :idEmpresa " +
+                        "ORDER BY s.fechaFin DESC")
+        List<SuscripcionAdminDTO> findByEmpresaId(@Param("idEmpresa") Integer idEmpresa);
+
+        // @Query("SELECT new com.stockbean.stockapp.dto.SuscripcionesDTO( " +
+        // + "FROM Suscripcion s " +
+        // ""
+        // )")
 }
