@@ -107,9 +107,11 @@ public class AuthService {
             return errorResult(401, "El usuario no existe");
         }
 
-        List<EmpresaUsuarioDTO> empresaUsuario = empresaUsuarioService.validarEmpresaUsuario(user.getId_usuario());
-        if (empresaUsuario == null) {
-            return errorResult(401, "El usuario no tiene una empresa asignada");
+        List<EmpresaUsuarioDTO> empresaUsuario = null;
+        if (!user.getCuenta().equals("sistemas")) {
+            empresaUsuario = empresaUsuarioService.validarEmpresaUsuario(user.getId_usuario());
+            // Se remueve la restricción de que deba tener una empresa, para permitir el
+            // flujo de nuevos registros.
         }
 
         // 2. Autenticar con Spring Security
@@ -123,9 +125,11 @@ public class AuthService {
         }
 
         // 3. Validar suscripción
-        LoginResult suscripcionCheck = validarSuscripcion(user, empresaUsuario);
-        if (suscripcionCheck != null) {
-            return suscripcionCheck;
+        if (!user.getCuenta().equals("sistemas")) {
+            LoginResult suscripcionCheck = validarSuscripcion(user, empresaUsuario);
+            if (suscripcionCheck != null) {
+                return suscripcionCheck;
+            }
         }
 
         // 4. Cargar UserDetails y generar JWT
@@ -141,8 +145,10 @@ public class AuthService {
         respuesta.put("success", true);
         respuesta.put("mensaje", "Autenticación exitosa");
         respuesta.put("token", jwt);
-        respuesta.put("empresa", empresaUsuario);
-        respuesta.put("permisos_crud", permisosCrud);
+        if (!user.getCuenta().equals("sistemas")) {
+            respuesta.put("empresa", empresaUsuario);
+            respuesta.put("permisos_crud", permisosCrud);
+        }
 
         // Datos del Usuario
         respuesta.put("id_usuario", user.getId_usuario());
@@ -195,12 +201,18 @@ public class AuthService {
     }
 
     private LoginResult validarSuscripcion(Usuario user, List<EmpresaUsuarioDTO> empresaUsuario) {
-        if (empresaUsuario == null || empresaUsuario.isEmpty()) {
-            return errorResult(401, "El usuario no tiene una empresa asignada");
+        Suscripcion suscripcion = null;
+
+        if (empresaUsuario != null && !empresaUsuario.isEmpty()) {
+            suscripcion = suscripcionRepository
+                    .findTopByEmpresa_IdEmpresaOrderByFechaInicioDesc(empresaUsuario.get(0).idEmpresa());
         }
 
-        Suscripcion suscripcion = suscripcionRepository
-                .findTopByEmpresa_IdEmpresaOrderByFechaInicioDesc(empresaUsuario.get(0).idEmpresa());
+        // Si no se encontró por empresa, buscar por usuario directo (para usuarios
+        // nuevos sin empresa asignada)
+        if (suscripcion == null) {
+            suscripcion = suscripcionRepository.findTopByUsuarioOrderByFechaInicioDesc(user);
+        }
 
         if (suscripcion != null) {
             LocalDateTime now = LocalDateTime.now();

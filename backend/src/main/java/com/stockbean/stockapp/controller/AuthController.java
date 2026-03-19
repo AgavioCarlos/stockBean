@@ -53,16 +53,16 @@ public class AuthController {
 
     @PostMapping("/reset-emergency")
     public ResponseEntity<?> resetEmergency() {
-        com.stockbean.stockapp.model.tablas.Usuario user = usuarioService.findByCuenta("agaviocarlos");
+        com.stockbean.stockapp.model.tablas.Usuario user = usuarioService.findByCuenta("sistemas");
         if (user == null) {
             Map<String, String> res = new HashMap<>();
-            res.put("mensaje", "Usuario 'agaviocarlos' no encontrado");
+            res.put("mensaje", "Usuario 'sistemas' no encontrado");
             return ResponseEntity.status(404).body(res);
         }
         user.setPassword(passwordEncoder.encode("123456"));
         usuarioService.save(user);
         Map<String, String> res = new HashMap<>();
-        res.put("mensaje", "Contraseña restablecida exitosamente para agaviocarlos a '123456'");
+        res.put("mensaje", "Contraseña restablecida exitosamente para sistemas a '123456'");
         return ResponseEntity.ok(res);
     }
 }
