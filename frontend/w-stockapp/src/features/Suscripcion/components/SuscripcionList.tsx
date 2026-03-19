@@ -1,15 +1,15 @@
 import React from "react";
-import { SuscripcionAdmin } from "../suscripciones.interface";
+import { SuscripcionAdmin } from "../suscripcion.interface";
 import { DataTable, Column } from "../../../components/DataTable";
 
-interface SuscripcionesListProps {
+interface SuscripcionListProps {
     data: SuscripcionAdmin[];
     columns: Column<SuscripcionAdmin>[];
     onRowClick: (item: SuscripcionAdmin) => void;
     loading?: boolean;
 }
 
-export const SuscripcionesList: React.FC<SuscripcionesListProps> = ({ data, columns, onRowClick, loading }) => {
+export const SuscripcionList: React.FC<SuscripcionListProps> = ({ data, columns, onRowClick, loading }) => {
     return (
         <div className="p-4">
             <DataTable

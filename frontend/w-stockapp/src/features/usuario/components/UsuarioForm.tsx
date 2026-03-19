@@ -6,7 +6,7 @@ import { SharedInput } from '../../../components/SharedInput';
 import { SharedButton } from '../../../components/SharedButton';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { consultarRoles } from '../../../services/Roles';
-import { consultarPersonas } from '../../persona/PersonaService';
+import { consultarPersonas } from '../../Persona/PersonaService';
 import { UsuarioPermisos } from './UsuarioPermisos';
 import { UsuarioSucursales } from './UsuarioSucursales';
 
@@ -82,7 +82,7 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                                     aria-label={selection.status ? "Desactivar" : "Reactivar"}
                                     icon={<MdPowerSettingsNew size={20} aria-hidden="true" />}
                                 >
-                                    {selection.status ? 'Desactivar' : 'Activar'}
+                                    {selection.status ? '' : ''}
                                 </SharedButton>
 
                                 <SharedButton
@@ -93,7 +93,6 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                                     aria-label="Editar"
                                     icon={<MdEdit size={20} aria-hidden="true" />}
                                 >
-                                    Editar
                                 </SharedButton>
                             </>
                         )}
@@ -107,7 +106,7 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                                 aria-label="Guardar Usuario"
                                 icon={<IoIosSave size={20} aria-hidden="true" />}
                             >
-                                Guardar Cambios
+                                Guardar
                             </SharedButton>
                         )}
 
@@ -117,11 +116,11 @@ export const UsuarioForm: React.FC<UsuarioFormProps> = ({
                                 variant="primary"
                                 className="shadow-md shadow-blue-500/20"
                                 onClick={onNew}
-                                title="Nuevo"
-                                aria-label="Nuevo"
+                                title="Agregar"
+                                aria-label="Agregar"
                                 icon={<MdAdd size={22} aria-hidden="true" />}
                             >
-                                Nuevo Usuario
+                                Agregar
                             </SharedButton>
                         )}
                     </div>

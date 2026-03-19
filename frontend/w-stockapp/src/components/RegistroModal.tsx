@@ -138,6 +138,9 @@ const RegistroModal: FC<RegistroModalProps> = ({ isOpen, onClose, selectedPlan }
 
                     if (loginData.empresa && loginData.empresa.length > 0) {
                         localStorage.removeItem('requiresEmpresaConfig');
+                        const emp = loginData.empresa[0] as any;
+                        const idEmp = emp.idEmpresa || emp.id_empresa;
+                        localStorage.setItem('id_empresa', idEmp?.toString() || '');
                     } else {
                         localStorage.setItem('requiresEmpresaConfig', 'true');
                     }

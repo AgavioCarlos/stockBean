@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { SuscripcionAdmin, Sucursal } from "../suscripciones.interface";
-import { consultarSucursalesEmpresa, cambiarStatusSuscripcion, extenderFechaSuscripcion } from "../../../services/Suscripciones";
+import { SuscripcionAdmin, Sucursal } from "../suscripcion.interface";
+import { consultarSucursalesEmpresa, cambiarStatusSuscripcion, extenderFechaSuscripcion } from "../SuscripcionService";
 import { StatusBadge } from "../../../components/StatusBadge";
 import { MdStorefront, MdExtension, MdPowerSettingsNew, MdAccountBalance } from "react-icons/md";
 
-interface SuscripcionesDetailProps {
+interface SuscripcionDetailProps {
     suscripcion: SuscripcionAdmin | null;
     onUpdate: () => void;
 }
 
-export const SuscripcionesDetail: React.FC<SuscripcionesDetailProps> = ({ suscripcion, onUpdate }) => {
+export const SuscripcionDetail: React.FC<SuscripcionDetailProps> = ({ suscripcion, onUpdate }) => {
     const [sucursales, setSucursales] = useState<Sucursal[]>([]);
     const [loading, setLoading] = useState(false);
     const [nuevaFecha, setNuevaFecha] = useState("");

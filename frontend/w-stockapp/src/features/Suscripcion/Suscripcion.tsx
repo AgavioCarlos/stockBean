@@ -6,13 +6,15 @@ import { IoMdList } from "react-icons/io";
 import { FaHome } from "react-icons/fa";
 import { MdDescription, MdCardMembership, MdBlock } from "react-icons/md";
 import Breadcrumb from "../../components/Breadcrumb";
-import { consultarSuscripcionesAdmin } from "../../services/Suscripciones";
-import { SuscripcionAdmin } from "./suscripciones.interface";
+import { consultarSuscripcionesAdmin } from "./SuscripcionService";
+import { SuscripcionAdmin } from "./suscripcion.interface";
 import { Column } from "../../components/DataTable";
 import { StatusBadge } from "../../components/StatusBadge";
-import { SuscripcionesList } from "./components/SuscripcionesList";
-import { SuscripcionesDetail } from "./components/SuscripcionesDetail";
+import { SuscripcionList } from "./components/SuscripcionList";
+import { SuscripcionDetail } from "./components/SuscripcionDetail";
 import { useAuth } from "../../hooks/useAuth";
+
+import { RefreshButton } from "../../components/RefreshButton";
 
 export default function Suscripciones() {
     const { isSistem, loading: authLoading } = useAuth();
@@ -57,6 +59,12 @@ export default function Suscripciones() {
             )
         },
         {
+            key: "nombreEmpresa",
+            label: "Empresa",
+            sortable: true,
+            render: (_: any, item: SuscripcionAdmin) => <span className="font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded text-xs">{item.nombreEmpresa}</span>
+        },
+        {
             key: "planNombre",
             label: "Plan",
             sortable: true,
@@ -95,7 +103,7 @@ export default function Suscripciones() {
             label: "Lista",
             icon: <IoMdList aria-hidden="true" />,
             content: (
-                <SuscripcionesList
+                <SuscripcionList
                     data={dataList}
                     columns={columnas}
                     onRowClick={handleRowClick}
@@ -108,7 +116,7 @@ export default function Suscripciones() {
             label: "Administración",
             icon: <MdDescription aria-hidden="true" />,
             content: (
-                <SuscripcionesDetail
+                <SuscripcionDetail
                     suscripcion={selectedItem}
                     onUpdate={() => {
                         loadData();
@@ -134,14 +142,21 @@ export default function Suscripciones() {
 
     return (
         <MainLayout>
-            <div className="flex flex-col h-full bg-slate-50">
-                <Breadcrumb
-                    showBackButton={true}
-                    items={[
-                        { label: "Home", icon: <FaHome aria-hidden="true" />, onClick: () => navigate("/dashboard") },
-                        { label: "Suscripciones (Admin)", icon: <MdCardMembership aria-hidden="true" /> },
-                    ]}
-                />
+            <div className="flex flex-col h-full bg-slate-50 pb-6 px-1">
+                <div className="flex items-center justify-between">
+                    <Breadcrumb
+                        showBackButton={true}
+                        items={[
+                            { label: "Home", icon: <FaHome aria-hidden="true" />, onClick: () => navigate("/dashboard") },
+                            { label: "Suscripciones (Admin)", icon: <MdCardMembership aria-hidden="true" /> },
+                        ]}
+                    />
+                    {isSistem && (
+                        <div className="mb-6 mr-1">
+                            <RefreshButton onRefresh={loadData} />
+                        </div>
+                    )}
+                </div>
 
                 {!isSistem ? (
                     <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-xl shadow-sm border border-gray-200">

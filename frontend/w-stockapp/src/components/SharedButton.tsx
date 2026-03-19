@@ -1,6 +1,7 @@
 import React, { ButtonHTMLAttributes } from 'react';
+import { FaFilePdf, FaFileExcel } from 'react-icons/fa';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'ghost' | 'pdf' | 'excel';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 interface SharedButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -20,6 +21,9 @@ export const SharedButton: React.FC<SharedButtonProps> = ({
     disabled,
     ...props
 }) => {
+    // Verificar si el tema de empresa está configurado (si existe el id_empresa)
+    const isEmpresa = !!localStorage.getItem("id_empresa");
+
     // Base styles
     const baseStyles = `
         inline-flex items-center justify-center font-medium tracking-tight 
@@ -31,27 +35,26 @@ export const SharedButton: React.FC<SharedButtonProps> = ({
 
     // Sizing variants - explicit heights help consistency (Touch-target minimums applied)
     const sizeStyles = {
-        sm: 'h-9 px-4 text-xs rounded-lg gap-1.5',
-        md: 'h-11 px-6 text-sm rounded-xl gap-2',
-        lg: 'h-14 px-8 text-base rounded-2xl gap-3',
-        icon: 'h-11 w-11 !p-0 rounded-xl shrink-0 flex items-center justify-center'
+        sm: 'h-9 px-4 text-xs gap-1.5',
+        md: 'h-11 px-6 text-sm gap-2',
+        lg: 'h-14 px-8 text-base gap-3',
+        icon: 'h-11 w-11 !p-0 shrink-0 flex items-center justify-center'
     };
 
     // Color/Visual variants with premium aesthetic
     const variantStyles = {
         primary: `
-            bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-900
-            text-white border-0
-            shadow-[0_4px_14px_0_rgb(15,23,42,0.39)] 
-            hover:shadow-[0_6px_20px_rgba(15,23,42,0.23)] hover:from-slate-800 hover:via-slate-700 hover:to-slate-800
+            bg-empresa-primario text-white border-0
+            shadow-lg shadow-black/10
+            hover:shadow-xl hover:shadow-black/20
             hover:-translate-y-[1px]
-            focus-visible:ring-slate-900 focus-visible:ring-offset-2
+            focus-visible:ring-offset-2
             relative overflow-hidden
             before:absolute before:inset-0 before:bg-white/10 before:translate-y-[100%] hover:before:translate-y-0 before:transition-transform before:duration-300 before:pointer-events-none before:ease-out
         `,
         secondary: `
             bg-white text-slate-700 border border-slate-200/80 
-            shadow-[0_1px_4px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)]
+            shadow-sm
             hover:bg-slate-50 hover:text-slate-900 shadow-sm
             hover:-translate-y-[1px]
             focus-visible:ring-slate-200 focus-visible:ring-offset-2
@@ -82,13 +85,16 @@ export const SharedButton: React.FC<SharedButtonProps> = ({
             bg-transparent text-slate-500 border border-transparent
             hover:bg-slate-100 hover:text-slate-900
             focus-visible:ring-slate-200 focus-visible:ring-offset-2
-        `
+        `,
+        pdf: `bg-white text-red-600 border border-red-200 hover:bg-red-50 hover:text-red-700 shadow-sm focus-visible:ring-red-500 focus-visible:ring-offset-2 transition-all hover:-translate-y-[1px]`,
+        excel: `bg-white text-green-600 border border-green-200 hover:bg-green-50 hover:text-green-700 shadow-sm focus-visible:ring-green-500 focus-visible:ring-offset-2 transition-all hover:-translate-y-[1px]`,
     };
 
     const combinedStyles = `
         ${baseStyles} 
         ${sizeStyles[size]} 
         ${variantStyles[variant]} 
+        rounded-empresa
         ${fullWidth ? 'w-full' : ''} 
         ${className}
     `.replace(/\s+/g, ' ').trim();
@@ -108,3 +114,32 @@ export const SharedButton: React.FC<SharedButtonProps> = ({
         </button>
     );
 };
+
+export interface ExportButtonProps {
+    onClick?: () => void;
+    disabled?: boolean;
+}
+
+export const PdfButton: React.FC<ExportButtonProps> = ({ onClick, disabled }) => (
+    <SharedButton
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        variant="pdf"
+        size="icon"
+        title="Exportar a PDF"
+        icon={<FaFilePdf size={20} />}
+    />
+);
+
+export const ExcelButton: React.FC<ExportButtonProps> = ({ onClick, disabled }) => (
+    <SharedButton
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        variant="excel"
+        size="icon"
+        title="Exportar a Excel"
+        icon={<FaFileExcel size={20} />}
+    />
+);

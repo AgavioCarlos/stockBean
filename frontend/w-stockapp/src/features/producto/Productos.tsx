@@ -19,7 +19,7 @@ import { SharedInput } from "../../components/SharedInput";
 import { StatusBadge } from "../../components/StatusBadge";
 import { MdDelete, MdEdit, MdDescription } from "react-icons/md";
 import StatusFilter from "../../components/StatusFilter";
-import { PdfButton, ExcelButton } from "../../components/Buttons";
+import { PdfButton, ExcelButton } from "../../components/SharedButton";
 import { IoIosSave } from "react-icons/io";
 import Breadcrumb from "../../components/Breadcrumb";
 import { Marca } from "../../interfaces/marca.interface";

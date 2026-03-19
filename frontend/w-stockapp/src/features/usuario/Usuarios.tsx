@@ -198,7 +198,7 @@ export default function Usuarios() {
                 <Breadcrumb
                     showBackButton={true}
                     items={[
-                        { label: "Home", icon: <FaHome aria-hidden="true" />, onClick: () => navigate("/dashboard") },
+                        { label: "Administración", icon: <FaHome aria-hidden="true" />, onClick: () => navigate("/dashboard") },
                         { label: "Usuarios", icon: <MdPeople aria-hidden="true" /> },
                     ]}
                 />

@@ -7,12 +7,12 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { NavLink } from "react-router-dom";
-import { FiX, FiChevronRight, FiChevronLeft, FiChevronDown, FiChevronUp } from "react-icons/fi";
-import Logo from "../../assets/icon.png";
+import { FiX, FiChevronRight, FiChevronLeft, FiChevronDown } from "react-icons/fi";
 import { Pantalla } from "../../interfaces/pantalla.interface";
 import { getPantallasFromLocalStorage } from "../../services/Pantallas";
 import { getIcon } from "../../utils/iconMapper";
 import { useResponsive } from "../../hooks/useResponsive";
+import { useEmpresaEstilos } from "../../hooks/useEmpresaEstilos";
 
 type DynamicSidebarProps = {
     isOpen: boolean;
@@ -41,9 +41,10 @@ const NavItem: React.FC<{
                 onClick={onClick}
                 className={({ isActive }) =>
                     `${base} ${isActive
-                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 font-bold scale-[1.02]"
+                        ? "text-white shadow-lg font-bold scale-[1.02]"
                         : "text-gray-400 hover:text-white hover:bg-white/5"} ${className || ""}`
                 }
+                style={({ isActive }) => isActive ? { backgroundColor: 'var(--color-primario)' } : {}}
             >
                 {Icon && (
                     <span className="text-xl transition-transform group-hover:scale-110 duration-300">
@@ -117,6 +118,7 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
     onCollapsedChange,
 }) => {
     const { isMobile } = useResponsive();
+    const { diseno } = useEmpresaEstilos();
     const [internalCollapsed, setInternalCollapsed] = useState(false);
     const [pantallas, setPantallas] = useState<Pantalla[]>([]);
     const collapsed = collapsedProp !== undefined ? collapsedProp : internalCollapsed;
@@ -156,12 +158,15 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
 
             <aside
                 className={`
-                    fixed top-0 left-0 h-full bg-[#0F172A] text-white z-50
+                    fixed top-0 left-0 h-full text-white z-50
                     transform transition-all duration-300 ease-in-out border-r border-white/5 shadow-2xl
                     ${isOpen ? "translate-x-0" : "-translate-x-full"}
                     ${collapsed && !isMobile ? "w-20" : "w-72"}
                 `}
-                style={{ minWidth: collapsed && !isMobile ? 80 : 288 }}
+                style={{ 
+                    minWidth: collapsed && !isMobile ? 80 : 288,
+                    backgroundColor: 'var(--color-secundario)'
+                }}
             >
                 <div className="flex flex-col h-full relative">
                     {/* Header */}
@@ -171,13 +176,16 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
                             onClick={isMobile ? onClose : undefined}
                             className={`flex items-center gap-4 p-6 hover:bg-white/5 transition-all group ${collapsed && !isMobile ? "justify-center" : ""}`}
                         >
-                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:rotate-12 transition-transform duration-500">
-                                <img src="/stock_icono.ico" alt="Logo" className="w-6 h-6 invert" />
+                            <div 
+                                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-black/20 group-hover:rotate-12 transition-transform duration-500"
+                                style={{ backgroundColor: 'var(--color-primario)' }}
+                            >
+                                <img src={diseno?.urlLogo || "/stock_icono.ico"} alt="Logo" className={`w-6 h-6 ${!diseno?.urlLogo ? 'invert' : ''}`} />
                             </div>
                             {!collapsed && !isMobile && (
                                 <div className="flex flex-col">
-                                    <span className="font-black text-xl tracking-tighter uppercase leading-none">StockApp</span>
-                                    <span className="text-[10px] text-indigo-400 font-bold tracking-widest mt-1">PRO EDITION</span>
+                                    <span className="font-black text-xl tracking-tighter uppercase leading-none truncate">BALUARTE</span>
+                                    <span className="text-[10px] opacity-75 font-bold tracking-widest mt-1" style={{ color: 'var(--color-primario)' }}></span>
                                 </div>
                             )}
                         </NavLink>
@@ -191,8 +199,11 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
                                         if (onCollapsedChange) onCollapsedChange(next);
                                         else setInternalCollapsed(next);
                                     }}
-                                    className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#1E293B] text-gray-400 border border-white/10 hover:bg-indigo-600 hover:text-white transition-all shadow-xl active:scale-90"
+                                    className="flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 border border-white/10 hover:text-white transition-all shadow-xl active:scale-90"
+                                    style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
                                     title={collapsed ? "Expandir" : "Contraer"}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primario)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
                                 >
                                     {collapsed ? <FiChevronRight size={16} /> : <FiChevronLeft size={16} />}
                                 </button>
@@ -214,7 +225,7 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
                     <nav className="flex-1 overflow-auto p-4 mt-2 custom-scrollbar space-y-8">
                         <div>
                             {!collapsed && (
-                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 ml-4">Módulos Principales</p>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 ml-4">Módulos</p>
                             )}
                             <ul className="space-y-1.5">
                                 {pantallasOrganizadas.length > 0 ? (
@@ -258,7 +269,6 @@ const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
                             label={collapsed && !isMobile ? "" : "Configuración"}
                             icon={getIcon("IoIosSettings")}
                             onClick={isMobile ? onClose : undefined}
-                            className="bg-indigo-500/5 text-indigo-400 hover:bg-indigo-500 hover:text-white"
                         />
                     </div>
                 </div>

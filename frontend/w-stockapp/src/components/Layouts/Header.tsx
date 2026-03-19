@@ -5,11 +5,13 @@ import { FaUserCircle } from "react-icons/fa";
 import { IoNotifications } from "react-icons/io5";
 import { HiMail } from "react-icons/hi";
 import { FiMenu, FiCheck, FiCheckCircle } from "react-icons/fi";
-import { HiOutlineExclamationTriangle, HiOutlineCube } from "react-icons/hi2";
+import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { useAlerts } from "../../hooks/useAlerts";
 import { useResponsive } from "../../hooks/useResponsive";
 import { useAuth } from "../../hooks/useAuth";
+import { useEmpresaEstilos } from "../../hooks/useEmpresaEstilos";
 import { obtenerAlertas, contarAlertas, marcarAlertaLeida, marcarTodasLeidas, type IAlerta } from "../../services/AlertaService";
+import ChatRoom from "../../features/chat/components/ChatRoom";
 
 interface HeaderProps {
     isSidebarOpen?: boolean;
@@ -26,6 +28,7 @@ function Header({
     const { isMobile } = useResponsive();
     const { confirm } = useAlerts();
     const { user } = useAuth();
+    const { diseno } = useEmpresaEstilos();
 
     // ─── Alertas ────────────────────────────────────────────
     const [alertas, setAlertas] = useState<IAlerta[]>([]);
@@ -33,6 +36,11 @@ function Header({
     const [showAlertPanel, setShowAlertPanel] = useState(false);
     const [loadingAlertas, setLoadingAlertas] = useState(false);
     const alertPanelRef = useRef<HTMLDivElement>(null);
+
+    // ─── Chat ───────────────────────────────────────────────
+    const [showChatPanel, setShowChatPanel] = useState(false);
+    const [unreadChatCount, setUnreadChatCount] = useState(2); // Fase 4 Mock de no leídos
+    const chatPanelRef = useRef<HTMLDivElement>(null);
 
     // Cargar el conteo de alertas al montar y cada 30 segundos
     const fetchAlertCount = useCallback(async () => {
@@ -56,6 +64,9 @@ function Header({
         const handleClickOutside = (e: MouseEvent) => {
             if (alertPanelRef.current && !alertPanelRef.current.contains(e.target as Node)) {
                 setShowAlertPanel(false);
+            }
+            if (chatPanelRef.current && !chatPanelRef.current.contains(e.target as Node)) {
+                setShowChatPanel(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
@@ -111,7 +122,7 @@ function Header({
         if (lower.includes("stock_bajo") || lower.includes("stock bajo")) {
             return { bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/20" };
         }
-        return { bg: "bg-indigo-500/10", text: "text-indigo-400", border: "border-indigo-500/20" };
+        return { bg: "bg-empresa-primario/10", text: "text-empresa-primario", border: "border-empresa-primario/20" };
     };
 
     // Tiempo relativo
@@ -160,15 +171,20 @@ function Header({
 
     return (
         <header
-            style={{ marginLeft, transition: 'margin-left 300ms' }}
-            className="bg-gray-900/95 backdrop-blur-md text-white h-20 px-8 flex justify-between items-center sticky top-0 z-40 border-b border-white/5 shadow-xl shadow-gray-900/10"
+            style={{
+                marginLeft,
+                transition: 'margin-left 300ms',
+                backgroundColor: 'var(--color-secundario)',
+                borderColor: 'rgba(255,255,255,0.05)'
+            }}
+            className="backdrop-blur-md text-white h-20 px-8 flex justify-between items-center sticky top-0 z-40 border-b shadow-xl shadow-black/20"
         >
             {/* Left Section */}
             <div className="flex items-center gap-6">
                 {(!isSidebarOpen || isMobile) && (
                     <button
                         onClick={onOpenSidebar}
-                        className="p-2.5 rounded-xl bg-white/5 text-white hover:bg-indigo-600 transition-all duration-300 shadow-lg group active:scale-95"
+                        className="p-2.5 rounded-xl bg-white/5 text-white hover:bg-empresa-primario transition-all duration-300 shadow-lg group active:scale-95"
                         title="Abrir menú"
                     >
                         <FiMenu className="text-xl group-hover:rotate-180 transition-transform duration-500" />
@@ -177,10 +193,13 @@ function Header({
 
                 {!isMobile && !isSidebarOpen && (
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                            <img src="/stock_icono.ico" alt="Icon" className="w-6 h-6 invert" />
+                        <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
+                            style={{ backgroundColor: 'var(--color-primario)' }}
+                        >
+                            <img src={diseno?.urlLogo || "/stock_icono.ico"} alt="Icon" className={`w-6 h-6 ${!diseno?.urlLogo ? 'invert' : ''}`} />
                         </div>
-                        <span className="font-bold text-lg tracking-tight">StockApp</span>
+                        <span className="font-bold text-lg tracking-tight">BALUARTE</span>
                     </div>
                 )}
             </div>
@@ -219,7 +238,7 @@ function Header({
 
                         {/* Alert Dropdown Panel */}
                         {showAlertPanel && (
-                            <div className="absolute right-0 top-full mt-2 w-96 bg-gray-900/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50">
+                            <div className="fixed sm:absolute top-20 sm:top-full right-4 sm:right-0 left-4 sm:left-auto mt-2 sm:w-96 bg-gray-900/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-[100] sm:z-50 max-h-[80vh] flex flex-col">
                                 {/* Panel header */}
                                 <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
                                     <div>
@@ -301,12 +320,49 @@ function Header({
                     </div>
 
                     {/* Messages */}
-                    <button
-                        className="relative w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 hover:border-indigo-500/50 hover:bg-white/10 transition-all group"
-                        title="Mensajes"
-                    >
-                        <HiMail className="text-lg text-gray-400 group-hover:text-indigo-400 transition-colors" />
-                    </button>
+                    <div ref={chatPanelRef} className="relative">
+                        <button
+                            onClick={() => setShowChatPanel(!showChatPanel)}
+                            className={`relative w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border transition-all group ${showChatPanel
+                                ? "border-indigo-500/50 bg-white/10"
+                                : "border-white/5 hover:border-indigo-500/50 hover:bg-white/10"
+                                }`}
+                            title="Mensajes"
+                        >
+                            <HiMail className={`text-lg transition-colors ${showChatPanel ? "text-indigo-400" : "text-gray-400 group-hover:text-indigo-400"}`} />
+                            {unreadChatCount > 0 && (
+                                <span className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-indigo-500 rounded-full border-2 border-gray-900 flex items-center justify-center text-[10px] font-bold text-white px-1">
+                                    {unreadChatCount > 99 ? "99+" : unreadChatCount}
+                                </span>
+                            )}
+                        </button>
+
+                        {/* Chat Dropdown Panel */}
+                        {showChatPanel && (
+                            <div className="fixed sm:absolute top-20 sm:top-full right-4 sm:right-0 left-4 sm:left-auto mt-2 sm:w-[350px] h-[75vh] sm:h-[500px] bg-gray-900/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-[100] sm:z-50 flex flex-col">
+                                {/* Header */}
+                                <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-white/5">
+                                    <div>
+                                        <h3 className="font-bold text-white text-sm m-0 flex items-center gap-2">
+                                            Chat
+                                        </h3>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowChatPanel(false)}
+                                        className="text-gray-400 hover:text-white transition-colors text-lg focus:outline-none"
+                                        aria-label="Cerrar ventana de chat"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+
+                                {/* Contenedor principal del Room */}
+                                <div className="flex-1 overflow-hidden">
+                                    <ChatRoom />
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Divider */}
