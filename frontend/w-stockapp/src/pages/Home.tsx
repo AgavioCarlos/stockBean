@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import MainLayout from "../components/Layouts/MainLayout";
 import Footer from "../components/Layouts/Footer";
 import ConfiguracionEmpresa from '../components/ConfiguracionEmpresa';
@@ -102,7 +102,7 @@ function Home() {
                   Panel de Control v2.4
                 </span>
                 <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6">
-                  ¡Bienvenido, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">{userData?.nombre || 'Usuario'}</span>!
+                  ¡Bienvenidx, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">{userData?.nombre || 'Usuario'}</span>!
                 </h1>
                 <p className="text-lg text-gray-400 font-medium mb-10 leading-relaxed">
                   Tu ecosistema de gestión está listo. Hemos procesado <span className="text-white font-bold">{dashboardStats?.conteoHoy || 0} ventas</span> hoy por un total de <span className="text-white font-bold">${(dashboardStats?.montoHoy || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span> en transacciones. Optimiza tus operaciones con inteligencia artificial.

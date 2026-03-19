@@ -39,7 +39,7 @@ function Header({
 
     // ─── Chat ───────────────────────────────────────────────
     const [showChatPanel, setShowChatPanel] = useState(false);
-    const [unreadChatCount, setUnreadChatCount] = useState(2); // Fase 4 Mock de no leídos
+    const [unreadChatCount, setUnreadChatCount] = useState(0); // Fase 4 Mock de no leídos
     const chatPanelRef = useRef<HTMLDivElement>(null);
 
     // Cargar el conteo de alertas al montar y cada 30 segundos
