@@ -72,15 +72,55 @@ button:focus-visible {
 
 @import "tailwindcss";
 
+:root {
+  /* Variables configurables por empresa (valores por defecto) */
+  --color-primario: #3b82f6;      /* Blue 500 */
+  --color-secundario: #1e293b;    /* Slate 800 */
+  --color-acento: #f59e0b;       /* Amber 500 */
+  --color-fondo: #f8fafc;        /* Slate 50 */
+  --fuente-familia: 'Instrument Sans', system-ui, sans-serif;
+  --redondeo-componentes: 0.375rem; /* rounded-md */
+}
+
 /* Evita scroll horizontal cuando elementos (ej. flyouts) se salen del viewport */
 html,
 body,
 #root {
   overflow-x: hidden;
-  font-family: 'Instrument Sans', system-ui, sans-serif;
+  font-family: var(--fuente-familia);
+  background-color: var(--color-fondo);
+  color: var(--color-secundario);
 }
 
 @layer utilities {
+  /* Colores de Empresa */
+  .bg-empresa-primario { background-color: var(--color-primario); }
+  .bg-empresa-secundario { background-color: var(--color-secundario); }
+  .bg-empresa-acento { background-color: var(--color-acento); }
+  .bg-empresa-fondo { background-color: var(--color-fondo); }
+
+  .text-empresa-primario { color: var(--color-primario); }
+  .text-empresa-secundario { color: var(--color-secundario); }
+  .text-empresa-acento { color: var(--color-acento); }
+
+  .border-empresa-primario { border-color: var(--color-primario); }
+  .border-empresa-secundario { border-color: var(--color-secundario); }
+
+  .rounded-empresa { border-radius: var(--redondeo-componentes); }
+
+  /* Estilos específicos para el Sidebar */
+  .sidebar-gradient {
+    background: linear-gradient(to bottom, var(--color-secundario), var(--color-secundario));
+    @apply border-r border-white/5 shadow-2xl;
+  }
+
+  .nav-item-active {
+    background-color: var(--color-primario);
+    @apply text-white shadow-lg font-bold scale-[1.02];
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Animaciones existentes */
   .animate-in {
     animation-duration: 700ms;
     animation-fill-mode: both;

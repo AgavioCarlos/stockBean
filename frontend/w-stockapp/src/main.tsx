@@ -1,3 +1,8 @@
+// Polyfill para SockJS en Vite
+if (typeof window !== 'undefined') {
+  (window as any).global = window;
+}
+
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import React from 'react'
 import ReactDOM from 'react-dom/client'
@@ -17,21 +22,19 @@ import Clientes from './pages/Clientes'
 import Proveedores from './features/Proveedores/Proveedores'
 import PuntoVenta from './features/Punto_venta/PuntoVenta'
 import ProtectedRoute from "./components/ProtectedRoute";
-import Configuracion from './pages/Configuracion';
+import Configuracion from './features/Configuracion/Configuracion';
 import Catalogos from './features/Catalogo/Catalogos';
 import Administrador from './pages/Administrador';
 import Sucursales from './features/Sucursal/Sucursales';
 import Usuarios from './features/Usuario/Usuarios';
-import UsuariosSucursales from './pages/UsuariosSucursales';
 import Inventario from './features/Inventario/Inventario';
 import HistorialPrecios from './pages/HistorialPrecios';
 import Empresas from './pages/Empresas';
 import EmpresaUsuario from './pages/EmpresaUsuario';
 import ProductoEmpresa from './features/ProductoEmpresa/ProductoEmpresa';
-import TestData from './pages/TestData';
 import Unauthorized from './pages/Unauthorized'; // Página de acceso denegado
 import ReporteVentas from './features/Reporte_ventas/ReporteVentas';
-import Suscripciones from './features/Suscripcion/Suscripciones';
+import Suscripciones from './features/Suscripcion/Suscripcion';
 // import Suscripciones from './features/Suscripcion/Suscripciones';
 import Pantallas from './features/Pantalla/Pantallas';
 
@@ -120,10 +123,6 @@ const router = createBrowserRouter([
     element: (<ProtectedRoute><Usuarios /></ProtectedRoute>)
   },
   {
-    path: "/usuarios-sucursales",
-    element: (<ProtectedRoute><UsuariosSucursales /></ProtectedRoute>)
-  },
-  {
     path: "/inventario",
     element: (<ProtectedRoute><Inventario /></ProtectedRoute>)
   },
@@ -142,10 +141,6 @@ const router = createBrowserRouter([
   {
     path: "/producto-empresa",
     element: (<ProtectedRoute><ProductoEmpresa /></ProtectedRoute>)
-  },
-  {
-    path: "/test-data",
-    element: (<ProtectedRoute><TestData /></ProtectedRoute>)
   },
   {
     path: "/reporte-ventas",

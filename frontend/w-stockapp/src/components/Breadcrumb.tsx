@@ -36,6 +36,21 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
 
     const hasBackButton = onBack || showBackButton;
 
+    // Filter out items without text (like the home icon fallback)
+    const textItems = items.filter(item => item.label && item.label.trim() !== "");
+    
+    let bloque = "";
+    let pantalla = "";
+    
+    if (textItems.length >= 2) {
+        bloque = textItems[0].label;
+        pantalla = textItems[textItems.length - 1].label;
+    } else if (textItems.length === 1) {
+        pantalla = textItems[0].label;
+    } else if (items.length > 0) {
+        pantalla = items[items.length - 1].label || "Dashboard";
+    }
+
     return (
         <nav aria-label="Breadcrumb" className="flex items-center text-[13px] font-medium text-slate-500 mb-6">
             {/* Back Button */}
@@ -53,37 +68,22 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
                 </>
             )}
 
-            <ol className="flex items-center space-x-1.5 md:space-x-3">
-                {items.map((item, index) => {
-                    const isLast = index === items.length - 1;
-
-                    return (
-                        <li key={index} className="flex items-center">
-                            {/* Item */}
-                            <div
-                                className={`flex items-center rounded-md px-2 py-1 transition-all duration-200 select-none ${isLast
-                                    ? "text-slate-800 font-semibold bg-slate-100/50 cursor-default"
-                                    : "hover:text-blue-600 hover:bg-blue-50/50 cursor-pointer"
-                                    } ${(!isLast && !item.onClick) ? "cursor-default" : ""}`}
-                                onClick={!isLast ? item.onClick : undefined}
-                                aria-current={isLast ? "page" : undefined}
-                            >
-                                {item.icon && (
-                                    <span className={`flex items-center justify-center mr-1.5 ${isLast ? "text-slate-700" : "text-slate-400"}`}>
-                                        {React.cloneElement(item.icon as React.ReactElement, { size: 15, 'aria-hidden': 'true' })}
-                                    </span>
-                                )}
-                                <span>{item.label}</span>
-                            </div>
-
-                            {/* Separator */}
-                            {!isLast && (
-                                <MdChevronRight className="flex-shrink-0 mx-0.5 md:mx-1 text-slate-300" size={18} aria-hidden="true" />
-                            )}
-                        </li>
-                    );
-                })}
-            </ol>
+            <div className="flex items-center select-none text-slate-600">
+                {bloque && (
+                    <div className="flex items-center">
+                        <span className="font-semibold text-slate-400 capitalize tracking-wide">
+                            {bloque}
+                        </span>
+                        <MdChevronRight className="flex-shrink-0 mx-2 text-slate-300" size={18} aria-hidden="true" />
+                    </div>
+                )}
+                
+                <div className="flex items-center">
+                    <span className="font-bold text-slate-800 capitalize tracking-wide">
+                        {pantalla}
+                    </span>
+                </div>
+            </div>
         </nav>
     );
 };

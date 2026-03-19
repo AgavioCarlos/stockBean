@@ -1,4 +1,4 @@
-export interface IVentaReporte {
+export interface VentaReporte {
     idVenta: number;
     fechaVenta: string;
     sucursal: string;

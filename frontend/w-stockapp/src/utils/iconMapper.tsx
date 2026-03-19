@@ -24,6 +24,9 @@ import { TbReportAnalytics } from "react-icons/tb";
 import { MdOutlinePayments } from "react-icons/md";
 import { FaUsers, FaUser } from "react-icons/fa";
 import { CgScreen } from "react-icons/cg";
+import { BiUnite } from "react-icons/bi";
+import { AiOutlineAppstoreAdd } from "react-icons/ai";
+
 
 export const iconMap: { [key: string]: React.ComponentType } = {
     // Iconos generales
@@ -38,6 +41,7 @@ export const iconMap: { [key: string]: React.ComponentType } = {
     FiPackage,
     FiTag,
     BsMenuButton,
+    BiUnite,
 
     // Usuarios y personas
     FiUsers,
@@ -68,6 +72,9 @@ export const iconMap: { [key: string]: React.ComponentType } = {
 
     //Pantallas
     CgScreen,
+
+    //Punto de venta
+    AiOutlineAppstoreAdd,
 
 };
 

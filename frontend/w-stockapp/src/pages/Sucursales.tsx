@@ -13,7 +13,7 @@ import SucursalesDetalle from "../components/SucursalesDetalle";
 import Breadcrumb from "../components/Breadcrumb";
 import SearchInput from "../components/SearchInput";
 import StatusFilter from "../components/StatusFilter";
-import { PdfButton, ExcelButton } from "../components/Buttons";
+import { PdfButton, ExcelButton } from "../components/SharedButton";
 
 function Sucursales() {
     const navigate = useNavigate();

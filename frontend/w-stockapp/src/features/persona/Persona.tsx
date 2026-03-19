@@ -168,7 +168,7 @@ export default function Persona() {
         <Breadcrumb
           showBackButton={true}
           items={[
-            { label: "Home", icon: <FaHome aria-hidden="true" />, onClick: () => navigate("/dashboard") },
+            { label: "Administración", icon: <FaHome aria-hidden="true" />, onClick: () => navigate("/dashboard") },
             { label: "Personas", icon: <MdPeople aria-hidden="true" /> },
           ]}
         />

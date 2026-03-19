@@ -53,11 +53,10 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({
                                         variant={selection.status ? 'danger' : 'success'}
                                         className={`shadow-sm transition-all ${selection.status ? 'hover:bg-red-50 hover:text-red-700 hover:border-red-200' : 'hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'}`}
                                         onClick={() => onToggleStatus(selection)}
-                                        title={selection.status ? "Desactivar Persona" : "Reactivar Persona"}
+                                        title={selection.status ? "Desactivar" : "Reactivar"}
                                         aria-label={selection.status ? "Desactivar" : "Reactivar"}
                                         icon={<MdPowerSettingsNew size={20} aria-hidden="true" />}
                                     >
-                                        {selection.status ? 'Desactivar' : 'Activar'}
                                     </SharedButton>
                                 </WithPermission>
 
@@ -70,7 +69,6 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({
                                         aria-label="Editar"
                                         icon={<MdEdit size={20} aria-hidden="true" />}
                                     >
-                                        Editar
                                     </SharedButton>
                                 </WithPermission>
                             </>
@@ -82,11 +80,10 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({
                                     type="submit"
                                     variant="primary"
                                     className="shadow-md shadow-blue-500/20"
-                                    title="Guardar Persona"
-                                    aria-label="Guardar Persona"
+                                    title="Guardar"
+                                    aria-label="Guardar"
                                     icon={<IoIosSave size={20} aria-hidden="true" />}
                                 >
-                                    Guardar Cambios
                                 </SharedButton>
                             </WithPermission>
                         )}
@@ -98,11 +95,10 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({
                                     variant="primary"
                                     className="shadow-md shadow-blue-500/20"
                                     onClick={onNew}
-                                    title="Nuevo"
-                                    aria-label="Nuevo"
+                                    title="Agregar"
+                                    aria-label="Agregar"
                                     icon={<MdAdd size={22} aria-hidden="true" />}
                                 >
-                                    Nueva Persona
                                 </SharedButton>
                             </WithPermission>
                         )}

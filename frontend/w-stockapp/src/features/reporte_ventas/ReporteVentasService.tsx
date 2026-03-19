@@ -1,5 +1,5 @@
 import { apiFetch } from "../../services/Api";
-import type { IVentaReporte, IDashboardStats, IVentasPorDia } from "./reporte_ventas.interface";
+import type { VentaReporte, IDashboardStats, IVentasPorDia } from "./reporte_ventas.interface";
 
 const ENDPOINT = "/reportes/ventas";
 
@@ -20,13 +20,13 @@ export const obtenerStatsDashboard = async (): Promise<IDashboardStats> => {
 /**
  * Obtener reporte de todas las ventas (filtrado por rol en el backend).
  */
-export const obtenerReporteVentas = async (): Promise<IVentaReporte[]> => {
-    return await apiFetch<IVentaReporte[]>(ENDPOINT) || [];
+export const obtenerReporteVentas = async (): Promise<VentaReporte[]> => {
+    return await apiFetch<VentaReporte[]>(ENDPOINT) || [];
 };
 
 /**
  * Obtener reporte filtrado por una sucursal específica.
  */
-export const obtenerReportePorSucursal = async (idSucursal: number): Promise<IVentaReporte[]> => {
-    return await apiFetch<IVentaReporte[]>(`${ENDPOINT}/sucursal/${idSucursal}`) || [];
+export const obtenerReportePorSucursal = async (idSucursal: number): Promise<VentaReporte[]> => {
+    return await apiFetch<VentaReporte[]>(`${ENDPOINT}/sucursal/${idSucursal}`) || [];
 };

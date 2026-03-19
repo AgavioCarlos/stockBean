@@ -19,6 +19,7 @@
 
 import { Navigate, useLocation } from "react-router-dom";
 import { usePantallas } from "../hooks/usePantallas";
+import { useEmpresaEstilos } from "../hooks/useEmpresaEstilos";
 
 interface ProtectedRouteProps {
     children: JSX.Element;
@@ -31,7 +32,12 @@ const ProtectedRoute = ({
 }: ProtectedRouteProps) => {
     const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
     const location = useLocation();
-    const { hasAccess, loading } = usePantallas();
+    const { hasAccess, loading: loadingPantallas } = usePantallas();
+    
+    // Cargar estilos dinámicos de la empresa
+    const { loading: loadingEstilos } = useEmpresaEstilos();
+
+    const loading = loadingPantallas || loadingEstilos;
 
     console.log(`ProtectedRoute: Checking access for ${location.pathname}. Auth: ${isAuthenticated}, Loading: ${loading}, RequirePerm: ${requirePermission}`);
 

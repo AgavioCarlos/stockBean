@@ -21,7 +21,7 @@ export const SharedInput: React.FC<SharedInputProps> = ({
         <div className="flex flex-col gap-1.5 w-full group">
             <label
                 htmlFor={id}
-                className={`text-[11px] font-black uppercase tracking-widest transition-colors duration-200 ${isEditing ? 'text-slate-600 group-focus-within:text-blue-600 cursor-pointer' : 'text-slate-400'}`}
+                className={`text-[11px] font-black uppercase tracking-widest transition-colors duration-200 ${isEditing ? 'text-slate-600 group-focus-within:text-empresa-primario cursor-pointer' : 'text-slate-400'}`}
             >
                 {label}
             </label>
@@ -30,7 +30,7 @@ export const SharedInput: React.FC<SharedInputProps> = ({
                 {icon && (
                     <div className={`
                         absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200
-                        ${isEditing ? 'text-slate-400 group-focus-within/input:text-blue-500' : 'text-slate-300'}
+                        ${isEditing ? 'text-slate-400 group-focus-within/input:text-empresa-primario' : 'text-slate-300'}
                     `}>
                         {icon}
                     </div>
@@ -40,8 +40,8 @@ export const SharedInput: React.FC<SharedInputProps> = ({
                     disabled={!isEditing}
                     {...props}
                     className={`
-                        w-full ${icon ? 'pl-11' : 'px-4'} py-3 border-2 rounded-xl transition-all duration-300 font-medium text-slate-800
-                        focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500
+                        w-full ${icon ? 'pl-11' : 'px-4'} py-3 border-2 rounded-empresa transition-all duration-300 font-medium text-slate-800
+                        focus:outline-none focus:ring-4 focus:ring-empresa-primario/10 focus:border-empresa-primario
                         ${!isEditing
                             ? 'bg-slate-50/80 border-slate-100 text-slate-500 cursor-not-allowed shadow-none'
                             : 'bg-white border-slate-200 shadow-sm hover:border-slate-300'}

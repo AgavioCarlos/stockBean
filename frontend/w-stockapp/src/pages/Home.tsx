@@ -4,15 +4,18 @@ import Footer from "../components/Layouts/Footer";
 import ConfiguracionEmpresa from '../components/ConfiguracionEmpresa';
 import { FiTrendingUp, FiBox, FiUsers, FiDollarSign, FiArrowRight, FiActivity } from 'react-icons/fi';
 import { obtenerReporteVentas, obtenerStatsDashboard } from '../features/Reporte_ventas/ReporteVentasService';
-import type { IVentaReporte, IDashboardStats } from '../features/Reporte_ventas/reporte_ventas.interface';
+import type { VentaReporte, IDashboardStats } from '../features/Reporte_ventas/reporte_ventas.interface';
 import { consultarClientes } from '../services/Clientes';
+
+import VentasBarChart from '../features/Reporte_ventas/components/VentasBarChart';
 
 function Home() {
   const [showConfiguracionEmpresa, setShowConfiguracionEmpresa] = useState(false);
   const [userData, setUserData] = useState<any>(null);
-  const [reporteData, setReporteData] = useState<IVentaReporte[]>([]);
+  const [reporteData, setReporteData] = useState<VentaReporte[]>([]);
   const [dashboardStats, setDashboardStats] = useState<IDashboardStats | null>(null);
   const [totalClientes, setTotalClientes] = useState(0);
+  const [loadingVentas, setLoadingVentas] = useState(true);
 
   useEffect(() => {
     // Verificar si el usuario necesita configurar empresa
@@ -27,10 +30,12 @@ function Home() {
       setUserData(JSON.parse(savedUser));
     }
 
-    // Cargar reporte de ventas para datos en tiempo real (Lista de últimas ventas)
+    // Cargar reporte de ventas para la gráfica
+    setLoadingVentas(true);
     obtenerReporteVentas()
       .then(setReporteData)
-      .catch(err => console.error("Error al cargar ventas en Home:", err));
+      .catch(err => console.error("Error al cargar ventas en Home:", err))
+      .finally(() => setLoadingVentas(false));
 
     // Cargar estadísticas del Dashboard desde el Backend
     obtenerStatsDashboard()
@@ -131,42 +136,19 @@ function Home() {
               ))}
             </div>
 
-            {/* Placeholder for more content */}
+            {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-100 border border-gray-50 flex flex-col">
                 <div className="flex justify-between items-center mb-8">
-                  <h3 className="text-xl font-black text-gray-900">Últimas Ventas</h3>
-                  <button className="text-indigo-600 font-bold text-sm hover:underline">Ver todas</button>
+                  <div>
+                    <h3 className="text-xl font-black text-gray-900">Ventas por Día</h3>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">Últimos 7 días de actividad</p>
+                  </div>
+                  {/* Ir a la pantalla reportes */}
+                  <button onClick={() => window.location.href = '/reporte-ventas'} className="text-indigo-600 font-bold text-sm hover:underline">Ver reporte completo</button>
                 </div>
-                <div className="flex-1 space-y-4 overflow-auto max-h-[280px] scrollbar-hide">
-                  {reporteData.length > 0 ? (
-                    reporteData.slice(0, 5).map((venta) => (
-                      <div key={venta.idVenta} className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-transparent hover:border-indigo-100 hover:bg-white hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-sm shadow-sm">
-                            #{venta.idVenta}
-                          </div>
-                          <div>
-                            <p className="font-black text-gray-900 text-sm tracking-tight">{venta.sucursal}</p>
-                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-0.5">
-                              {new Date(venta.fechaVenta).toLocaleDateString("es-MX", { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-black text-gray-900 text-lg">${venta.totalVenta.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
-                          <span className="text-[10px] bg-green-50 text-green-600 font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                            {venta.metodoPago || 'Efectivo'}
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-300">
-                      <FiDollarSign className="text-5xl mb-4 opacity-20" />
-                      <p className="font-black text-sm uppercase tracking-widest">Sin actividad comercial hoy</p>
-                    </div>
-                  )}
+                <div className="flex-1 min-h-[300px]">
+                  <VentasBarChart ventas={reporteData} loading={loadingVentas} />
                 </div>
               </div>
               <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-gray-100 border border-gray-50 h-[400px] flex items-center justify-center">
