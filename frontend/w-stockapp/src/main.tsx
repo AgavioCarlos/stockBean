@@ -12,7 +12,7 @@ import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Login from './features/Login/Login';
 import Perfil from './features/Perfil/Perfil';
-import Categorias from './pages/Categorias';
+import Categorias from './features/Categorias/Categorias';
 import Unidades from './features/Unidades/Unidades'
 import Permisos from './features/Permisos/Permisos';
 import Inicio from './pages/Inicio';
@@ -37,6 +37,7 @@ import ReporteVentas from './features/Reporte_ventas/ReporteVentas';
 import Suscripciones from './features/Suscripcion/Suscripcion';
 // import Suscripciones from './features/Suscripcion/Suscripciones';
 import Pantallas from './features/Pantalla/Pantallas';
+import Planes from './features/Planes/Planes';
 
 
 const router = createBrowserRouter([
@@ -157,6 +158,10 @@ const router = createBrowserRouter([
   {
     path: "/pantallas",
     element: (<ProtectedRoute><Pantallas /></ProtectedRoute>)
+  },
+  {
+    path: "/planes",
+    element: (<ProtectedRoute><Planes /></ProtectedRoute>)
   },
 
 ]);

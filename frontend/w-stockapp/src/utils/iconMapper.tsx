@@ -26,7 +26,8 @@ import { FaUsers, FaUser } from "react-icons/fa";
 import { CgScreen } from "react-icons/cg";
 import { BiUnite } from "react-icons/bi";
 import { AiOutlineAppstoreAdd } from "react-icons/ai";
-
+import { GrPlan } from "react-icons/gr";
+import { MdOutlineCategory } from "react-icons/md";
 
 export const iconMap: { [key: string]: React.ComponentType } = {
     // Iconos generales
@@ -35,6 +36,8 @@ export const iconMap: { [key: string]: React.ComponentType } = {
     FiGrid,
     FiSettings,
     IoIosSettings,
+    GrPlan,
+    MdOutlineCategory,
 
     // Catálogos y productos
     FiBox,

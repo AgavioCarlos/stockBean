@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { login } from "./LoginService";
 import { getPantallasUsuario, savePantallasToLocalStorage } from "../../services/Pantallas";
 import { useAlerts } from "../../hooks/useAlerts";
-import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaCog, FaServer, FaCheckCircle, FaDatabase } from 'react-icons/fa';
+import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaCog, FaDatabase } from 'react-icons/fa';
 import PaymentModal from "../../components/PaymentModal";
 import { DatabaseConfigModal } from "./components/DatabaseConfigModal";
 import { apiFetch } from "../../services/Api";
@@ -86,6 +86,8 @@ function Login() {
           const emp = data.empresa[0] as any;
           const idEmp = emp.idEmpresa || emp.id_empresa;
           localStorage.setItem("id_empresa", idEmp?.toString() || "");
+        } else if (data.cuenta === "sistemas") {
+          localStorage.setItem("requiresEmpresaConfig", "false");
         } else {
           localStorage.setItem("requiresEmpresaConfig", "true");
         }
@@ -150,7 +152,7 @@ function Login() {
         {/* Logo & Branding */}
         <div className="flex flex-col items-center mb-6 space-y-4">
           <div className="relative group">
-            <button 
+            <button
               onClick={() => navigate('/')}
               className="w-20 h-20 bg-gradient-to-tr from-indigo-600 to-indigo-500 rounded-[2.2rem] flex items-center justify-center shadow-[0_20px_40px_-10px_rgba(79,70,229,0.4)] transform transition-all duration-700 group-hover:rotate-12 group-hover:scale-110 cursor-pointer outline-none focus-visible:ring-4 focus-visible:ring-indigo-200"
               title="Ir al Inicio"
@@ -211,7 +213,7 @@ function Login() {
                     className="w-full pl-11 pr-4 py-3.5 bg-slate-50/50 border-2 border-slate-100/50 rounded-2xl focus:bg-white focus:border-indigo-600 focus:ring-8 focus:ring-indigo-600/[0.03] outline-none transition-all duration-300 font-bold text-slate-700 placeholder:text-slate-300"
                     required
                     spellCheck={false}
-                  />  
+                  />
                 </div>
               </div>
 
@@ -248,8 +250,8 @@ function Login() {
               type="submit"
               disabled={isSubmitting}
               className={`w-full py-4 rounded-2xl font-black text-white shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] flex items-center justify-center gap-3 transition-all duration-500 overflow-hidden relative group/btn ${isSubmitting
-                  ? 'bg-indigo-300 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-slate-900 active:scale-[0.97]'
+                ? 'bg-indigo-300 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-slate-900 active:scale-[0.97]'
                 }`}
             >
               {isSubmitting ? (
