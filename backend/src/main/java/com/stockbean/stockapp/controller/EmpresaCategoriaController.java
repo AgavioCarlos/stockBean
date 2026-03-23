@@ -2,7 +2,6 @@ package com.stockbean.stockapp.controller;
 
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,7 +17,9 @@ import com.stockbean.stockapp.model.catalogos.Categoria;
 import com.stockbean.stockapp.service.EmpresaCategoriaService;
 
 import org.springframework.lang.NonNull;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/empres-categorias")
 public class EmpresaCategoriaController {

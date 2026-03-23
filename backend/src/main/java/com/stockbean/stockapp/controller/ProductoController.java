@@ -1,51 +1,63 @@
 package com.stockbean.stockapp.controller;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.stockbean.stockapp.dto.ProductoDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.stockbean.stockapp.dto.ProductoRequest;
-import com.stockbean.stockapp.model.tablas.Producto;
 import com.stockbean.stockapp.security.UsuarioPrincipal;
 import com.stockbean.stockapp.service.ProductoService;
 
 @RestController
 @RequestMapping("/productos")
 public class ProductoController {
-    @Autowired
-    private ProductoService productoService;
+
+    private final ProductoService productoService;
+
+    // S3-B5: Constructor Injection
+    public ProductoController(ProductoService productoService) {
+        this.productoService = productoService;
+    }
 
     @PreAuthorize("hasAnyRole('SISTEM', 'ADMIN')")
     @GetMapping
-    public List<Producto> listar(@AuthenticationPrincipal UsuarioPrincipal principal) {
+    public List<ProductoDTO> listar(@AuthenticationPrincipal UsuarioPrincipal principal) {
         return productoService.listar(principal.getId());
     }
 
+    /**
+     * Endpoint para paginación server-side.
+     * S3-B4: Paginación.
+     */
+    @PreAuthorize("hasAnyRole('SISTEM', 'ADMIN')")
+    @GetMapping("/page")
+    public Page<ProductoDTO> listarPaginado(
+            @AuthenticationPrincipal UsuarioPrincipal principal,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return productoService.listarPaginado(principal.getId(), pageable);
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<Producto> obtener(@PathVariable Integer id) {
-        Producto producto = productoService.obtenerPorId(id);
+    public ResponseEntity<ProductoDTO> obtener(@PathVariable Integer id) {
+        ProductoDTO producto = productoService.obtenerPorId(id);
         return producto != null ? ResponseEntity.ok(producto) : ResponseEntity.notFound().build();
     }
 
     @PostMapping()
-    public ResponseEntity<Producto> guardar(@RequestBody ProductoRequest dto,
+    public ResponseEntity<ProductoDTO> guardar(@RequestBody ProductoRequest dto,
             @AuthenticationPrincipal UsuarioPrincipal principal) {
-        Producto resultado = productoService.guardar(dto, principal.getId());
+        ProductoDTO resultado = productoService.guardar(dto, principal.getId());
         return ResponseEntity.ok(resultado);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Producto> actualizar(@PathVariable Integer id, @RequestBody ProductoRequest dto) {
-        Producto producto = productoService.actualizar(id, dto);
+    public ResponseEntity<ProductoDTO> actualizar(@PathVariable Integer id, @RequestBody ProductoRequest dto) {
+        ProductoDTO producto = productoService.actualizar(id, dto);
         return producto != null ? ResponseEntity.ok(producto) : ResponseEntity.notFound().build();
     }
 
@@ -54,5 +66,4 @@ public class ProductoController {
         productoService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
-
 }

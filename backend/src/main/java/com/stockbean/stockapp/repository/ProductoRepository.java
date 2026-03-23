@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.stockbean.stockapp.model.tablas.Producto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ProductoRepository extends JpaRepository<Producto, Integer> {
     List<Producto> findByStatus(Boolean status);
@@ -35,4 +37,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
 
     @Query("SELECT p FROM Producto p JOIN EmpresaUsuario eu ON p.empresa.idEmpresa = eu.empresa.idEmpresa WHERE eu.usuario.id_usuario = :idUsuario AND eu.activo = true")
     List<Producto> findByUsuarioId(@Param("idUsuario") Integer idUsuario);
+
+    @Query("SELECT p FROM Producto p JOIN EmpresaUsuario eu ON p.empresa.idEmpresa = eu.empresa.idEmpresa WHERE eu.usuario.id_usuario = :idUsuario AND eu.activo = true")
+    Page<Producto> findByUsuarioId(@Param("idUsuario") Integer idUsuario, Pageable pageable);
 }

@@ -37,11 +37,20 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
     List<Venta> findByFechaVentaBetween(@Param("inicio") java.time.LocalDateTime inicio,
             @Param("fin") java.time.LocalDateTime fin);
 
-    // Dashboard: Ventas en un rango de fechas para sucursales específicas
-    // (ADMIN/GERENTE)
     @Query("SELECT v FROM Venta v WHERE v.idSucursal IN :idsSucursales AND v.fechaVenta BETWEEN :inicio AND :fin")
     List<Venta> findBySucursalIdsAndFechaVentaBetween(
             @Param("idsSucursales") List<Integer> idsSucursales,
             @Param("inicio") java.time.LocalDateTime inicio,
             @Param("fin") java.time.LocalDateTime fin);
+
+    // --- Bulk Stats para Fix N+1 ---
+
+    @Query("SELECT d.venta.idVenta, COUNT(d) FROM DetalleVenta d WHERE d.venta.idVenta IN :ids GROUP BY d.venta.idVenta")
+    List<Object[]> countDetallesBatch(@Param("ids") List<Integer> ids);
+
+    @Query("SELECT d.venta.idVenta, SUM(d.cantidad) FROM DetalleVenta d WHERE d.venta.idVenta IN :ids GROUP BY d.venta.idVenta")
+    List<Object[]> sumCantidadBatch(@Param("ids") List<Integer> ids);
+
+    @Query("SELECT COALESCE(SUM(d.cantidad), 0) FROM DetalleVenta d WHERE d.venta.idVenta IN :ids")
+    Long sumTotalCantidadBatch(@Param("ids") List<Integer> ids);
 }
