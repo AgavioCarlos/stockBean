@@ -16,7 +16,7 @@ import {
     FiUser,
     FiShield,
 } from "react-icons/fi";
-import { BsMenuButton } from "react-icons/bs";
+import { BsMenuButton, BsCashCoin } from "react-icons/bs";
 import { MdOutlinePointOfSale } from "react-icons/md";
 import { RiAdminLine } from "react-icons/ri";
 import { IoIosSettings } from "react-icons/io";
@@ -38,6 +38,7 @@ export const iconMap: { [key: string]: React.ComponentType } = {
     IoIosSettings,
     GrPlan,
     MdOutlineCategory,
+    BsCashCoin,
 
     // Catálogos y productos
     FiBox,

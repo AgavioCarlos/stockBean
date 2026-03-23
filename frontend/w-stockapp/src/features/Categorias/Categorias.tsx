@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Breadcrumb from "../../components/Breadcrumb";
 import MainLayout from "../../components/Layouts/MainLayout";
 import { CategoriasGlobales } from './components/CategoriasGlobales';
-import { AsignacionCategorias } from './components/AsignacionCategorias';
+import { AsignacionCategoria } from './components/AsignacionCategoria';
 
 const Categorias: React.FC = () => {
   const [userData, setUserData] = useState<any>(null);
@@ -14,18 +14,9 @@ const Categorias: React.FC = () => {
       setUserData(JSON.parse(savedUser));
     }
 
-    const eMenuConfig = localStorage.getItem('empresa');
-    if (eMenuConfig) {
-      try {
-        const eParsed = JSON.parse(eMenuConfig);
-        if (Array.isArray(eParsed) && eParsed.length > 0) {
-          setEmpresaId(eParsed[0].idEmpresa || 0);
-        } else if (eParsed && eParsed.idEmpresa) {
-          setEmpresaId(eParsed.idEmpresa);
-        }
-      } catch (err) {
-        console.error("Error parseando empresa", err);
-      }
+    const idEmpStr = localStorage.getItem('id_empresa');
+    if (idEmpStr) {
+      setEmpresaId(parseInt(idEmpStr, 10));
     }
   }, []);
 
@@ -46,9 +37,8 @@ const Categorias: React.FC = () => {
       <div className="flex flex-col h-full">
         <Breadcrumb
           items={[
-            { label: "Proyectos", onClick: () => { } },
             { label: "Catálogo", onClick: () => { } },
-            { label: isSistemas ? "Gestión Global de Categorías" : "Mis Categorías" }
+            { label: "Categorías" }
           ]}
           onBack={() => { }}
         />
@@ -57,7 +47,7 @@ const Categorias: React.FC = () => {
           <CategoriasGlobales />
         ) : (
           <div className="mt-4 flex-1">
-            <AsignacionCategorias idEmpresa={empresaId} />
+            <AsignacionCategoria idEmpresa={empresaId} />
           </div>
         )}
       </div>

@@ -6,10 +6,7 @@ export interface Categoria {
 export interface Unidad {
   idUnidad: number;
   nombre: string;
-  abreviatura: string;
-  fechaAlta: Date;
-  fechaBaja: Date;
-  fechaUltimaModificacion: Date;
+  abreviatura?: string;
 }
 
 export interface Marca {
@@ -22,9 +19,15 @@ export interface Productos {
   nombre: string;
   descripcion: string;
   categoria?: Categoria;
+  idCategoria?: number;
   unidad?: Unidad;
+  idUnidad?: number;
   marca?: Marca;
+  idMarca?: number;
   codigoBarras: string;
   imagenUrl: string;
   status: boolean;
+  idEmpresa?: number;
+  fechaAlta?: string | Date;
+  fechaUltimaModificacion?: string | Date;
 }

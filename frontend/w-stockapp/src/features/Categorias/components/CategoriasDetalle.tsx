@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Categoria } from "../interfaces/categoria.interface";
+import { Categoria } from "../../../interfaces/categoria.interface";
 import { IoIosSave } from "react-icons/io";
 import { MdBlock } from "react-icons/md";
 import Swal from "sweetalert2";
