@@ -106,7 +106,7 @@ const Tabs: React.FC<TabsProps> = ({
               id={`panel-${tab.key}`}
               aria-labelledby={`tab-${tab.key}`}
               tabIndex={0}
-              className={`flex-1 flex flex-col h-full outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 ${
+              className={`flex-1 flex flex-col h-full outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 tab-content ${
                 activeTab === tab.key ? "block" : "hidden"
               }`}
             >

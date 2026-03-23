@@ -38,6 +38,7 @@ import Suscripciones from './features/Suscripcion/Suscripcion';
 // import Suscripciones from './features/Suscripcion/Suscripciones';
 import Pantallas from './features/Pantalla/Pantallas';
 import Planes from './features/Planes/Planes';
+import TiposPrecio from './features/TipoPrecio/TipoPrecio';
 
 
 const router = createBrowserRouter([
@@ -162,6 +163,10 @@ const router = createBrowserRouter([
   {
     path: "/planes",
     element: (<ProtectedRoute><Planes /></ProtectedRoute>)
+  },
+  {
+    path: "/precio",
+    element: (<ProtectedRoute><TiposPrecio /></ProtectedRoute>)
   },
 
 ]);

@@ -1,308 +1,164 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
-import { consultarCategorias } from "../../../services/Categoria";
-import { consultarUnidades } from "../../Unidades/UnidadService";
-import { consultarMarcas } from "../../../services/Marcas";
-import { Categoria, Unidad, Marca } from "../producto.interface";
+import React, { ChangeEvent } from 'react';
+import { IoMdCube } from 'react-icons/io';
+import { FormGrid, FormCol } from '../../../components/ui';
+import { SharedInput } from '../../../components/SharedInput';
+import { SharedTextarea } from '../../../components/SharedTextarea';
+import { SearchableSelect } from '../../../components/SearchableSelect';
 
-
-type Props = {
-  mostrar: boolean;
-  onClose: () => void;
-  nombre: string;
-  setNombre: (v: string) => void;
-  descripcion: string;
-  setDescripcion: (v: string) => void;
-  categoria: number;
-  setCategoria: (v: number) => void;
-  unidad: number;
-  setUnidad: (v: number) => void;
-  marca: number;
-  setMarca: (v: number) => void;
-  codigoBarras: string;
-  setCodigoBarras: (v: string) => void;
-  imagenUrl: string;
-  manejarCambio: (e: ChangeEvent<HTMLInputElement>) => void;
-  status: boolean;
-  setStatus: (v: boolean) => void;
-  manejarEnvio: (e: React.FormEvent) => void;
-};
-
-export default function ProductosForm({
-  mostrar,
-  onClose,
-  nombre,
-  setNombre,
-  descripcion,
-  setDescripcion,
-  categoria,
-  setCategoria,
-  unidad,
-  setUnidad,
-  marca,
-  setMarca,
-  codigoBarras,
-  setCodigoBarras,
-  imagenUrl,
-  manejarCambio,
-  status,
-  setStatus,
-  manejarEnvio,
-}: Props) {
-  if (!mostrar) return null;
-
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [unidades, setUnidades] = useState<Unidad[]>([]);
-  const [marcas, setMarcas] = useState<Marca[]>([]);
-
-  const [cargandoCategorias, setCargandoCategorias] = useState(false);
-  const [cargandoUnidades, setCargandoUnidades] = useState(false);
-  const [cargandoMarcas, setCargandoMarcas] = useState(false);
-
-
-  useEffect(() => {
-    let mounted = true;
-    setCargandoCategorias(true);
-    consultarCategorias()
-      .then((data: Categoria[]) => {
-        if (!mounted) return;
-        setCategorias(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        console.error("Error al cargar categorias:", err);
-        setCategorias([]);
-      })
-      .finally(() => {
-        if (mounted) setCargandoCategorias(false);
-      });
-    return () => {
-      mounted = false;
+interface ProductosFormProps {
+    values: any;
+    handleChange: (e: any) => void;
+    setValues: (values: any) => void;
+    isEditing: boolean;
+    loadingLovs: boolean;
+    lovOptions: {
+        categorias: any[];
+        marcas: any[];
+        unidades: any[];
     };
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-    setCargandoUnidades(true);
-    consultarUnidades()
-      .then((data: Unidad[]) => {
-        if (!mounted) return;
-        setUnidades(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        console.error("Error al cargar unidades:", err);
-        setUnidades([]);
-      })
-      .finally(() => {
-        if (mounted) setCargandoUnidades(false);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-    setCargandoMarcas(true);
-    consultarMarcas()
-      .then((data: Marca[]) => {
-        if (!mounted) return;
-        setMarcas(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        console.error("Error al cargar marcas:", err);
-        setMarcas([]);
-      })
-      .finally(() => {
-        if (mounted) setCargandoMarcas(false);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  return (
-    <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-xl">
-        <form onSubmit={manejarEnvio}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre
-            </label>
-            <input
-              type="text"
-              placeholder="Nombre"
-              className="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Descripción
-            </label>
-            <input
-              type="text"
-              placeholder="Descripción"
-              className="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <select
-              id="categoria"
-              name="categoria"
-              value={categoria}
-              onChange={(e) => setCategoria(Number(e.target.value))}
-              className="w-full border px-3 py-2 rounded-md"
-            >
-              <option value={0}>Selecciona una Categoria</option>
-              {cargandoCategorias ? (
-                <option value={0} disabled>
-                  Cargando...
-                </option>
-              ) : categorias.length > 0 ? (
-                categorias.map((c) => (
-                  <option key={c.idCategoria} value={c.idCategoria}>
-                    {c.nombre}
-                  </option>
-                ))
-              ) : (
-                <option value={0} disabled>
-                  No hay categorías
-                </option>
-              )}
-              {/* mapear categorías reales aquí */}
-            </select>
-          </div>
-
-          {/* Unidad: checks (selección única) */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Unidad
-            </label>
-            <div className="grid grid-cols-3 gap-2 max-h-48 overflow-auto p-2 border rounded-md">
-              {cargandoUnidades ? (
-                <div className="text-sm text-gray-500">Cargando unidades...</div>
-              ) : unidades.length > 0 ? (
-                unidades.map((u) => (
-                  <label key={u.idUnidad} className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      className="form-checkbox h-4 w-4"
-                      checked={unidad === u.idUnidad}
-                      onChange={() =>
-                        setUnidad(unidad === u.idUnidad ? 0 : u.idUnidad)
-                      }
-                    />
-                    <span>{u.nombre}</span>
-                  </label>
-                ))
-              ) : (
-                <div className="text-sm text-gray-500">No hay unidades</div>
-              )}
-            </div>
-            <p className="text-xs text-gray-400 mt-1">Marca la unidad deseada.</p>
-          </div>
-
-
-          <div className="mb-4">
-            <select
-              name="marca"
-              id="marca"
-              value={marca}
-              onChange={(e) => setMarca(Number(e.target.value))}
-              className="w-full border px-3 py-2 rounded-md"
-            >
-              <option value={0}>Selecciona una Marca</option>
-              {cargandoMarcas ? (
-                <option value={0} disabled>
-                  Cargando...
-                </option>
-              ) : marcas.length > 0 ? (
-                marcas.map((m) => (
-                  <option key={m.idMarca} value={m.idMarca}>
-                    {m.nombre}
-                  </option>
-                ))
-              ) : (
-                <option value={0} disabled>
-                  No hay marcas
-                </option>
-              )}
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Codigo de barras
-            </label>
-            <input
-              type="text"
-              placeholder="Codigo de barras"
-              className="w-full border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={codigoBarras}
-              onChange={(e) => setCodigoBarras(e.target.value)}
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700">
-              Selecciona una imagen:
-            </label>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={manejarCambio}
-              className="block text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
-            />
-
-            {imagenUrl && (
-              <img
-                src={imagenUrl}
-                alt="Vista previa"
-                className="mt-3 w-48 h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
-              />
-            )}
-          </div>
-
-          <div className="flex items-center mb-4">
-            <label className="inline-flex items-center cursor-pointer">
-              <span className="mr-3 text-sm text-gray-700">Activo</span>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={status}
-                  onChange={(e) => setStatus(e.target.checked)}
-                />
-                <div className="w-11 h-6 bg-gray-300 peer-checked:bg-green-500 rounded-full transition-colors duration-200"></div>
-                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 peer-checked:translate-x-5"></div>
-              </div>
-            </label>
-          </div>
-
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-green-500 text-white hover:bg-green-600 rounded-md transition-colors flex items-center gap-2"
-            >
-              Guardar
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+    imagenUrl: string;
+    onImageChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
+
+export const ProductosForm: React.FC<ProductosFormProps> = ({
+    values,
+    handleChange,
+    setValues,
+    isEditing,
+    loadingLovs,
+    lovOptions,
+    imagenUrl,
+    onImageChange,
+}) => {
+    return (
+        <div className="flex flex-col lg:flex-row gap-8 min-h-[400px]">
+            {/* Columna Imagen */}
+            <div className="w-full lg:w-1/3 flex flex-col gap-4">
+                <div className={`
+                    aspect-square lg:aspect-auto lg:h-80 border-2 border-dashed rounded-card 
+                    bg-slate-50/50 transition-all flex flex-col items-center justify-center 
+                    overflow-hidden relative group
+                    ${isEditing ? 'border-empresa-primario/30 hover:border-empresa-primario/60 hover:bg-white cursor-pointer' : 'border-slate-200'}
+                `}>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={onImageChange}
+                        disabled={!isEditing}
+                        className={`absolute inset-0 w-full h-full opacity-0 z-10 ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}
+                    />
+                    
+                    {imagenUrl ? (
+                        <img
+                            src={imagenUrl}
+                            alt="Vista previa"
+                            className="w-full h-full object-contain p-4"
+                        />
+                    ) : (
+                        <div className="text-center p-6 flex flex-col items-center gap-3">
+                            <div className={`transition-colors duration-300 ${isEditing ? 'text-empresa-primario/40 group-hover:text-empresa-primario' : 'text-slate-200'}`}>
+                                <IoMdCube size={64} />
+                            </div>
+                            <p className="text-sm font-bold text-slate-400">
+                                {isEditing ? "Subir imagen" : "Sin imagen"}
+                            </p>
+                        </div>
+                    )}
+                </div>
+                
+                <p className="text-[10px] text-center text-slate-400 font-medium uppercase tracking-wider">
+                    Formatos: JPG, PNG, WEBP. Máx 2MB.
+                </p>
+            </div>
+
+            {/* Columna Campos */}
+            <div className="w-full lg:w-2/3 flex flex-col gap-6">
+                <FormGrid cols={5} gap={4}>
+                    <FormCol span={3}>
+                        <SharedInput
+                            label="Nombre del Producto"
+                            id="nombre"
+                            name="nombre"
+                            value={values.nombre || ''}
+                            onChange={handleChange}
+                            isEditing={isEditing}
+                            required
+                            placeholder="Ej. Coca Cola 600ml"
+                        />
+                    </FormCol>
+                    <FormCol span={2}>
+                        <SharedInput
+                            label="Código de Barras"
+                            id="codigoBarras"
+                            name="codigoBarras"
+                            value={values.codigoBarras || ''}
+                            onChange={handleChange}
+                            isEditing={isEditing}
+                            className="font-mono text-sm"
+                            placeholder="0000000000"
+                        />
+                    </FormCol>
+                </FormGrid>
+
+                <SharedTextarea
+                    label="Descripción detalla"
+                    id="descripcion"
+                    name="descripcion"
+                    value={values.descripcion || ''}
+                    onChange={handleChange}
+                    isEditing={isEditing}
+                    rows={4}
+                    placeholder="Escribe características, ingredientes o notas relevantes..."
+                />
+
+                <FormGrid cols={3} gap={4}>
+                    <FormCol>
+                        <SearchableSelect
+                            label="Categoría"
+                            id="idCategoria"
+                            options={lovOptions.categorias}
+                            value={values.idCategoria ?? 0}
+                            onChange={(val) => setValues({ ...values, idCategoria: Number(val) })}
+                            disabled={!isEditing || loadingLovs}
+                            loading={loadingLovs}
+                            placeholder="Seleccionar..."
+                        />
+                    </FormCol>
+                    <FormCol>
+                        <SearchableSelect
+                            label="Marca"
+                            id="idMarca"
+                            options={lovOptions.marcas}
+                            value={values.idMarca ?? 0}
+                            onChange={(val) => setValues({ ...values, idMarca: Number(val) })}
+                            disabled={!isEditing || loadingLovs}
+                            loading={loadingLovs}
+                            placeholder="Seleccionar..."
+                        />
+                    </FormCol>
+                    <FormCol>
+                        <SearchableSelect
+                            label="Unidad"
+                            id="idUnidad"
+                            options={lovOptions.unidades}
+                            value={values.idUnidad ?? 0}
+                            onChange={(val) => setValues({ ...values, idUnidad: Number(val) })}
+                            disabled={!isEditing || loadingLovs}
+                            loading={loadingLovs}
+                            placeholder="Seleccionar..."
+                        />
+                    </FormCol>
+                </FormGrid>
+
+                <div className="mt-auto pt-6 border-t border-slate-100 flex justify-center">
+                    <span className="text-xs text-slate-400 font-medium italic">
+                        {isEditing 
+                            ? "Completa todos los campos obligatorios para guardar." 
+                            : "Modo visualización. Haz clic en Editar para realizar cambios."
+                        }
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+};

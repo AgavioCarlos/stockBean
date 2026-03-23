@@ -1,5 +1,6 @@
 
 import { apiFetch } from "./Api";
+import { Categoria } from "../interfaces/categoria.interface";
 
 export async function Roles(signal?: AbortSignal) {
     return apiFetch("/roles", { signal });
@@ -19,6 +20,12 @@ export async function Sucursales(signal?: AbortSignal) {
 
 export async function Categorias(signal?: AbortSignal) {
     return apiFetch("/categorias", { signal });
+}
+
+export async function CategoriasAsignadas(signal?: AbortSignal): Promise<Categoria[]> {
+    const idEmpresa = localStorage.getItem("id_empresa") || "0";
+    const res = await apiFetch<Categoria[]>(`/empres-categorias/asignacion?idEmpresa=${idEmpresa}`, { signal });
+    return res || [];
 }
 
 export async function Marcas(signal?: AbortSignal) {

@@ -1,13 +1,12 @@
-import { Categoria } from "../interfaces/categoria.interface";
+import { Categoria } from "../../../interfaces/categoria.interface";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import Table from "./Table";
+import Table from "../../../components/Table";
 
 type Props = {
     categorias: Categoria[];
     onRowClick?: (event: import("ag-grid-community").RowClickedEvent<Categoria>) => void;
     onDelete?: (id: number) => void;
 };
-
 
 
 export default function CategoriasTable({

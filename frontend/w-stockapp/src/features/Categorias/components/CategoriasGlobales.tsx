@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import Pagination from "../../../components/Pagination";
 import Tabs from "../../../components/Tabs";
 import { consultarCategorias, crearCategoria, actualizarCategoria } from "../../../services/Categoria";
 import { Categoria } from "../../../interfaces/categoria.interface";
-import CategoriasTable from "../../../components/CategoriasTable";
-import CategoriasDetalle from "../../../components/CategoriasDetalle";
+import CategoriasDetalle from "./CategoriasDetalle";
 import { IoMdList, IoMdAddCircle } from "react-icons/io";
 import { MdDescription } from "react-icons/md";
 import Swal from 'sweetalert2';
+import { DataTable, type Column } from "../../../components/DataTable";
+import { SharedButton, PdfButton, ExcelButton } from "../../../components/SharedButton";
+import StatusFilter from "../../../components/StatusFilter";
+import { StatusBadge } from "../../../components/StatusBadge";
 
 export const CategoriasGlobales: React.FC = () => {
     const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -15,20 +17,16 @@ export const CategoriasGlobales: React.FC = () => {
     const [vista, setVista] = useState("lista");
 
     const [rowDataFiltrada, setRowDataFiltrada] = useState<Categoria[]>([]);
-    const [busqueda, setBusqueda] = useState("");
     const [filtroEstado, setFiltroEstado] = useState(true);
 
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<Categoria | null>(null);
     const [nombre, setNombre] = useState('');
     const [status, setStatus] = useState(true);
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
-
     useEffect(() => {
         consultarCategorias()
             .then((data: Categoria[]) => {
-                setCategorias(data);
+                setCategorias(data || []);
                 setLoading(false);
             })
             .catch((error) => {
@@ -38,22 +36,16 @@ export const CategoriasGlobales: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        let datosFiltrados = categorias;
-        if (busqueda.trim() !== "") {
-            datosFiltrados = datosFiltrados.filter((item) =>
-                item.nombre.toLowerCase().includes(busqueda.toLowerCase())
-            );
-        }
-        datosFiltrados = datosFiltrados.filter((item) => item.status === filtroEstado);
+        let datosFiltrados = categorias || [];
+        datosFiltrados = datosFiltrados.filter((item) => Boolean(item.status) === filtroEstado);
         setRowDataFiltrada(datosFiltrados);
-        setCurrentPage(1);
-    }, [busqueda, filtroEstado, categorias]);
+    }, [filtroEstado, categorias]);
 
-    const handleBuscar = (e: React.ChangeEvent<HTMLInputElement>) => setBusqueda(e.target.value);
-    const handleFiltrarEstado = (valor: string) => setFiltroEstado(valor === "true");
+    const handleFiltrarEstado = (valor: boolean) => {
+        setFiltroEstado(valor);
+    };
 
-    const handleRowClick = (event: any) => {
-        const c = event.data;
+    const handleRowClick = (c: Categoria) => {
         setCategoriaSeleccionada(c);
         setNombre(c.nombre);
         setStatus(c.status);
@@ -77,7 +69,13 @@ export const CategoriasGlobales: React.FC = () => {
             const payload = { nombre: cat.nombre, status: newStatus };
             await actualizarCategoria(id, payload);
             setCategorias((prev) => prev.map((c) => (c.idCategoria === id ? { ...c, status: newStatus } : c)));
-            await Swal.fire({ icon: 'success', title: newStatus ? 'Categoría activada' : 'Categoría desactivada', text: newStatus ? 'La categoría se activó correctamente.' : 'La categoría se desactivó correctamente.', timer: 1500, showConfirmButton: false });
+            await Swal.fire({
+                icon: 'success',
+                title: newStatus ? 'Categoría activada' : 'Categoría desactivada',
+                text: newStatus ? 'La categoría se activó correctamente.' : 'La categoría se desactivó correctamente.',
+                timer: 1500,
+                showConfirmButton: false
+            });
             setVista('lista');
         } catch (error) {
             console.error("Error al cambiar estado:", error);
@@ -110,61 +108,77 @@ export const CategoriasGlobales: React.FC = () => {
         }
     };
 
+    const columnDefs: Column<Categoria>[] = [
+        {
+            key: "idCategoria",
+            label: "ID",
+            sortable: true,
+        },
+        {
+            key: "nombre",
+            label: "Nombre",
+            sortable: true,
+        },
+        {
+            key: "fechaAlta",
+            label: "Fecha",
+            sortable: true,
+        },
+        {
+            key: "status",
+            label: "Estado",
+            sortable: true,
+            valueGetter: (item) => (item.status ? "1" : "0"),
+            render: (_, item) => (
+                <StatusBadge
+                    status={item.status as boolean}
+                    trueText="Activo"
+                    falseText="Inactivo"
+                />
+            ),
+        },
+    ];
+
     const pestañas = [
         {
             key: "lista",
-            label: "Lista Global",
+            label: "Lista",
             icon: <IoMdList />,
             content: (
-                <div className="h-full flex flex-col">
-                    <div className="flex justify-between items-center mb-2 mt-2">
-                        <div className="flex gap-4 items-center">
-                            <input
-                                type="text"
-                                placeholder="Buscar..."
-                                onChange={handleBuscar}
-                                className="border border-gray-300 rounded-lg px-3 py-2 w-60"
-                            />
-                            <select
-                                value={String(filtroEstado)}
-                                onChange={(e) => handleFiltrarEstado(e.target.value)}
-                                className="border border-gray-300 rounded-lg px-3 py-2"
-                            >
-                                <option value="true">Activos</option>
-                                <option value="false">Inactivos</option>
-                            </select>
+                <div className="w-full h-full relative">
+                    {loading && (
+                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/50 backdrop-blur-[2px] rounded-2xl transition-all duration-300">
+                            <div className="w-8 h-8 border-3 border-blue-600/30 border-t-blue-600 rounded-full animate-spin mb-2" aria-hidden="true"></div>
+                            <span className="text-xs font-medium text-slate-500" aria-live="polite">Cargando categorías…</span>
                         </div>
-                        <button
-                            className="px-4 py-2 text-blue-600 text-sm font-medium rounded-md border-2 border-blue-600 bg-white hover:bg-blue-600 hover:text-white transition-colors flex items-center gap-2"
-                            type="button"
-                            onClick={nuevoDesdeDetalle}
-                        >
-                            <IoMdAddCircle size={20} />
-                            <span>Agregar al Catálogo</span>
-                        </button>
-                    </div>
-
-                    <div className="flex-grow">
-                        {loading ? (
-                            <div className="text-center text-gray-500 mt-4">Cargando...</div>
-                        ) : rowDataFiltrada && rowDataFiltrada.length > 0 ? (
-                            <div>
-                                <CategoriasTable
-                                    categorias={rowDataFiltrada.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)}
-                                    onRowClick={handleRowClick}
-                                    onDelete={handleDelete}
+                    )}
+                    <DataTable
+                        data={rowDataFiltrada}
+                        columns={columnDefs}
+                        onRowClick={handleRowClick}
+                        actionContent={
+                            <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                                <StatusFilter
+                                    status={filtroEstado}
+                                    onChange={handleFiltrarEstado}
                                 />
-                                <Pagination
-                                    totalItems={rowDataFiltrada.length}
-                                    itemsPerPage={itemsPerPage}
-                                    currentPage={currentPage}
-                                    onPageChange={setCurrentPage}
+                                <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
+                                <PdfButton onClick={() => { }} />
+                                <ExcelButton onClick={() => { }} />
+                                <SharedButton
+                                    onClick={() => {
+                                        setVista("detalle");
+                                        nuevoDesdeDetalle();
+                                    }}
+                                    variant="primary"
+                                    size="icon"
+                                    title="Nueva Categoría"
+                                    aria-label="Nueva Categoría"
+                                    icon={<IoMdAddCircle size={22} aria-hidden="true" />}
                                 />
                             </div>
-                        ) : (
-                            <div className="text-center text-gray-500 mt-4">No hay datos</div>
-                        )}
-                    </div>
+                        }
+                    />
                 </div>
             )
         },

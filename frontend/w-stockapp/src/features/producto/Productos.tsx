@@ -1,605 +1,292 @@
-import { ChangeEvent, useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import MainLayout from "../../components/Layouts/MainLayout";
-import {
-  consultarProductos,
-  crearProducto,
-  actualizarProducto,
+import { useState, useMemo, type ChangeEvent } from "react";
+import { 
+    consultarProductos, 
+    crearProducto, 
+    actualizarProducto 
 } from "./ProductosService";
-
-import Swal from "sweetalert2";
-import "ag-grid-community/styles/ag-theme-alpine.css";
-import { IoMdAddCircle, IoMdList } from "react-icons/io";
-import { FaHome } from "react-icons/fa";
 import type { Productos } from "./producto.interface";
+
+import { 
+    IoMdAddCircle, 
+    IoMdList, 
+    IoIosSave 
+} from "react-icons/io";
+import { MdDescription } from "react-icons/md";
+
+import { useCRUD } from "../../hooks/useCRUD";
+import { useLOVs } from "../../hooks/useLOVs";
+
 import Tabs from "../../components/Tabs";
 import { DataTable, type Column } from "../../components/DataTable";
-import { SharedButton } from "../../components/SharedButton";
-import { SharedInput } from "../../components/SharedInput";
+import { SharedButton, PdfButton, ExcelButton } from "../../components/SharedButton";
 import { StatusBadge } from "../../components/StatusBadge";
-import { MdDelete, MdEdit, MdDescription } from "react-icons/md";
 import StatusFilter from "../../components/StatusFilter";
-import { PdfButton, ExcelButton } from "../../components/SharedButton";
-import { IoIosSave } from "react-icons/io";
-import Breadcrumb from "../../components/Breadcrumb";
-import { Marca } from "../../interfaces/marca.interface";
-import { useLOVs } from "../../hooks/useLOVs";
-import { SearchableSelect } from "../../components/SearchableSelect";
+import { RefreshButton } from "../../components/RefreshButton";
 
-function Productos() {
-  const navigate = useNavigate();
-  const [productos, setProductos] = useState<Productos[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [nombre, setNombre] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [categoria, setCategoria] = useState<number | null>(null);
-  const [unidad, setUnidad] = useState<number | null>(null);
-  const [marca, setMarca] = useState<number | null>(null);
-  const [codigoBarras, setCodigoBarras] = useState("");
-  const [imagenUrl, setImagenUrl] = useState("");
-  const [status, setStatus] = useState(true);
-  const [vista, setVista] = useState("lista");
-  const { data: lovs, loading: loadingLovs } = useLOVs(["categorias", "marcas", "unidades"]);
-  const categoriasList = useMemo(() => lovs.categorias || [], [lovs.categorias]);
-  const marcasList = useMemo(() => lovs.marcas || [], [lovs.marcas]);
-  const unidadesList = useMemo(() => lovs.unidades || [], [lovs.unidades]);
+import { 
+    PageContainer, 
+    SectionHeader, 
+    LoadingOverlay, 
+    EmptyState 
+} from "../../components/ui";
+import { ProductosForm } from "./components/ProductosForm";
 
-  const categoriaOptions = useMemo(() =>
-    categoriasList.map((c: any) => ({
-      value: c.idCategoria ?? c.id,
-      label: c.nombre
-    })), [categoriasList]);
+/**
+ * Pantalla principal del catálogo de Productos.
+ * Refactorizada para usar useCRUD y componentes UI estandarizados.
+ */
+function ProductosPage() {
+    const [filtroEstado, setFiltroEstado] = useState(true);
+    const [imagenUrlPreview, setImagenUrlPreview] = useState("");
 
-  const marcaOptions = useMemo(() =>
-    marcasList.map((m: any) => ({
-      value: m.idMarca ?? m.id,
-      label: m.nombre
-    })), [marcasList]);
+    // 1. Cargar Catálogos (LOVs) con Caché
+    const { data: lovs, loading: loadingLovs } = useLOVs([
+        "categoriasAsignadas", 
+        "marcas", 
+        "unidades"
+    ]);
 
-  const unidadOptions = useMemo(() =>
-    unidadesList.map((u: any) => ({
-      value: u.idUnidad ?? u.id,
-      label: u.nombre
-    })), [unidadesList]);
+    // 2. Mapear opciones para los selectores
+    interface LovOption {
+        value: string | number;
+        label: string;
+    }
 
-  const [productoSeleccionado, setProductoSeleccionado] =
-    useState<Productos | null>(null);
+    const lovOptions = useMemo(() => ({
+        categorias: (lovs.categoriasAsignadas || []).map((c: any): LovOption => ({
+            value: c.idCategoria ?? c.id,
+            label: c.nombre
+        })),
+        marcas: (lovs.marcas || []).map((m: any): LovOption => ({
+            value: m.idMarca ?? m.id,
+            label: m.nombre
+        })),
+        unidades: (lovs.unidades || []).map((u: any): LovOption => ({
+            value: u.idUnidad ?? u.id,
+            label: u.nombre
+        }))
+    }), [lovs]);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
-  // ... (rest of state)
-  // const [categoriasList, setCategoriasList] = useState<Categoria[]>([]);
-  // const [marcasList, setMarcasList] = useState<Marca[]>([]);
-  // const [unidadesList, setUnidadesList] = useState<any[]>([]);
+    // 3. Sistema CRUD Centralizado
+    // Los servicios usan un payload extendido (idCategoria/idMarca/idUnidad planos)
+    // que no está en la interfaz Productos, por eso se castean como any.
+    const crud = useCRUD<Productos>({
+        fetchData: consultarProductos,
+        createData: crearProducto as any,
+        updateData: actualizarProducto as any,
+        deleteData: (id, _, status) => actualizarProducto(id, { status } as any),
+        getId: (p) => p.id_producto,
+        initialFormValues: {
+            nombre: "",
+            descripcion: "",
+            idCategoria: 0,
+            idUnidad: 0,
+            idMarca: 0,
+            codigoBarras: "",
+            imagenUrl: "",
+            status: true
+        }
+    });
 
-  const [rowDataFiltrada, setRowDataFiltrada] = useState(productos);
-  const [filtroEstado, setFiltroEstado] = useState(true);
+    const {
+        dataList,
+        loading,
+        activeTab,
+        setActiveTab,
+        selectedItem,
+        isEditing,
+        setIsEditing,
+        values,
+        setValues,
+        handleChange,
+        refreshData,
+        handleDeleteOrRestore
+    } = crud;
 
-  // ... (handlers: handleRowClick, manejarEnvio, manejarCambio, useEffects, handleBuscar, handleFiltrarEstado, nuevoDesdeDetalle, handleDelete)
-
-  const handleRowClick = (event: any) => {
-    const p = event.data;
-    setProductoSeleccionado(p);
-    setVista("detalle");
-    setNombre(p.nombre ?? "");
-    setDescripcion(p.descripcion ?? "");
-    setCategoria(p.categoria?.idCategoria || p.categoria || 0);
-    setUnidad(p.unidad?.idUnidad || p.unidad || 0);
-    setMarca(p.marca?.idMarca || p.marca || 0);
-    setCodigoBarras(p.codigoBarras ?? "");
-    setImagenUrl(p.imagenUrl ?? "");
-    setStatus(typeof p.status === "boolean" ? p.status : true);
-  };
-
-  const manejarEnvio = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const payload = {
-      nombre,
-      descripcion,
-      idCategoria: categoria ?? null,
-      idUnidad: unidad ?? null,
-      idMarca: marca ?? null,
-      imagenUrl: imagenUrl,
-      codigoBarras,
-      status,
+    // 4. Handlers de Imagen
+    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setImagenUrlPreview(url);
+            setValues({ ...values, imagenUrl: url });
+        }
     };
 
-    try {
-      if (productoSeleccionado) {
-        const actualizado = await actualizarProducto(
-          productoSeleccionado.id_producto,
-          payload
-        );
-        // actualizar la lista local con la respuesta del servidor si viene completa
-        setProductos((prev) =>
-          prev.map((p) =>
-            p.id_producto === productoSeleccionado.id_producto
-              ? { ...p, ...actualizado }
-              : p
-          )
-        );
-        await Swal.fire({
-          icon: "success",
-          title: "Producto actualizado",
-          text: "El producto se actualizó correctamente.",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        setVista("lista");
-      } else {
-        const nuevoProducto = await crearProducto(payload);
-        setProductos((prev) => [...prev, nuevoProducto]);
-        setNombre("");
-        setDescripcion("");
-        setCategoria(null);
-        setUnidad(null);
-        setMarca(null);
-        setCodigoBarras("");
-        setImagenUrl("");
-        setStatus(true);
-        await Swal.fire({
-          icon: "success",
-          title: "Producto creado",
-          text: "El producto se creó correctamente.",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      }
-    } catch (error) {
-      console.error("❌ Error al guardar Producto:", error);
-      alert("Error al guardar");
-    }
-  };
-
-  const manejarCambio = (e: ChangeEvent<HTMLInputElement>) => {
-    const archivo = e.target.files?.[0];
-    if (archivo) {
-      setImagenUrl(URL.createObjectURL(archivo));
-    }
-  };
-
-  useEffect(() => {
-    consultarProductos()
-      .then((productosData) => {
-        setProductos(productosData);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log("Error al cargar datos iniciales", error);
-        setLoading(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    let datosFiltrados = productos;
-
-    datosFiltrados = datosFiltrados.filter(
-      (item) => item.status === filtroEstado
+    // 5. Filtrado local de la tabla
+    const rowDataFiltrada = useMemo(() => 
+        dataList.filter(p => (p.status === filtroEstado)),
+        [dataList, filtroEstado]
     );
 
-    setRowDataFiltrada(datosFiltrados);
-    setCurrentPage(1);
-  }, [filtroEstado, productos]);
+    const columnDefs = useMemo<Column<Productos>[]>(() => [
+        { key: "nombre", label: "Nombre", sortable: true },
+        { key: "descripcion", label: "Descripción" },
+        {
+            key: "categoria",
+            label: "Categoría",
+            render: (_, item) => {
+                const idCat = item.categoria?.idCategoria ?? item.idCategoria;
+                const cat = lovOptions.categorias.find((c: { value: string | number }) => c.value === idCat);
+                return <span className="text-slate-600 italic font-medium">{cat?.label || "Sin Categoría"}</span>;
+            }
+        },
+        {
+            key: "marca",
+            label: "Marca",
+            render: (_, item) => {
+                const idMarca = item.marca?.idMarca ?? item.idMarca;
+                const m = lovOptions.marcas.find((mar: { value: string | number }) => mar.value === idMarca);
+                return <span className="bg-slate-100 px-2 py-0.5 rounded text-xs text-slate-500">{m?.label || "—"}</span>;
+            }
+        },
+        {
+            key: "status",
+            label: "Estado",
+            sortable: true,
+            render: (_, item) => (
+                <StatusBadge status={item.status as boolean} />
+            )
+        }
+    ], [lovOptions]);
 
-  const handleFiltrarEstado = (valor: boolean) => {
-    setFiltroEstado(valor);
-  };
-
-  const nuevoDesdeDetalle = () => {
-    setProductoSeleccionado(null);
-    setNombre("");
-    setDescripcion("");
-    setCategoria(null);
-    setUnidad(null);
-    setMarca(null);
-    setCodigoBarras("");
-    setImagenUrl("");
-    setStatus(true);
-    setVista("detalle");
-  };
-
-  const handleDelete = async (id: number, newStatus: boolean = false) => {
-    try {
-      const producto = productos.find((p) => p.id_producto === id);
-      if (!producto) {
-        await Swal.fire({
-          icon: "error",
-          title: "No encontrado",
-          text: "Producto no encontrado",
-        });
-        return;
-      }
-
-      const payload = {
-        nombre: producto.nombre ?? "",
-        descripcion: producto.descripcion ?? "",
-        idCategoria: producto.categoria?.idCategoria ?? (typeof producto.categoria === "number" ? producto.categoria : null),
-        idUnidad: producto.unidad?.idUnidad ?? (typeof producto.unidad === "number" ? producto.unidad : null),
-        idMarca: producto.marca?.idMarca ?? (typeof producto.marca === "number" ? producto.marca : null),
-        imagenUrl: producto.imagenUrl ?? "",
-        codigoBarras: producto.codigoBarras ?? "",
-        status: newStatus,
-      };
-
-      await actualizarProducto(id, payload as any);
-      setProductos((prev) =>
-        prev.map((p) =>
-          p.id_producto === id ? { ...p, status: newStatus } : p
-        )
-      );
-      await Swal.fire({
-        icon: "success",
-        title: newStatus ? "Producto activado" : "Producto desactivado",
-        text: newStatus
-          ? "El producto se activó correctamente."
-          : "El producto se desactivó correctamente.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      setVista("lista");
-    } catch (error) {
-      console.error("Error al cambiar estado del producto:", error);
-      await Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Error al cambiar el estado del producto.",
-      });
-    }
-  };
-
-  // Column definitions for DataTable
-  const columnDefs: Column<Productos>[] = [
-    {
-      key: "nombre",
-      label: "Nombre",
-      sortable: true,
-    },
-    {
-      key: "descripcion",
-      label: "Descripción",
-    },
-    {
-      key: "categoria",
-      label: "Categoría",
-      valueGetter: (item: any) => {
-        if (!item) return "";
-        if (item.categoria?.nombre) return item.categoria.nombre;
-        const id = typeof item.categoria === "number" ? item.categoria : item.idCategoria;
-        if (!id) return "";
-        const cat = categoriasList.find((c: any) => c.idCategoria === id || c.id === id);
-        return cat ? cat.nombre : "";
-      },
-      render: (_, item: any) => {
-        if (!item) return "";
-        if (item.categoria?.nombre) return item.categoria.nombre;
-        const id = typeof item.categoria === "number" ? item.categoria : item.idCategoria;
-        if (!id) return "";
-        const cat = categoriasList.find((c: any) => c.idCategoria === id || c.id === id);
-        return cat ? cat.nombre : "";
-      },
-    },
-    {
-      key: "marca",
-      label: "Marca",
-      valueGetter: (item: any) => {
-        if (!item) return "";
-        if (item.marca?.nombre) return item.marca.nombre;
-        const id = typeof item.marca === "number" ? item.marca : item.idMarca;
-        if (!id) return "";
-        const marcaItem = marcasList.find((m: any) => m.idMarca === id || m.id === id);
-        return marcaItem ? marcaItem.nombre : "";
-      },
-      render: (_, item: any) => {
-        if (!item) return "";
-        if (item.marca?.nombre) return item.marca.nombre;
-        const id = typeof item.marca === "number" ? item.marca : item.idMarca;
-        if (!id) return "";
-        const marcaItem = marcasList.find((m: any) => m.idMarca === id || m.id === id);
-        return marcaItem ? marcaItem.nombre : "";
-      },
-    },
-    {
-      key: "unidad",
-      label: "Unidad",
-      valueGetter: (item: any) => {
-        if (!item) return "";
-        if (item.unidad?.nombre) return item.unidad.nombre;
-        const id = typeof item.unidad === "number" ? item.unidad : item.idUnidad;
-        if (!id) return "";
-        const u = unidadesList.find((u: any) => u.idUnidad === id || u.id === id);
-        return u ? u.nombre : "";
-      },
-      render: (_, item: any) => {
-        if (!item) return "";
-        if (item.unidad?.nombre) return item.unidad.nombre;
-        const id = typeof item.unidad === "number" ? item.unidad : item.idUnidad;
-        if (!id) return "";
-        const u = unidadesList.find((u: any) => u.idUnidad === id || u.id === id);
-        return u ? u.nombre : "";
-      },
-    },
-    {
-      key: "status",
-      label: "Estado",
-      sortable: true,
-      valueGetter: (item) => item.status ? "1" : "0",
-      render: (_, item) => (
-        <StatusBadge
-          status={item.status as boolean}
-          trueText="Activo"
-          falseText="Inactivo"
-        />
-      )
-    }
-  ];
-
-  return (
-    <MainLayout>
-      <div>
-        <Breadcrumb
-          items={[
-            {
-              label: "",
-              icon: <FaHome />,
-              onClick: () => navigate("/dashboard"),
-            },
-            { label: "Catálogos", onClick: () => navigate("/catalogos") },
-            { label: "Productos" },
-          ]}
-          onBack={() => navigate(-1)}
-        />
-        <Tabs
-          activeTab={vista}
-          onChange={setVista}
-          tabs={[
-            {
-              key: "lista",
-              label: "Lista",
-              icon: <IoMdList />,
-              content: (
-                <div className="w-full h-full relative">
-                  {loading && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/50 backdrop-blur-[2px] rounded-2xl transition-all duration-300">
-                      <div className="w-8 h-8 border-3 border-blue-600/30 border-t-blue-600 rounded-full animate-spin mb-2" aria-hidden="true"></div>
-                      <span className="text-xs font-medium text-slate-500" aria-live="polite">Cargando productos…</span>
-                    </div>
-                  )}
-                  <DataTable
-                    data={rowDataFiltrada}
-                    columns={columnDefs}
-                    onRowClick={handleRowClick}
-                    actionContent={
-                      <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                        <StatusFilter
-                          status={filtroEstado}
-                          onChange={handleFiltrarEstado}
-                        />
-                        <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
-                        <PdfButton onClick={() => { }} />
-                        <ExcelButton onClick={() => { }} />
-                        <SharedButton
-                          onClick={() => {
-                            setVista("detalle");
-                            nuevoDesdeDetalle();
-                          }}
-                          variant="primary"
-                          size="icon"
-                          title="Nuevo Producto"
-                          aria-label="Nuevo Producto"
-                          icon={<IoMdAddCircle size={22} aria-hidden="true" />}
-                        />
-                      </div>
-                    }
-                  />
-                </div>
-              ),
-            },
-            {
-              key: "detalle",
-              label: "Detalle",
-              icon: <MdDescription />,
-              content: (
-                <div className="w-full h-full flex flex-col">
-                  <form
-                    onSubmit={manejarEnvio}
-                    className="w-full h-full flex flex-col"
-                  >
-                    <div className="flex items-center justify-between gap-4 px-6 py-3 border-b border-gray-100 shrink-0">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          {productoSeleccionado
-                            ? "Detalle del Producto"
-                            : "Nuevo Producto"}
-                        </h3>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        {productoSeleccionado ? (
-                          <>
-                            <SharedButton
-                              type="button"
-                              variant={productoSeleccionado.status ? "danger" : "success"}
-                              size="icon"
-                              onClick={() => handleDelete(productoSeleccionado.id_producto, !productoSeleccionado.status)}
-                              title={productoSeleccionado.status ? "Desactivar Producto" : "Reactivar Producto"}
-                              aria-label={productoSeleccionado.status ? "Desactivar Producto" : "Reactivar Producto"}
-                              icon={<MdDelete size={22} aria-hidden="true" />}
-                            />
-                            <SharedButton
-                              type="submit"
-                              variant="success"
-                              size="icon"
-                              title="Guardar Producto"
-                              aria-label="Guardar Producto"
-                              icon={<IoIosSave size={22} aria-hidden="true" />}
-                            />
-                            <SharedButton
-                              type="button"
-                              variant="secondary"
-                              size="icon"
-                              onClick={() => nuevoDesdeDetalle()}
-                              title="Nuevo"
-                              aria-label="Nuevo"
-                              icon={<IoMdAddCircle size={24} aria-hidden="true" />}
-                            />
-                          </>
-                        ) : (
-                          <SharedButton
-                            type="submit"
-                            variant="success"
-                            size="icon"
-                            title="Guardar Producto"
-                            aria-label="Guardar Producto"
-                            icon={<IoIosSave size={22} aria-hidden="true" />}
-                          />
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex-1 p-6 pb-40 overflow-visible">
-                      <div className="flex gap-8 h-full">
-                        <div className="w-1/3 flex flex-col gap-4">
-                          <div
-                            className={`flex-[2] border-2 border-dashed rounded-xl bg-gray-50 transition-all group relative flex flex-col items-center justify-center overflow-hidden h-64 ${productoSeleccionado
-                              ? "border-gray-300"
-                              : "border-gray-200"
-                              }`}
-                          >
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={manejarCambio}
-                              className={`absolute inset-0 w-full h-full opacity-0 z-10 ${productoSeleccionado
-                                ? "cursor-pointer"
-                                : "cursor-default"
-                                }`}
-                            />
-                            {imagenUrl ? (
-                              <img
-                                src={imagenUrl}
-                                alt="preview"
-                                className="w-full h-full object-contain p-2"
-                              />
-                            ) : (
-                              <div className="text-center p-4">
-                                <div className="mx-auto w-12 h-12 text-gray-400 mb-2">
-                                  <svg
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+    return (
+        <PageContainer
+            breadcrumbs={[
+                { label: "Catálogos", onClick: () => {} },
+                { label: "Productos" }
+            ]}
+        >
+            <div className="bg-white rounded-card shadow-card border border-empresa overflow-hidden flex flex-col h-[calc(100vh-180px)]">
+                <Tabs
+                    activeTab={activeTab}
+                    onChange={setActiveTab}
+                    tabs={[
+                        {
+                            key: "lista",
+                            label: "Lista de Productos",
+                            icon: <IoMdList />,
+                            content: (
+                                <div className="p-6 pt-2 flex flex-col h-full relative">
+                                    <SectionHeader 
+                                        title="Inventario de Productos"
+                                        subtitle={`${rowDataFiltrada.length} productos registrados bajo este filtro.`}
+                                        className="border-none mb-4"
+                                        actions={
+                                            <div className="flex items-center gap-2">
+                                                <StatusFilter status={filtroEstado} onChange={setFiltroEstado} />
+                                                <div className="h-6 w-px bg-slate-200 mx-1"></div>
+                                                <RefreshButton onRefresh={refreshData} showText={false} />
+                                                <PdfButton onClick={() => {}} />
+                                                <ExcelButton onClick={() => {}} />
+                                                <SharedButton
+                                                    onClick={crud.newFromDetail}
+                                                    variant="primary"
+                                                    icon={<IoMdAddCircle size={20} />}
+                                                >
+                                                    Agregar Producto
+                                                </SharedButton>
+                                            </div>
+                                        }
                                     />
-                                  </svg>
+
+                                    <div className="flex-1 overflow-hidden relative">
+                                        {loading && <LoadingOverlay message="Cargando productos..." />}
+                                        
+                                        {!loading && rowDataFiltrada.length === 0 ? (
+                                            <EmptyState 
+                                                icon={<IoMdAddCircle size={32} />}
+                                                title="No se encontraron productos"
+                                                description={filtroEstado ? "No hay productos activos registrados todavía." : "No hay productos inactivos."}
+                                                action={filtroEstado ? <SharedButton variant="primary" onClick={crud.newFromDetail}>Agregar el primero</SharedButton> : undefined}
+                                            />
+                                        ) : (
+                                            <DataTable
+                                                data={rowDataFiltrada}
+                                                columns={columnDefs}
+                                                onRowClick={(p) => {
+                                                    setImagenUrlPreview(p.imagenUrl || "");
+                                                    crud.handleRowClick(p, (item) => ({
+                                                        ...item,
+                                                        idCategoria: item.categoria?.idCategoria ?? item.idCategoria,
+                                                        idUnidad: item.unidad?.idUnidad ?? item.idUnidad,
+                                                        idMarca: item.marca?.idMarca ?? item.idMarca
+                                                    }));
+                                                }}
+                                            />
+                                        )}
+                                    </div>
                                 </div>
-                                <p className="text-sm text-gray-500 font-medium">
-                                  {productoSeleccionado
-                                    ? "Subir Imagen Principal"
-                                    : "Sin imagen"}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                            )
+                        },
+                        {
+                            key: "detalle",
+                            label: selectedItem ? "Ficha Técnica" : "Nuevo Producto",
+                            icon: <MdDescription />,
+                            content: (
+                                <form 
+                                    className="p-6 pt-2 flex flex-col h-full bg-white relative"
+                                    onSubmit={(e) => crud.handleSubmit(e, (vals) => vals)}
+                                >
+                                    <SectionHeader 
+                                        title={selectedItem ? `Producto: ${selectedItem.nombre}` : "Registrar Producto"}
+                                        subtitle="Gestiona la información base del producto."
+                                        className="border-none mb-6"
+                                        actions={
+                                            <div className="flex items-center gap-3">
+                                                {selectedItem && (
+                                                    <>
+                                                        {!isEditing && (
+                                                            <SharedButton 
+                                                                variant="secondary" 
+                                                                onClick={() => setIsEditing(true)}
+                                                            >
+                                                                Editar
+                                                            </SharedButton>
+                                                        )}
+                                                        <SharedButton 
+                                                            variant={selectedItem.status ? "danger" : "success"}
+                                                            onClick={() => handleDeleteOrRestore(selectedItem)}
+                                                            title={selectedItem.status ? "Desactivar" : "Reactivar"}
+                                                        >
+                                                            {selectedItem.status ? "Desactivar" : "Reactivar"}
+                                                        </SharedButton>
+                                                    </>
+                                                )}
+                                                
+                                                {isEditing && (
+                                                    <SharedButton 
+                                                        type="submit" 
+                                                        variant="success" 
+                                                        icon={<IoIosSave size={20} />}
+                                                    >
+                                                        Guardar Cambios
+                                                    </SharedButton>
+                                                )}
+                                            </div>
+                                        }
+                                    />
 
-                        <div className="w-2/3 flex flex-col gap-5">
-                          <div className="grid grid-cols-5 gap-4">
-                            <div className="col-span-3">
-                              <SharedInput
-                                label="Nombre"
-                                id="nombre"
-                                name="nombre"
-                                value={nombre}
-                                onChange={(e) => setNombre(e.target.value)}
-                                isEditing={true}
-                                required
-                              />
-                            </div>
-                            <div className="col-span-2">
-                              <SharedInput
-                                label="Código de Barras"
-                                id="codigoBarras"
-                                name="codigoBarras"
-                                value={codigoBarras}
-                                onChange={(e) => setCodigoBarras(e.target.value)}
-                                isEditing={true}
-                                className="font-mono text-sm"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex-1 flex flex-col group mt-2">
-                            <label className="text-[11px] font-black uppercase tracking-widest transition-colors duration-200 text-slate-600 group-focus-within:text-blue-600 mb-1">
-                              Descripción
-                            </label>
-                            <textarea
-                              value={descripcion}
-                              onChange={(e) => setDescripcion(e.target.value)}
-                              className="w-full flex-1 px-4 py-3 rounded-xl transition-all duration-300 font-medium text-slate-800 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 bg-white border-slate-200 shadow-sm hover:border-slate-300 resize-none"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-4">
-                            <div className="z-[30]">
-                              <SearchableSelect
-                                label="Categoría"
-                                id="categoria"
-                                options={categoriaOptions}
-                                value={categoria ?? 0}
-                                onChange={(val) => setCategoria(Number(val))}
-                                disabled={loadingLovs}
-                                loading={loadingLovs}
-                                placeholder="Seleccionar categoría..."
-                              />
-                            </div>
-                            <div className="z-[20]">
-                              <SearchableSelect
-                                label="Marca"
-                                id="marca"
-                                options={marcaOptions}
-                                value={marca ?? 0}
-                                onChange={(val) => setMarca(Number(val))}
-                                disabled={loadingLovs}
-                                loading={loadingLovs}
-                                placeholder="Seleccionar marca..."
-                              />
-                            </div>
-                            <div className="z-[10]">
-                              <SearchableSelect
-                                label="Unidad"
-                                id="unidad"
-                                options={unidadOptions}
-                                value={unidad ?? 0}
-                                onChange={(val) => setUnidad(Number(val))}
-                                disabled={loadingLovs}
-                                loading={loadingLovs}
-                                placeholder="Seleccionar unidad..."
-                              />
-                            </div>
-                          </div>
-
-                          <div className="mt-2 text-center text-xs text-gray-400">
-                            {productoSeleccionado
-                              ? "Edita los campos y guarda los cambios."
-                              : "Crear nuevo producto."}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              ),
-            },
-          ]}
-        />
-      </div>
-    </MainLayout>
-  );
+                                    <div className="flex-1 overflow-auto">
+                                        <ProductosForm 
+                                            values={values}
+                                            handleChange={handleChange}
+                                            setValues={setValues}
+                                            isEditing={isEditing}
+                                            loadingLovs={loadingLovs}
+                                            lovOptions={lovOptions}
+                                            imagenUrl={imagenUrlPreview}
+                                            onImageChange={handleImageChange}
+                                        />
+                                    </div>
+                                </form>
+                            )
+                        }
+                    ]}
+                />
+            </div>
+        </PageContainer>
+    );
 }
 
-export default Productos;
+export default ProductosPage;
