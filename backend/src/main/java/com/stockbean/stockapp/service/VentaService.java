@@ -17,18 +17,14 @@ import com.stockbean.stockapp.model.tablas.DetalleVenta;
 import com.stockbean.stockapp.model.tablas.HistorialPrecios;
 import com.stockbean.stockapp.model.tablas.Inventario;
 import com.stockbean.stockapp.model.tablas.Producto;
-import com.stockbean.stockapp.model.tablas.Sucursal;
 import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.model.tablas.Venta;
 import com.stockbean.stockapp.repository.DetalleVentaRepository;
-import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
 import com.stockbean.stockapp.repository.HistorialPreciosRepository;
 import com.stockbean.stockapp.repository.InventarioRepository;
 import com.stockbean.stockapp.repository.MetodoPagoRepository;
 import com.stockbean.stockapp.repository.ProductoRepository;
-import com.stockbean.stockapp.repository.SucursalRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
-import com.stockbean.stockapp.repository.UsuarioSucursalRepository;
 import com.stockbean.stockapp.repository.VentaRepository;
 import com.stockbean.stockapp.repository.TurnoCajaRepository;
 import com.stockbean.stockapp.model.tablas.TurnoCaja;
@@ -63,13 +59,7 @@ public class VentaService {
     private HistorialPreciosRepository historialPreciosRepository;
 
     @Autowired
-    private SucursalRepository sucursalRepository;
-
-    @Autowired
-    private UsuarioSucursalRepository usuarioSucursalRepository;
-
-    @Autowired
-    private EmpresaUsuarioRepository empresaUsuarioRepository;
+    private SucursalAccessService sucursalAccessService;
 
     // ─────────────────────────────────────────────────────────────
     // BUSCAR PRODUCTOS PARA EL PUNTO DE VENTA
@@ -293,45 +283,6 @@ public class VentaService {
     // ─────────────────────────────────────────────────────────────
 
     private void validarAccesoSucursal(Usuario usuario, @NonNull Integer idSucursal) {
-        String rol = usuario.getNombre_rol();
-
-        if (rol == null) {
-            throw new RuntimeException("El usuario no tiene un rol asignado.");
-        }
-
-        // SISTEM: Acceso total
-        if ("SISTEM".equalsIgnoreCase(rol)) {
-            return;
-        }
-
-        Sucursal sucursalTarget = sucursalRepository.findById(idSucursal)
-                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada con ID: " + idSucursal));
-
-        // ADMIN: Acceso total a su Empresa
-        if ("ADMIN".equalsIgnoreCase(rol)) {
-            List<Integer> companyIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(usuario.getId_usuario());
-            if (companyIds.isEmpty()) {
-                throw new RuntimeException("El usuario administrador no tiene empresa asignada.");
-            }
-            Integer idEmpresa = companyIds.get(0);
-            List<Sucursal> companySucursales = sucursalRepository.findByEmpresaId(idEmpresa);
-            boolean belongs = companySucursales.stream()
-                    .anyMatch(s -> s.getId_sucursal().equals(idSucursal));
-            if (!belongs) {
-                throw new RuntimeException("Acceso denegado: La sucursal no pertenece a su empresa.");
-            }
-            return;
-        }
-
-        // GERENTE / CAJERO: Solo su Sucursal asignada
-        if ("GERENTE".equalsIgnoreCase(rol) || "CAJERO".equalsIgnoreCase(rol)) {
-            boolean access = usuarioSucursalRepository.existsByUsuarioAndSucursal(usuario, sucursalTarget);
-            if (!access) {
-                throw new RuntimeException("Acceso denegado: No tiene permisos sobre esta sucursal.");
-            }
-            return;
-        }
-
-        throw new RuntimeException("Rol de usuario no autorizado (" + rol + ")");
+        sucursalAccessService.validarAcceso(usuario, idSucursal);
     }
 }

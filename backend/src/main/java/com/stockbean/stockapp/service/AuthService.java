@@ -187,15 +187,14 @@ public class AuthService {
                 response.put("token", newToken);
                 response.put("mensaje", "Token refrescado correctamente");
 
-                System.out.println("✅ Token refrescado para usuario: " + username + ", id_rol: " + user.getId_rol());
+                log.info("Token refrescado para usuario: {}, id_rol: {}", username, user.getId_rol());
                 return new LoginResult(true, 200, response);
             } else {
-                System.out.println("⚠️ Token inválido o expirado para usuario: " + username);
+                log.warn("Token inválido o expirado para usuario: {}", username);
                 return errorResult(401, "Token inválido o expirado");
             }
         } catch (Exception e) {
-            System.err.println("❌ Error al procesar el token: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error al procesar el token: {}", e.getMessage(), e);
             return errorResult(401, "Error al procesar el token: " + e.getMessage());
         }
     }

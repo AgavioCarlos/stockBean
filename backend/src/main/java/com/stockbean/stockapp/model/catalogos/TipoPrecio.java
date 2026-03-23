@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Entity
 @Data
 @Table(name = "cat_tipo_precio")
@@ -24,10 +23,10 @@ public class TipoPrecio {
 
     @Column(name = "nombre", nullable = false)
     private String nombre;
-    
+
     @Column(name = "descripcion")
     private String descripcion;
-    
+
     @Column(name = "status")
-    private String status;
+    private Boolean status;
 }

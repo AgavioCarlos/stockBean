@@ -32,23 +32,26 @@ import lombok.NonNull;
 @Service
 public class ReporteVentasService {
 
-    @Autowired
-    private VentaRepository ventaRepository;
+    private final VentaRepository ventaRepository;
+    private final DetalleVentaRepository detalleVentaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final SucursalRepository sucursalRepository;
+    private final EmpresaUsuarioRepository empresaUsuarioRepository;
+    private final UsuarioSucursalRepository usuarioSucursalRepository;
 
-    @Autowired
-    private DetalleVentaRepository detalleVentaRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private SucursalRepository sucursalRepository;
-
-    @Autowired
-    private EmpresaUsuarioRepository empresaUsuarioRepository;
-
-    @Autowired
-    private UsuarioSucursalRepository usuarioSucursalRepository;
+    public ReporteVentasService(VentaRepository ventaRepository,
+            DetalleVentaRepository detalleVentaRepository,
+            UsuarioRepository usuarioRepository,
+            SucursalRepository sucursalRepository,
+            EmpresaUsuarioRepository empresaUsuarioRepository,
+            UsuarioSucursalRepository usuarioSucursalRepository) {
+        this.ventaRepository = ventaRepository;
+        this.detalleVentaRepository = detalleVentaRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.sucursalRepository = sucursalRepository;
+        this.empresaUsuarioRepository = empresaUsuarioRepository;
+        this.usuarioSucursalRepository = usuarioSucursalRepository;
+    }
 
     /**
      * Obtiene el reporte de ventas según el rol del usuario:
@@ -158,10 +161,10 @@ public class ReporteVentasService {
         BigDecimal montoHoy = BigDecimal
                 .valueOf(ventasHoy.stream().mapToLong(v -> v.getTotal() != null ? v.getTotal() : 0).sum());
         long conteoHoy = ventasHoy.size();
-        long unidadesHoy = ventasHoy.stream().mapToLong(v -> {
-            Long c = ventaRepository.sumCantidadByVentaId(v.getIdVenta());
-            return c != null ? c : 0;
-        }).sum();
+
+        List<Integer> idsHoy = ventasHoy.stream().map(Venta::getIdVenta).collect(Collectors.toList());
+        long unidadesHoy = idsHoy.isEmpty() ? 0 : ventaRepository.sumTotalCantidadBatch(idsHoy);
+
         BigDecimal promedioHoy = conteoHoy > 0 ? montoHoy.divide(BigDecimal.valueOf(conteoHoy), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
@@ -169,10 +172,10 @@ public class ReporteVentasService {
         BigDecimal montoAyer = BigDecimal
                 .valueOf(ventasAyer.stream().mapToLong(v -> v.getTotal() != null ? v.getTotal() : 0).sum());
         long conteoAyer = ventasAyer.size();
-        long unidadesAyer = ventasAyer.stream().mapToLong(v -> {
-            Long c = ventaRepository.sumCantidadByVentaId(v.getIdVenta());
-            return c != null ? c : 0;
-        }).sum();
+
+        List<Integer> idsAyer = ventasAyer.stream().map(Venta::getIdVenta).collect(Collectors.toList());
+        long unidadesAyer = idsAyer.isEmpty() ? 0 : ventaRepository.sumTotalCantidadBatch(idsAyer);
+
         BigDecimal promedioAyer = conteoAyer > 0
                 ? montoAyer.divide(BigDecimal.valueOf(conteoAyer), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
@@ -237,8 +240,27 @@ public class ReporteVentasService {
     private List<VentaReporteDTO> convertToReportDTOs(
             List<Venta> ventas, Map<Integer, String> sucursalNames) {
 
-        // Pre-cache users for performance
-        Map<Integer, Usuario> userCache = new java.util.HashMap<>();
+        if (ventas.isEmpty())
+            return Collections.emptyList();
+
+        // --- PRE-FETCH Batch Stats (Solución N+1) ---
+        List<Integer> ventaIds = ventas.stream().map(Venta::getIdVenta).collect(Collectors.toList());
+        List<Integer> userIds = ventas.stream()
+                .map(Venta::getIdUsuario)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<Integer, Long> countsMap = ventaRepository.countDetallesBatch(ventaIds).stream()
+                .collect(Collectors.toMap(row -> (Integer) row[0], row -> (Long) row[1], (a, b) -> a));
+
+        Map<Integer, Long> sumsMap = ventaRepository.sumCantidadBatch(ventaIds).stream()
+                .collect(Collectors.toMap(row -> (Integer) row[0], row -> (Long) row[1], (a, b) -> a));
+
+        Map<Integer, Usuario> userCache = userIds.isEmpty() ? Collections.emptyMap()
+                : usuarioRepository.findAllById(userIds).stream()
+                        .collect(Collectors.toMap(Usuario::getId_usuario, u -> u));
+        // ---------------------------------------------
 
         List<VentaReporteDTO> reportes = new ArrayList<>();
 
@@ -251,10 +273,9 @@ public class ReporteVentasService {
             dto.setMetodoPago(v.getMetodoPago() != null ? v.getMetodoPago().getNombre() : "N/A");
             dto.setTotalVenta(BigDecimal.valueOf(v.getTotal() != null ? v.getTotal() : 0));
 
-            // Nombre del cajero
+            // Nombre del cajero (desde caché pre-cargado)
             if (v.getIdUsuario() != null) {
-                Usuario usr = userCache.computeIfAbsent(v.getIdUsuario(),
-                        id -> usuarioRepository.findById(Objects.requireNonNull(id)).orElse(null));
+                Usuario usr = userCache.get(v.getIdUsuario());
                 if (usr != null && usr.getPersona() != null) {
                     String nombre = usr.getPersona().getNombre();
                     String apPat = usr.getPersona().getApellido_paterno();
@@ -267,13 +288,9 @@ public class ReporteVentasService {
                 dto.setCajero("N/A");
             }
 
-            // Cantidad de items en la venta
-            Long itemCount = ventaRepository.countDetallesByVentaId(v.getIdVenta());
-            dto.setCantidadItems(itemCount != null ? itemCount.intValue() : 0);
-
-            // Total de productos vendidos
-            Long totalProductos = ventaRepository.sumCantidadByVentaId(v.getIdVenta());
-            dto.setTotalProductos(totalProductos != null ? totalProductos.intValue() : 0);
+            // Stats desde Map (Batch query)
+            dto.setCantidadItems(countsMap.getOrDefault(v.getIdVenta(), 0L).intValue());
+            dto.setTotalProductos(sumsMap.getOrDefault(v.getIdVenta(), 0L).intValue());
 
             reportes.add(dto);
         }

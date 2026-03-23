@@ -3,88 +3,108 @@ package com.stockbean.stockapp.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-import com.stockbean.stockapp.repository.UnidadRepository;
-import com.stockbean.stockapp.repository.UsuarioRepository;
-import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
-import com.stockbean.stockapp.repository.EmpresaRepository;
-import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import com.stockbean.stockapp.dto.ProductoRequest;
+import com.stockbean.stockapp.dto.ProductoDTO;
+import com.stockbean.stockapp.repository.*;
+import com.stockbean.stockapp.model.admin.Empresa;
 import com.stockbean.stockapp.model.tablas.Producto;
 import com.stockbean.stockapp.model.tablas.Usuario;
-import com.stockbean.stockapp.repository.CategoriaRepository;
-import com.stockbean.stockapp.repository.MarcaRepository;
-import com.stockbean.stockapp.repository.ProductoRepository;
-
+import com.stockbean.stockapp.dto.ProductoRequest;
+import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ProductoService {
 
-    @Autowired
-    private ProductoRepository productoRepository;
+    private final ProductoRepository productoRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final UnidadRepository unidadRepository;
+    private final MarcaRepository marcaRepository;
+    private final EmpresaRepository empresaRepository;
+    private final EmpresaContextService contextService;
 
-    @Autowired
-    private CategoriaRepository categoriaRepository;
+    // S3-B5: Constructor Injection
+    public ProductoService(ProductoRepository productoRepository,
+                           CategoriaRepository categoriaRepository,
+                           UnidadRepository unidadRepository,
+                           MarcaRepository marcaRepository,
+                           EmpresaRepository empresaRepository,
+                           EmpresaContextService contextService) {
+        this.productoRepository = productoRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.unidadRepository = unidadRepository;
+        this.marcaRepository = marcaRepository;
+        this.empresaRepository = empresaRepository;
+        this.contextService = contextService;
+    }
 
-    @Autowired
-    private UnidadRepository unidadRepository;
+    /**
+     * Lista productos filtrados por el contexto del usuario.
+     * S3-B3: Retorna DTOs en lugar de entidades.
+     */
+    public List<ProductoDTO> listar(@NonNull Integer idUsuario) {
+        Usuario usuario = contextService.getUsuario(idUsuario);
+        List<Producto> productos;
 
-    @Autowired
-    private MarcaRepository marcaRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private EmpresaRepository empresaRepository;
-
-    @Autowired
-    private EmpresaUsuarioRepository empresaUsuarioRepository;
-
-    public List<Producto> listar(@NonNull Integer id) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        if (usuario.getId_rol() == 1) {
-            return productoRepository.findAll();
+        if (contextService.isSistemas(usuario)) {
+            productos = productoRepository.findAll();
         } else {
-            return productoRepository.findByUsuarioId(id);
+            productos = productoRepository.findByUsuarioId(idUsuario);
         }
+
+        return productos.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public Producto obtenerPorId(@NonNull Integer id) {
-        return productoRepository.findById(id).orElse(null);
+    /**
+     * Lista productos con paginación server-side.
+     * S3-B4: Paginación.
+     */
+    public Page<ProductoDTO> listarPaginado(@NonNull Integer idUsuario, Pageable pageable) {
+        Usuario usuario = contextService.getUsuario(idUsuario);
+        Page<Producto> page;
+
+        if (contextService.isSistemas(usuario)) {
+            page = productoRepository.findAll(pageable);
+        } else {
+            page = productoRepository.findByUsuarioId(idUsuario, pageable);
+        }
+
+        return page.map(this::toDTO);
     }
 
-    public Producto guardar(ProductoRequest dto, @NonNull Integer idUsuario) {
+    public ProductoDTO obtenerPorId(@NonNull Integer id) {
+        return productoRepository.findById(id)
+                .map(this::toDTO)
+                .orElse(null);
+    }
 
+    public ProductoDTO guardar(ProductoRequest dto, @NonNull Integer idUsuario) {
         Producto producto = new Producto();
         producto.setNombre(dto.getNombre());
         producto.setDescripcion(dto.getDescripcion());
+        
+        // Carga de relaciones
         if (dto.getIdCategoria() != null) {
-            producto.setCategoria(categoriaRepository.findById(Objects.requireNonNull(dto.getIdCategoria()))
+            producto.setCategoria(categoriaRepository.findById(dto.getIdCategoria())
                     .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
         }
-
         if (dto.getIdUnidad() != null) {
-            producto.setUnidad(unidadRepository.findById(Objects.requireNonNull(dto.getIdUnidad()))
+            producto.setUnidad(unidadRepository.findById(dto.getIdUnidad())
                     .orElseThrow(() -> new RuntimeException("Unidad no encontrada")));
         }
-
         if (dto.getIdMarca() != null) {
-            producto.setMarca(marcaRepository.findById(Objects.requireNonNull(dto.getIdMarca())).orElse(null));
+            producto.setMarca(marcaRepository.findById(dto.getIdMarca()).orElse(null));
         }
 
-        if (dto.getIdEmpresa() != null) {
-            producto.setEmpresa(empresaRepository.findById(Objects.requireNonNull(dto.getIdEmpresa()))
-                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada")));
-        } else if (idUsuario != null) {
-            List<Integer> empIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);
-            if (empIds != null && !empIds.isEmpty()) {
-                producto.setEmpresa(empresaRepository.findById(Objects.requireNonNull(empIds.get(0))).orElse(null));
-            }
+        // S3-B2: Uso de contextService para obtener empresaId
+        Integer idEmpresa = dto.getIdEmpresa() != null ? dto.getIdEmpresa() : contextService.getEmpresaId(idUsuario);
+        if (idEmpresa != null) {
+            Empresa empresa = empresaRepository.findById(idEmpresa)
+                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
+            producto.setEmpresa(empresa);
         }
 
         producto.setCodigoBarras(dto.getCodigoBarras());
@@ -92,56 +112,27 @@ public class ProductoService {
         producto.setStatus(dto.getStatus() != null ? dto.getStatus() : true);
         producto.setFechaAlta(LocalDateTime.now());
         producto.setFechaUltimaModificacion(LocalDateTime.now());
-        return productoRepository.save(producto);
+        
+        return toDTO(productoRepository.save(producto));
     }
 
-    public Producto actualizar(Integer id, Producto productoActualizado) {
-        Producto producto = obtenerPorId(id);
-        if (producto == null)
-            return null;
-
-        producto.setNombre(productoActualizado.getNombre());
-        producto.setDescripcion(productoActualizado.getDescripcion());
-        producto.setCategoria(productoActualizado.getCategoria());
-        producto.setUnidad(productoActualizado.getUnidad());
-        producto.setMarca(productoActualizado.getMarca());
-        producto.setCodigoBarras(productoActualizado.getCodigoBarras());
-        producto.setImagenUrl(productoActualizado.getImagenUrl());
-        producto.setStatus(productoActualizado.getStatus());
-        if (productoActualizado.getEmpresa() != null) {
-            producto.setEmpresa(productoActualizado.getEmpresa());
-        }
-        producto.setFechaUltimaModificacion(LocalDateTime.now());
-
-        return productoRepository.save(producto);
-    }
-
-    // Nuevo método que acepta ProductoRequest (DTO) para actualizar
-    public Producto actualizar(Integer id, ProductoRequest dto) {
-        Producto producto = obtenerPorId(id);
-        if (producto == null)
-            return null;
+    public ProductoDTO actualizar(Integer id, ProductoRequest dto) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
         producto.setNombre(dto.getNombre());
         producto.setDescripcion(dto.getDescripcion());
 
         if (dto.getIdCategoria() != null) {
-            producto.setCategoria(categoriaRepository.findById(Objects.requireNonNull(dto.getIdCategoria()))
+            producto.setCategoria(categoriaRepository.findById(dto.getIdCategoria())
                     .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
         }
-
         if (dto.getIdUnidad() != null) {
-            producto.setUnidad(unidadRepository.findById(Objects.requireNonNull(dto.getIdUnidad()))
+            producto.setUnidad(unidadRepository.findById(dto.getIdUnidad())
                     .orElseThrow(() -> new RuntimeException("Unidad no encontrada")));
         }
-
         if (dto.getIdMarca() != null) {
-            producto.setMarca(marcaRepository.findById(Objects.requireNonNull(dto.getIdMarca())).orElse(null));
-        }
-
-        if (dto.getIdEmpresa() != null) {
-            producto.setEmpresa(empresaRepository.findById(Objects.requireNonNull(dto.getIdEmpresa()))
-                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada")));
+            producto.setMarca(marcaRepository.findById(dto.getIdMarca()).orElse(null));
         }
 
         producto.setCodigoBarras(dto.getCodigoBarras());
@@ -149,16 +140,39 @@ public class ProductoService {
         producto.setStatus(dto.getStatus());
         producto.setFechaUltimaModificacion(LocalDateTime.now());
 
-        return productoRepository.save(producto);
+        return toDTO(productoRepository.save(producto));
     }
 
     public void eliminar(Integer id) {
-        Producto producto = obtenerPorId(id);
-        if (producto != null) {
-            producto.setStatus(false);
-            producto.setFechaBaja(LocalDateTime.now());
-            producto.setFechaUltimaModificacion(LocalDateTime.now());
-            productoRepository.save(producto);
-        }
+        productoRepository.findById(id).ifPresent(p -> {
+            p.setStatus(false);
+            p.setFechaBaja(LocalDateTime.now());
+            p.setFechaUltimaModificacion(LocalDateTime.now());
+            productoRepository.save(p);
+        });
+    }
+
+    /**
+     * Mapea una entidad Producto a un DTO ligero.
+     */
+    public ProductoDTO toDTO(Producto p) {
+        if (p == null) return null;
+        return ProductoDTO.builder()
+                .id_producto(p.getId_producto())
+                .nombre(p.getNombre())
+                .descripcion(p.getDescripcion())
+                .codigoBarras(p.getCodigoBarras())
+                .imagenUrl(p.getImagenUrl())
+                .status(p.getStatus())
+                .fechaAlta(p.getFechaAlta())
+                .fechaUltimaModificacion(p.getFechaUltimaModificacion())
+                .categoria(p.getCategoria() != null ? 
+                        new ProductoDTO.CategoriaMiniDTO(p.getCategoria().getIdCategoria(), p.getCategoria().getNombre()) : null)
+                .unidad(p.getUnidad() != null ? 
+                        new ProductoDTO.UnidadMiniDTO(p.getUnidad().getIdUnidad(), p.getUnidad().getNombre()) : null)
+                .marca(p.getMarca() != null ? 
+                        new ProductoDTO.MarcaMiniDTO(p.getMarca().getIdMarca(), p.getMarca().getNombre()) : null)
+                .idEmpresa(p.getEmpresa() != null ? p.getEmpresa().getIdEmpresa() : null)
+                .build();
     }
 }
