@@ -43,7 +43,6 @@ public class Usuario {
     private LocalDateTime fecha_baja;
     private LocalDateTime fecha_ultima_modificacion;
 
-    // Métodos de conveniencia para compatibilidad y acceso fácil al rol
     public Integer getId_rol() {
         return (rol != null) ? rol.getId_rol() : null;
     }
