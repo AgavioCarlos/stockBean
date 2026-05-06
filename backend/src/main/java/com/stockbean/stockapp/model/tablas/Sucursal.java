@@ -2,6 +2,7 @@ package com.stockbean.stockapp.model.tablas;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,13 +21,17 @@ import lombok.NoArgsConstructor;
 public class Sucursal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id_sucursal;
+    @Column(name = "id_sucursal")
+    private Integer idSucursal;
     private String nombre;
     private String direccion;
     private String telefono;
     private String email;
     private Boolean status;
-    private LocalDateTime fecha_alta;
-    private LocalDateTime fecha_baja;
-    private LocalDateTime fecha_ultima_modificacion;
+    @Column(name = "fecha_alta")
+    private LocalDateTime fechaAlta;
+    @Column(name = "fecha_baja")
+    private LocalDateTime fechaBaja;
+    @Column(name = "fecha_ultima_modificacion")
+    private LocalDateTime fechaUltimaModificacion;
 }

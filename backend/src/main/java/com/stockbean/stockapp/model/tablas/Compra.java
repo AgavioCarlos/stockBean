@@ -12,16 +12,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Entity
 @Data
-@Table(name="tbl_compras")
+@Table(name = "tbl_compras")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Compra{
+public class Compra {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    
+
     @Column(name = "id_compra")
     private Integer idCompra;
 
@@ -47,4 +46,3 @@ public class Compra{
     @Column(name = "fecha_ultima_modificacion")
     private LocalDateTime fechaUltimaModificacion;
 }
-
