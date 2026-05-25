@@ -11,18 +11,19 @@ import java.util.List;
 
 @Repository
 public interface UsuarioPantallaRepository extends JpaRepository<AdminUsuarioPantalla, Integer> {
-    
-    @Query("SELECT a FROM AdminUsuarioPantalla a WHERE a.usuario.id_usuario = :idUsuario AND a.empresa.idEmpresa = :idEmpresa")
-    List<AdminUsuarioPantalla> findByUsuarioIdAndEmpresaId(@Param("idUsuario") Integer idUsuario, @Param("idEmpresa") Integer idEmpresa);
-    
     @Modifying
     @Query("DELETE FROM AdminUsuarioPantalla a WHERE a.usuario.id_usuario = :idUsuario AND a.empresa.idEmpresa = :idEmpresa")
     void deleteByUsuarioIdAndEmpresaId(@Param("idUsuario") Integer idUsuario, @Param("idEmpresa") Integer idEmpresa);
 
-    /**
-     * Busca todos los permisos de un usuario sin filtrar por empresa.
-     * Útil para usuarios Sistemas que pueden no tener empresa asociada.
-     */
-    @Query("SELECT a FROM AdminUsuarioPantalla a WHERE a.usuario.id_usuario = :idUsuario")
-    List<AdminUsuarioPantalla> findByUsuarioId(@Param("idUsuario") Integer idUsuario);
+    @Query("SELECT a FROM AdminUsuarioPantalla a " +
+            "INNER JOIN UsuarioSucursal us ON (us.usuario.id_usuario = a.usuario.id_usuario) " +
+            "WHERE a.usuario.id_usuario = :idUsuario " + 
+            "AND us.sucursal.idSucursal = :idSucursal")
+    List<AdminUsuarioPantalla> findByUsuarioIdAndEmpresaId(@Param("idUsuario") Integer idUsuario, @Param("idSucursal") Integer idSucursal);
+
+    @Query("SELECT a FROM AdminUsuarioPantalla a " + 
+            "INNER JOIN UsuarioSucursal us ON (us.usuario.id_usuario = a.usuario.id_usuario) " +
+            "WHERE a.usuario.id_usuario = :idUsuario " + 
+            "AND us.sucursal.idSucursal = :idSucursal")
+    List<AdminUsuarioPantalla> findByUsuarioId(@Param("idUsuario") Integer idUsuario, @Param("idSucursal") Integer idSucursal);
 }
