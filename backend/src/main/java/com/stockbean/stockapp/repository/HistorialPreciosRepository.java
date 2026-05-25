@@ -17,9 +17,9 @@ public interface HistorialPreciosRepository extends JpaRepository<HistorialPreci
         List<HistorialPrecios> findCurrentPrices();
 
         @Query("SELECT hp FROM HistorialPrecios hp " +
-                        "WHERE hp.sucursal.id_sucursal = :idSucursal AND hp.fechaCambio = (" +
+                        "WHERE hp.sucursal.idSucursal = :idSucursal AND hp.fechaCambio = (" +
                         "   SELECT MAX(sub.fechaCambio) FROM HistorialPrecios sub " +
-                        "   WHERE sub.producto = hp.producto AND sub.sucursal.id_sucursal = :idSucursal)")
+                        "   WHERE sub.producto = hp.producto AND sub.sucursal.idSucursal = :idSucursal)")
         List<HistorialPrecios> findCurrentPricesByBranch(@Param("idSucursal") Integer idSucursal);
 
         @Query("SELECT hp FROM HistorialPrecios hp WHERE hp.producto = :id")
