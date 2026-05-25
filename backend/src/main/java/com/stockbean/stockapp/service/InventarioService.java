@@ -12,6 +12,11 @@ import com.stockbean.stockapp.model.tablas.HistorialPrecios;
 import com.stockbean.stockapp.repository.HistorialPreciosRepository;
 import com.stockbean.stockapp.repository.InventarioRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
+import com.stockbean.stockapp.security.AuthHelper;
+import com.stockbean.stockapp.repository.ProductoRepository;
+import com.stockbean.stockapp.repository.SucursalRepository;
+import com.stockbean.stockapp.model.tablas.Sucursal;
+import com.stockbean.stockapp.model.tablas.Producto;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.NonNull;
@@ -29,9 +34,15 @@ public class InventarioService {
     private HistorialPreciosRepository historialPreciosRepository;
 
     @Autowired
+    private ProductoRepository productoRepository;
+
+    @Autowired
+    private SucursalRepository sucursalRepository;
+
+    @Autowired
     private SucursalAccessService sucursalAccessService;
 
-    public List<Inventario> listarPorUsuarioYSucursal(@NonNull Integer idUsuario, @NonNull Integer idSucursal) {
+    public List<Inventario> listarPorUsuarioYSucursal(Integer idUsuario, Integer idSucursal) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
 
@@ -59,15 +70,30 @@ public class InventarioService {
 
     @Transactional
     public Inventario guardar(Inventario inventario, @NonNull Integer idUsuario) {
-        if (inventario.getSucursal() == null || inventario.getSucursal().getId_sucursal() == null) {
+        Integer idSucursal = (inventario.getSucursal() != null) ? inventario.getSucursal().getIdSucursal() : null;
+        final Integer idSucursalFinal = (idSucursal != null) ? idSucursal : AuthHelper.getCurrentSucursalId();
+
+        if (idSucursalFinal == null) {
             throw new RuntimeException("Sucursal es requerida para registrar inventario.");
         }
+        Sucursal sucursal = sucursalRepository.findById(idSucursal)
+                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada con ID: " + idSucursal));
 
-        Integer idSucursal = inventario.getSucursal().getId_sucursal();
+        if (inventario.getProducto() == null || inventario.getProducto().getId_producto() == null) {
+            throw new RuntimeException("El producto es requerido para registrar inventario.");
+        }
+        Integer idProducto = inventario.getProducto().getId_producto();
+        Producto producto = productoRepository.findById(idProducto)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + idProducto));
+
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
 
         validarAccesoSucursal(usuario, idSucursal);
+
+        // Asignar entidades gestionadas
+        inventario.setSucursal(sucursal);
+        inventario.setProducto(producto);
 
         if (inventario.getStatus() == null)
             inventario.setStatus(true);
@@ -79,8 +105,8 @@ public class InventarioService {
 
         if (inventario.getPrecioNuevo() != null) {
             HistorialPrecios historial = new HistorialPrecios();
-            historial.setProducto(savedInventario.getProducto());
-            historial.setSucursal(savedInventario.getSucursal());
+            historial.setProducto(producto);
+            historial.setSucursal(sucursal);
             // historial.setPrecioAnterior(inventario.getPrecioAnterior());
             historial.setPrecioNuevo(inventario.getPrecioNuevo());
             historial.setIdTipoPrecio(inventario.getIdTipoPrecio() != null ? inventario.getIdTipoPrecio() : 1);
@@ -105,7 +131,7 @@ public class InventarioService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
 
         // Validate access to the EXISTING inventory item's branch
-        validarAccesoSucursal(usuario, inventario.getSucursal().getId_sucursal());
+        validarAccesoSucursal(usuario, inventario.getSucursal().getIdSucursal());
 
         // Update fields
         if (inventarioDetails.getStock_actual() != null)
@@ -148,7 +174,7 @@ public class InventarioService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
 
-        validarAccesoSucursal(usuario, inventario.getSucursal().getId_sucursal());
+        validarAccesoSucursal(usuario, inventario.getSucursal().getIdSucursal());
 
         inventario.setStatus(false);
         inventario.setFechaBaja(LocalDateTime.now());

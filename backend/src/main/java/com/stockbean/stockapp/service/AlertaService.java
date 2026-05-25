@@ -67,7 +67,7 @@ public class AlertaService {
             Integer idEmpresa = companyIds.get(0);
             List<Integer> idsSucursales = sucursalRepository.findByEmpresaId(idEmpresa)
                     .stream()
-                    .map(Sucursal::getId_sucursal)
+                    .map(Sucursal::getIdSucursal)
                     .collect(Collectors.toList());
 
             if (idsSucursales.isEmpty()) {
@@ -81,7 +81,7 @@ public class AlertaService {
             List<Integer> idsSucursales = usuarioSucursalRepository.findByStatusTrue()
                     .stream()
                     .filter(us -> us.getUsuario().getId_usuario().equals(idUsuario))
-                    .map(us -> us.getSucursal().getId_sucursal())
+                    .map(us -> us.getSucursal().getIdSucursal())
                     .collect(Collectors.toList());
 
             if (idsSucursales.isEmpty()) {
@@ -135,7 +135,7 @@ public class AlertaService {
             // Para SISTEM, marcar todas
             List<Integer> allSucursalIds = sucursalRepository.findAll()
                     .stream()
-                    .map(Sucursal::getId_sucursal)
+                    .map(Sucursal::getIdSucursal)
                     .collect(Collectors.toList());
             if (!allSucursalIds.isEmpty()) {
                 alertaRepository.marcarTodasComoLeidas(allSucursalIds);
@@ -157,7 +157,7 @@ public class AlertaService {
                 return Collections.emptyList();
             return sucursalRepository.findByEmpresaId(companyIds.get(0))
                     .stream()
-                    .map(Sucursal::getId_sucursal)
+                    .map(Sucursal::getIdSucursal)
                     .collect(Collectors.toList());
         }
 
@@ -165,7 +165,7 @@ public class AlertaService {
         return usuarioSucursalRepository.findByStatusTrue()
                 .stream()
                 .filter(us -> us.getUsuario().getId_usuario().equals(idUsuario))
-                .map(us -> us.getSucursal().getId_sucursal())
+                .map(us -> us.getSucursal().getIdSucursal())
                 .collect(Collectors.toList());
     }
 }
