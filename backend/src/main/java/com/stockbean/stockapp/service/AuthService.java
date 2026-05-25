@@ -23,6 +23,7 @@ import com.stockbean.stockapp.model.tablas.Suscripcion;
 import com.stockbean.stockapp.model.tablas.Usuario;
 import com.stockbean.stockapp.model.admin.Empresa;
 import com.stockbean.stockapp.repository.UsuarioPantallaRepository;
+import com.stockbean.stockapp.repository.UsuarioRepository;
 import com.stockbean.stockapp.repository.EmpresaUsuarioRepository;
 import com.stockbean.stockapp.repository.SuscripcionRepository;
 import com.stockbean.stockapp.security.JwtUtil;
@@ -58,14 +59,14 @@ public class AuthService {
     private SuscripcionRepository suscripcionRepository;
 
     @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
     private UsuarioPantallaRepository adminUsuarioPantallaRepository;
 
     @Autowired
     private EmpresaUsuarioRepository empresaUsuarioRepository;
 
-    // ============================================
-    // Resultado interno para login
-    // ============================================
     public static class LoginResult {
         private final boolean success;
         private final int httpStatus; // 200, 401, 402, 500
@@ -90,31 +91,21 @@ public class AuthService {
         }
     }
 
-    // ============================================
-    // Registro
-    // ============================================
     public void registrar(RegistroRequest request) {
         registroService.registrar(request);
     }
 
-    // ============================================
-    // Login
-    // ============================================
-    public LoginResult login(String cuenta, String password) {
-        // 1. Verificar si el usuario existe
+    public LoginResult login(Integer sucursal, String cuenta, String password) {
         Usuario user = usuarioService.findByCuenta(cuenta);
         if (user == null) {
             return errorResult(401, "El usuario no existe");
         }
 
-        List<EmpresaUsuarioDTO> empresaUsuario = null;
-        if (!user.getCuenta().equals("sistemas")) {
-            empresaUsuario = empresaUsuarioService.validarEmpresaUsuario(user.getId_usuario());
-            // Se remueve la restricción de que deba tener una empresa, para permitir el
-            // flujo de nuevos registros.
+        List<Usuario> usuarios = usuarioRepository.findByCuentaSucursal(cuenta, sucursal);
+        if (usuarios.isEmpty()) {
+            return errorResult(401, "El usuario no existe en la sucursal");
         }
 
-        // 2. Autenticar con Spring Security
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(cuenta, password));
@@ -124,39 +115,33 @@ public class AuthService {
             return errorResult(500, "Error de autenticación");
         }
 
-        // 3. Validar suscripción
-        if (!user.getCuenta().equals("sistemas")) {
-            LoginResult suscripcionCheck = validarSuscripcion(user, empresaUsuario);
-            if (suscripcionCheck != null) {
-                return suscripcionCheck;
-            }
-        }
+        // if (!user.getCuenta().equals("sistemas")) {
+        // LoginResult suscripcionCheck = validarSuscripcion(user, empresaUsuario);
+        // if (suscripcionCheck != null) {
+        // return suscripcionCheck;
+        // }
+        // }
 
-        // 4. Cargar UserDetails y generar JWT
         final UserDetails userDetails = userDetailsService.loadUserByUsername(cuenta);
         final String jwt = jwtUtil.generateToken(userDetails, user.getId_usuario(), user.getId_rol(),
-                user.getNombre_rol());
+                user.getNombre_rol(), sucursal);
 
-        // 5. Construir permisos CRUD desde admin_usuario_pantalla
-        Map<Integer, Map<String, List<String>>> permisosCrud = construirPermisosCrud(user);
-
-        // 6. Armar respuesta
+        Map<Integer, Map<String, List<String>>> permisosCrud = construirPermisosCrud(user, sucursal);
         Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("success", true);
         respuesta.put("mensaje", "Autenticación exitosa");
         respuesta.put("token", jwt);
         if (!user.getCuenta().equals("sistemas")) {
-            respuesta.put("empresa", empresaUsuario);
+            // respuesta.put("empresa", empresaUsuario);
             respuesta.put("permisos_crud", permisosCrud);
         }
 
-        // Datos del Usuario
         respuesta.put("id_usuario", user.getId_usuario());
         respuesta.put("cuenta", user.getCuenta());
         respuesta.put("id_rol", user.getId_rol());
+        respuesta.put("id_sucursal", sucursal);
         respuesta.put("fecha_alta", user.getFecha_alta());
 
-        // Datos de la Persona asociada
         if (user.getPersona() != null) {
             respuesta.put("id_persona", user.getPersona().getId_persona());
             respuesta.put("nombre", user.getPersona().getNombre());
@@ -169,9 +154,6 @@ public class AuthService {
         return new LoginResult(true, 200, respuesta);
     }
 
-    // ============================================
-    // Refresh Token
-    // ============================================
     public LoginResult refreshToken(String token) {
         try {
             String username = jwtUtil.extractUsername(token);
@@ -179,8 +161,9 @@ public class AuthService {
 
             if (jwtUtil.validateToken(token, userDetails)) {
                 Usuario user = usuarioService.findByCuenta(username);
+                Integer idSucursal = jwtUtil.extractIdSucursal(token);
                 String newToken = jwtUtil.generateToken(userDetails, user.getId_usuario(), user.getId_rol(),
-                        user.getNombre_rol());
+                        user.getNombre_rol(), idSucursal);
 
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
@@ -227,34 +210,28 @@ public class AuthService {
         return null; // Suscripción válida
     }
 
-    /**
-     * Construye el mapa de permisos CRUD desde admin_usuario_pantalla.
-     * Para TODOS los roles (incluido Sistemas).
-     */
-    private Map<Integer, Map<String, List<String>>> construirPermisosCrud(Usuario user) {
-        List<Integer> idsEmpresas = empresaUsuarioRepository.findIdEmpresaByUsuarioId(user.getId_usuario());
+    private Map<Integer, Map<String, List<String>>> construirPermisosCrud(Usuario user, Integer idSucursal) {
+        // List<Integer> idsEmpresas =
+        // empresaUsuarioRepository.findIdEmpresaByUsuarioId(user.getId_usuario());
         Map<Integer, Map<String, List<String>>> permisosCrud = new HashMap<>();
 
-        for (Integer idEmpresa : idsEmpresas) {
-            Map<String, List<String>> permisosPorPantalla = obtenerPermisosDeUsuario(user.getId_usuario(), idEmpresa);
-            permisosCrud.put(idEmpresa, permisosPorPantalla);
-        }
+        Map<String, List<String>> permisosPorPantalla = obtenerPermisosDeUsuario(user.getId_usuario(), idSucursal);
+        permisosCrud.put(0, permisosPorPantalla);
 
-        // Si no tiene empresas (ej. Sistemas sin empresa) asignar dummy 0
-        if (idsEmpresas.isEmpty()) {
-            List<AdminUsuarioPantalla> acciones = adminUsuarioPantallaRepository
-                    .findByUsuarioId(user.getId_usuario());
-            Map<String, List<String>> permisosPorPantalla = mapearPermisos(acciones);
-            permisosCrud.put(0, permisosPorPantalla);
-        }
+        // if (idsEmpresas.isEmpty()) {
+        // List<AdminUsuarioPantalla> acciones = adminUsuarioPantallaRepository
+        // .findByUsuarioId(user.getId_usuario());
+        // Map<String, List<String>> permisosPorPantalla = mapearPermisos(acciones);
+        // permisosCrud.put(0, permisosPorPantalla);
+        // }
 
         return permisosCrud;
     }
 
-    private Map<String, List<String>> obtenerPermisosDeUsuario(Integer idUsuario, Integer idEmpresa) {
-        log.info("AuthService - obtenerPermisosDeUsuario: idUsuario={}, idEmpresa={}", idUsuario, idEmpresa);
+    private Map<String, List<String>> obtenerPermisosDeUsuario(Integer idUsuario, Integer idSucursal) {
+        log.info("AuthService - obtenerPermisosDeUsuario: idUsuario={}, idEmpresa={}", idUsuario);
         List<AdminUsuarioPantalla> acciones = adminUsuarioPantallaRepository
-                .findByUsuarioIdAndEmpresaId(idUsuario, idEmpresa);
+                .findByUsuarioId(idUsuario, idSucursal);
         log.info("AuthService - Encontrados {} registros en admin_usuario_pantalla", acciones.size());
         Map<String, List<String>> permisos = mapearPermisos(acciones);
         log.info("AuthService - Permisos mapeados resultantes: {}", permisos);

@@ -68,7 +68,7 @@ public class SucursalAccessService {
             Integer idEmpresa = companyIds.get(0);
             List<Sucursal> companySucursales = sucursalRepository.findByEmpresaId(idEmpresa);
             boolean belongs = companySucursales.stream()
-                    .anyMatch(s -> s.getId_sucursal().equals(idSucursal));
+                    .anyMatch(s -> s.getIdSucursal().equals(idSucursal));
 
             if (!belongs) {
                 throw new RuntimeException("Acceso denegado: La sucursal no pertenece a su empresa.");

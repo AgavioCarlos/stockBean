@@ -21,8 +21,6 @@ public class UsuarioService {
     @Autowired
     private EmpresaUsuarioRepository empresaUsuarioRepository;
 
-    // Asumimos que el ID del rol de sistemas/root es 1.
-    // Esto debería idealmente estar en una constante o enum.
     private static final Integer ID_ROL_SISTEMAS = 1;
 
     public Usuario findById(@NonNull Integer id) {

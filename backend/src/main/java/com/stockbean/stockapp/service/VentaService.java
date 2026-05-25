@@ -26,6 +26,7 @@ import com.stockbean.stockapp.repository.MetodoPagoRepository;
 import com.stockbean.stockapp.repository.ProductoRepository;
 import com.stockbean.stockapp.repository.UsuarioRepository;
 import com.stockbean.stockapp.repository.VentaRepository;
+import com.stockbean.stockapp.security.AuthHelper;
 import com.stockbean.stockapp.repository.TurnoCajaRepository;
 import com.stockbean.stockapp.model.tablas.TurnoCaja;
 import java.util.Objects;
@@ -130,27 +131,19 @@ public class VentaService {
         return resultados;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // REGISTRAR VENTA COMPLETA (HEADER + DETALLES)
-    // ─────────────────────────────────────────────────────────────
-
-    /**
-     * Registra una venta completa:
-     * 1. Crea el registro en tbl_ventas
-     * 2. Inserta cada detalle en tbl_detalle_venta
-     * → El trigger de BD ajustará el inventario automáticamente
-     * 3. Retorna la venta creada
-     */
     @Transactional
     public Venta registrarVenta(@NonNull VentaRequest request, @NonNull Integer idUsuario) {
 
-        // Validaciones básicas
-        if (request.getIdSucursal() == null) {
+        Integer idSucursal = AuthHelper.getCurrentSucursalId();
+
+        if (idSucursal == null) {
             throw new RuntimeException("La sucursal es requerida.");
         }
+
         if (request.getIdMetodoPago() == null) {
             throw new RuntimeException("El método de pago es requerido.");
         }
+
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new RuntimeException("La venta debe tener al menos un producto.");
         }
@@ -164,7 +157,7 @@ public class VentaService {
             throw new RuntimeException("No hay un turno de caja abierto para registrar la venta.");
         }
 
-        validarAccesoSucursal(usuario, request.getIdSucursal());
+        validarAccesoSucursal(usuario, idSucursal);
 
         MetodoPago metodoPago = metodoPagoRepository.findById(Objects.requireNonNull(request.getIdMetodoPago()))
                 .orElseThrow(() -> new RuntimeException(
@@ -173,11 +166,12 @@ public class VentaService {
         // Validar stock ANTES de crear la venta
         for (DetalleVentaItem item : request.getItems()) {
             List<Inventario> invList = inventarioRepository.findByProductoAndSucursal(
-                    item.getIdProducto(), request.getIdSucursal());
+                    item.getIdProducto(), idSucursal);
 
             if (invList.isEmpty()) {
                 Producto prod = productoRepository.findById(Objects.requireNonNull(item.getIdProducto()))
-                        .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + item.getIdProducto()));
+                        .orElseThrow(
+                                () -> new RuntimeException("Producto no encontrado con ID: " + item.getIdProducto()));
                 throw new RuntimeException(
                         "No existe inventario para el producto \"" + prod.getNombre() + "\" en esta sucursal.");
             }
@@ -207,7 +201,7 @@ public class VentaService {
 
         // 1. Crear la venta (header)
         Venta venta = new Venta();
-        venta.setIdSucursal(request.getIdSucursal());
+        venta.setIdSucursal(idSucursal);
         venta.setIdUsuario(idUsuario);
         venta.setFechaVenta(LocalDateTime.now());
         venta.setTotal(totalCalculado.intValue());
@@ -217,12 +211,6 @@ public class VentaService {
         venta.setEstado("COMPLETADA");
 
         Venta ventaGuardada = ventaRepository.save(venta);
-
-        // 2. Insertar cada detalle
-        // Al insertar en tbl_detalle_venta, el trigger de BD:
-        // - Descuenta stock_actual en tbl_inventario
-        // - Genera alertas si stock <= stock_minimo
-        // - Lanza excepción si stock insuficiente
         for (DetalleVentaItem item : request.getItems()) {
             Producto producto = productoRepository.findById(Objects.requireNonNull(item.getIdProducto()))
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + item.getIdProducto()));
@@ -251,10 +239,6 @@ public class VentaService {
         return ventaGuardada;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // OBTENER VENTAS DE UNA SUCURSAL
-    // ─────────────────────────────────────────────────────────────
-
     public List<Venta> listarVentasPorSucursal(@NonNull Integer idSucursal, @NonNull Integer idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
@@ -262,25 +246,13 @@ public class VentaService {
         return ventaRepository.findBySucursalId(idSucursal);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // OBTENER DETALLE DE UNA VENTA
-    // ─────────────────────────────────────────────────────────────
-
     public List<DetalleVenta> obtenerDetalleVenta(@NonNull Integer idVenta) {
         return detalleVentaRepository.findByVentaId(idVenta);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // OBTENER MÉTODOS DE PAGO
-    // ─────────────────────────────────────────────────────────────
-
     public List<MetodoPago> listarMetodosPago() {
         return metodoPagoRepository.findAll();
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // VALIDACIÓN DE ACCESO A SUCURSAL (reutilizada de InventarioService)
-    // ─────────────────────────────────────────────────────────────
 
     private void validarAccesoSucursal(Usuario usuario, @NonNull Integer idSucursal) {
         sucursalAccessService.validarAcceso(usuario, idSucursal);

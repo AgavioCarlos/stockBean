@@ -2,9 +2,7 @@ package com.stockbean.stockapp.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-
 import com.stockbean.stockapp.dto.ProductoDTO;
 import com.stockbean.stockapp.repository.*;
 import com.stockbean.stockapp.model.admin.Empresa;
@@ -26,7 +24,6 @@ public class ProductoService {
     private final EmpresaRepository empresaRepository;
     private final EmpresaContextService contextService;
 
-    // S3-B5: Constructor Injection
     public ProductoService(ProductoRepository productoRepository,
                            CategoriaRepository categoriaRepository,
                            UnidadRepository unidadRepository,
@@ -41,10 +38,6 @@ public class ProductoService {
         this.contextService = contextService;
     }
 
-    /**
-     * Lista productos filtrados por el contexto del usuario.
-     * S3-B3: Retorna DTOs en lugar de entidades.
-     */
     public List<ProductoDTO> listar(@NonNull Integer idUsuario) {
         Usuario usuario = contextService.getUsuario(idUsuario);
         List<Producto> productos;
@@ -58,10 +51,6 @@ public class ProductoService {
         return productos.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    /**
-     * Lista productos con paginación server-side.
-     * S3-B4: Paginación.
-     */
     public Page<ProductoDTO> listarPaginado(@NonNull Integer idUsuario, Pageable pageable) {
         Usuario usuario = contextService.getUsuario(idUsuario);
         Page<Producto> page;
@@ -86,7 +75,6 @@ public class ProductoService {
         producto.setNombre(dto.getNombre());
         producto.setDescripcion(dto.getDescripcion());
         
-        // Carga de relaciones
         if (dto.getIdCategoria() != null) {
             producto.setCategoria(categoriaRepository.findById(dto.getIdCategoria())
                     .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
@@ -99,7 +87,6 @@ public class ProductoService {
             producto.setMarca(marcaRepository.findById(dto.getIdMarca()).orElse(null));
         }
 
-        // S3-B2: Uso de contextService para obtener empresaId
         Integer idEmpresa = dto.getIdEmpresa() != null ? dto.getIdEmpresa() : contextService.getEmpresaId(idUsuario);
         if (idEmpresa != null) {
             Empresa empresa = empresaRepository.findById(idEmpresa)

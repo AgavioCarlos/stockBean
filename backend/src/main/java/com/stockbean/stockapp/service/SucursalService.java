@@ -30,25 +30,8 @@ public class SucursalService {
         return sucursalRepository.findByEmpresaId(idEmpresa);
     }
 
-    public List<Sucursal> listarSucursales(@NonNull Integer idUsuario) {
-        Usuario solicitante = usuarioRepository.findById(idUsuario)
-                .orElse(null);
-        if (solicitante == null) {
-            throw new RuntimeException("Usuario no encontrado");
-        }
-
-        // Si es ROOT / SISTEMAS (SISTEM), ve todas las sucursales
-        if ("SISTEM".equals(solicitante.getNombre_rol())) {
-            return sucursalRepository.findAll();
-        }
-
-        // Si no es ROOT, obtener SÓLO las sucursales asignadas en UsuarioSucursal
-        return usuarioSucursalRepository.findByUsuarioIdUsuario(idUsuario)
-                .stream()
-                .filter(dto -> Boolean.TRUE.equals(dto.getStatus()))
-                .map(dto -> sucursalRepository.findById(dto.getIdSucursal()).orElse(null))
-                .filter(java.util.Objects::nonNull)
-                .toList();
+    public List<Sucursal> listarSucursales() {
+        return sucursalRepository.findAll();
     }
 
     @Autowired
@@ -59,10 +42,10 @@ public class SucursalService {
         if (sucursal.getStatus() == null) {
             sucursal.setStatus(true);
         }
-        if (sucursal.getFecha_alta() == null) {
-            sucursal.setFecha_alta(LocalDateTime.now());
+        if (sucursal.getFechaAlta() == null) {
+            sucursal.setFechaAlta(LocalDateTime.now());
         }
-        sucursal.setFecha_ultima_modificacion(LocalDateTime.now());
+        sucursal.setFechaUltimaModificacion(LocalDateTime.now());
 
         Sucursal nuevaSucursal = sucursalRepository.save(sucursal);
 
@@ -100,7 +83,7 @@ public class SucursalService {
     public void eliminar(@NonNull Integer id) {
         sucursalRepository.findById(id).ifPresent(sucursal -> {
             sucursal.setStatus(false); // Baja lógica
-            sucursal.setFecha_baja(LocalDateTime.now());
+            sucursal.setFechaBaja(LocalDateTime.now());
             sucursalRepository.save(sucursal);
         });
     }

@@ -24,23 +24,9 @@ public class PantallaService {
     @Autowired
     private UsuarioPantallaRepository adminUsuarioPantallaRepository;
 
-    /**
-     * Pantallas del menú lateral del usuario.
-     * Lee de admin_usuario_pantalla donde ver = true, y convierte a PantallaDTO.
-     * Solo incluye pantallas activas (status = true).
-     *
-     * @param idUsuario ID del usuario autenticado
-     * @param idEmpresa ID de la empresa activa (puede ser null para Sistemas)
-     */
-    public List<PantallaDTO> findPantallasUsuario(Integer idUsuario, Integer idEmpresa) {
+    public List<PantallaDTO> findPantallasUsuario(Integer idUsuario, Integer idSucursal) {
         List<AdminUsuarioPantalla> permisos;
-
-        if (idEmpresa != null) {
-            permisos = adminUsuarioPantallaRepository.findByUsuarioIdAndEmpresaId(idUsuario, idEmpresa);
-        } else {
-            permisos = adminUsuarioPantallaRepository.findByUsuarioId(idUsuario);
-            System.out.println("Permisos: " + permisos);
-        }
+        permisos = adminUsuarioPantallaRepository.findByUsuarioId(idUsuario, idSucursal);
 
         return permisos.stream()
                 .filter(p -> Boolean.TRUE.equals(p.getVer()))
@@ -66,28 +52,14 @@ public class PantallaService {
                 })
                 .collect(Collectors.toList());
     }
-
-    /**
-     * Pantallas activas filtradas por esRoot:
-     * - Sistemas (rol 1): esRoot = true
-     * - Otros roles: esRoot IS NULL o false
-     */
     public List<Pantallas> findPantallasByRol(Integer idRol) {
         if (idRol != null && idRol == 1) {
             List<Pantallas> result = pantallaRepository.findAllRoot();
-            log.info("[PantallaService] findPantallasByRol idRol={} -> ROOT query -> {} pantallas", idRol,
-                    result.size());
             return result;
         }
         List<Pantallas> result = pantallaRepository.findAllNoRoot();
-        log.info("[PantallaService] findPantallasByRol idRol={} -> NO-ROOT query -> {} pantallas", idRol,
-                result.size());
         return result;
     }
-
-    /**
-     * Todas las pantallas activas (sin filtro de esRoot).
-     */
     public List<Pantallas> findAllActivas() {
         return pantallaRepository.findAllActivas();
     }
@@ -95,7 +67,7 @@ public class PantallaService {
     public Pantallas getPantalla(Integer id) {
         return pantallaRepository.findById(id).orElse(null);
     }
-    
+
     public Pantallas save(Pantallas p) {
         if (p.getIdPantalla() == null) {
             p.setFechaAlta(LocalDateTime.now());

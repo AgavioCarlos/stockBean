@@ -6,16 +6,21 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-
 import com.stockbean.stockapp.dto.UsuarioSucursalResponse;
+import com.stockbean.stockapp.model.tablas.Sucursal;
 import com.stockbean.stockapp.model.tablas.UsuarioSucursal;
+import com.stockbean.stockapp.repository.SucursalRepository;
 import com.stockbean.stockapp.repository.UsuarioSucursalRepository;
+import com.stockbean.stockapp.security.AuthHelper;
 
 @Service
 public class UsuarioSucursalService {
 
     @Autowired
     private UsuarioSucursalRepository usuarioSucursalRepository;
+
+    @Autowired
+    private SucursalRepository sucursalRepository;
 
     public List<UsuarioSucursal> listarTodos() {
         return usuarioSucursalRepository.findByStatusTrue();
@@ -29,20 +34,17 @@ public class UsuarioSucursalService {
         return usuarioSucursalRepository.findByUsuarioIdUsuario(idUsuario);
     }
 
-    public UsuarioSucursal guardar(UsuarioSucursal usuarioSucursal) {
-        if (usuarioSucursalRepository.existsByUsuarioAndSucursal(
-                usuarioSucursal.getUsuario(),
-                usuarioSucursal.getSucursal())) {
-            // Handle duplicate logic if necessary.
-            // For now, if it exists, we might want to return it or update it?
-            // Or throw exception.
-            // Given the UI handles 500 as error, letting it save will trigger
-            // UniqueConstraint violation if DB enforces it.
-            // But valid check prevents DB error in logs.
-            // We can return null or throw.
-            // Ideally we throw a business exception.
-            // throw new RuntimeException("Asignación ya existe");
-        }
+    public UsuarioSucursal guardar(@NonNull UsuarioSucursal usuarioSucursal) {
+        // if (usuarioSucursalRepository.existsByUsuarioAndSucursal(
+        // usuarioSucursal.getUsuario(),
+        // usuarioSucursal.getSucursal())) {
+        // }
+        // Agregar idSucursal en el objeto usuarioSucursal antes de guardar
+        // Integer idSucursal = AuthHelper.getCurrentSucursalId();
+        // // con el idSucursal buscar la sucursal y agregar a setSucursal
+        // Sucursal sucursal = sucursalRepository.findById(idSucursal).orElse(null);
+        // usuarioSucursal.setSucursal(sucursal);
+
         return usuarioSucursalRepository.save(usuarioSucursal);
     }
 

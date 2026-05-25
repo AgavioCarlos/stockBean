@@ -74,7 +74,7 @@ public class ReporteVentasService {
         if ("SISTEM".equalsIgnoreCase(rol)) {
             ventas = ventaRepository.findAllWithMetodoPago();
             sucursalNames = sucursalRepository.findAll().stream()
-                    .collect(Collectors.toMap(Sucursal::getId_sucursal, Sucursal::getNombre, (a, b) -> a));
+                    .collect(Collectors.toMap(Sucursal::getIdSucursal, Sucursal::getNombre, (a, b) -> a));
         } else if ("ADMIN".equalsIgnoreCase(rol)) {
             List<Integer> companyIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);
             if (companyIds.isEmpty())
@@ -82,19 +82,19 @@ public class ReporteVentasService {
 
             List<Sucursal> sucursales = sucursalRepository.findByEmpresaId(companyIds.get(0));
             List<Integer> idsSucursales = sucursales.stream()
-                    .map(Sucursal::getId_sucursal).collect(Collectors.toList());
+                    .map(Sucursal::getIdSucursal).collect(Collectors.toList());
 
             if (idsSucursales.isEmpty())
                 return Collections.emptyList();
 
             ventas = ventaRepository.findBySucursalIds(idsSucursales);
             sucursalNames = sucursales.stream()
-                    .collect(Collectors.toMap(Sucursal::getId_sucursal, Sucursal::getNombre, (a, b) -> a));
+                    .collect(Collectors.toMap(Sucursal::getIdSucursal, Sucursal::getNombre, (a, b) -> a));
         } else {
             // GERENTE / CAJERO
             List<Integer> idsSucursales = usuarioSucursalRepository.findByStatusTrue().stream()
                     .filter(us -> us.getUsuario().getId_usuario().equals(idUsuario))
-                    .map(us -> us.getSucursal().getId_sucursal())
+                    .map(us -> us.getSucursal().getIdSucursal())
                     .collect(Collectors.toList());
 
             if (idsSucursales.isEmpty())
@@ -102,7 +102,7 @@ public class ReporteVentasService {
 
             ventas = ventaRepository.findBySucursalIds(idsSucursales);
             sucursalNames = sucursalRepository.findAllById(idsSucursales).stream()
-                    .collect(Collectors.toMap(Sucursal::getId_sucursal, Sucursal::getNombre, (a, b) -> a));
+                    .collect(Collectors.toMap(Sucursal::getIdSucursal, Sucursal::getNombre, (a, b) -> a));
         }
 
         return convertToReportDTOs(ventas, sucursalNames);
@@ -125,12 +125,12 @@ public class ReporteVentasService {
             List<Integer> companyIds = empresaUsuarioRepository.findIdEmpresaByUsuarioId(idUsuario);
             if (!companyIds.isEmpty()) {
                 idsSucursales = sucursalRepository.findByEmpresaId(companyIds.get(0)).stream()
-                        .map(Sucursal::getId_sucursal).collect(Collectors.toList());
+                        .map(Sucursal::getIdSucursal).collect(Collectors.toList());
             }
         } else {
             idsSucursales = usuarioSucursalRepository.findByStatusTrue().stream()
                     .filter(us -> us.getUsuario().getId_usuario().equals(idUsuario))
-                    .map(us -> us.getSucursal().getId_sucursal())
+                    .map(us -> us.getSucursal().getIdSucursal())
                     .collect(Collectors.toList());
         }
 

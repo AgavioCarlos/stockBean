@@ -33,12 +33,8 @@ public class CajaService {
     @Autowired
     private MovimientoCajaRepository movimientoCajaRepository;
 
-    public List<Caja> obtenerCajasPorSucursal(Integer idSucursal) {
-        // Asumiendo que quisieramos filtrar (por ahora findAll que se podria filtrar)
-        // para un caso simple retorna todas, habria que agregar findByIdSucursal
-        return cajaRepository.findAll().stream()
-                .filter(c -> c.getIdSucursal().equals(idSucursal))
-                .toList();
+    public List<Caja> obtenerCajasPorSucursal() {
+        return cajaRepository.findAll();
     }
 
     public TurnoCaja obtenerTurnoActivo(Integer idUsuario) {
